@@ -1,8 +1,8 @@
 import { api } from './client';
-import type { Paged, TaskDetail, TaskListItem } from './types';
+import type { Paged, TaskDetail, TaskListItem, TaskStatusDef } from './types';
 
 const B = '/api/task-management/tasks';
-export interface TaskQuery { pageNumber?: number; pageSize?: number; search?: string; archived?: boolean; isProject?: boolean }
+export interface TaskQuery { pageNumber?: number; pageSize?: number; search?: string; archived?: boolean; isProject?: boolean; customStatusId?: string }
 
 export const tasksApi = {
   list(q: TaskQuery) {
@@ -15,6 +15,16 @@ export const tasksApi = {
   // rowVersion from the last read: the host answers 409 if someone else changed the task meanwhile.
   update: (id: string, b: { title: string; dueDate: string; priority: number; description?: string | null; rowVersion?: string | null }) =>
     api<TaskDetail>('PUT', `${B}/${id}`, b),
+  // Exactly one: a built-in status (0..3) or a custom status id.
+  setStatus: (id: string, b: { status: number } | { customStatusId: string }) => api<TaskDetail>('PATCH', `${B}/${id}/status`, b),
   archive: (id: string) => api('POST', `${B}/${id}/archive`),
   restore: (id: string) => api('POST', `${B}/${id}/restore`),
+};
+
+export const statusesApi = {
+  list: () => api<TaskStatusDef[]>('GET', '/api/task-management/statuses'),
+  create: (b: { name: string; category: number; color?: string; sortOrder?: number }) => api<TaskStatusDef>('POST', '/api/task-management/statuses', b),
+  update: (id: string, b: { name: string; category: number; color?: string | null; sortOrder: number; isActive: boolean }) =>
+    api<TaskStatusDef>('PUT', `/api/task-management/statuses/${id}`, b),
+  remove: (id: string) => api('DELETE', `/api/task-management/statuses/${id}`),
 };

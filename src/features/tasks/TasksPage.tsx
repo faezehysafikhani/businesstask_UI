@@ -2,11 +2,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { Archive, ArchiveRestore, Pencil, Plus } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
 import { tasksApi } from '../../api/tasks';
-import { PriorityLabel, StatusLabel, type Paged, type TaskListItem } from '../../api/types';
+import { PriorityLabel, type Paged, type TaskListItem } from '../../api/types';
+import { useStatuses, type StatusOption } from './useStatuses';
 import { TaskForm } from './TaskForm';
 
 export function TasksPage() {
   const { can } = useAuth();
+  const statuses = useStatuses();
+  const [board, setBoard] = useState(false);
   const [archived, setArchived] = useState(false);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -15,14 +18,26 @@ export function TasksPage() {
   const [form, setForm] = useState<{ id?: string } | null>(null);
 
   const load = useCallback(() => {
-    tasksApi.list({ pageNumber: page, pageSize: 20, search: search || undefined, archived }).then(setData).catch((e) => setError(e.message));
-  }, [page, search, archived]);
+    tasksApi.list({ pageNumber: page, pageSize: board ? 200 : 20, search: search || undefined, archived }).then(setData).catch((e) => setError(e.message));
+  }, [page, search, archived, board]);
   useEffect(() => { const t = setTimeout(load, 250); return () => clearTimeout(t); }, [load]);
 
   async function act(fn: () => Promise<unknown>) {
     setError('');
     try { await fn(); load(); } catch (e) { setError((e as Error).message); }
   }
+
+  const StatusSelect = ({ t }: { t: TaskListItem }) => (
+    <select
+      disabled={archived || !can('Tasks.Edit')}
+      className="border rounded px-1 py-0.5 text-xs bg-white"
+      style={{ borderColor: statuses.colorOf(t.customStatusId) ?? undefined }}
+      value={statuses.keyOf(t.status, t.customStatusId)}
+      onChange={(e) => { const o = statuses.options.find((x: StatusOption) => x.key === e.target.value); if (o) act(() => tasksApi.setStatus(t.id, o.payload)); }}
+    >
+      {statuses.options.map((o: StatusOption) => <option key={o.key} value={o.key}>{o.label}</option>)}
+    </select>
+  );
 
   return (
     <div className="space-y-4">
@@ -33,12 +48,38 @@ export function TasksPage() {
             <button key={String(a)} onClick={() => { setArchived(a); setPage(1); }} className={`px-3 py-1.5 ${archived === a ? 'bg-blue-600 text-white' : ''}`}>{a ? 'بایگانی' : 'فعال'}</button>
           ))}
         </div>
+        <div className="flex rounded-lg border bg-white text-sm overflow-hidden">
+          {[false, true].map((b) => (
+            <button key={String(b)} onClick={() => setBoard(b)} className={`px-3 py-1.5 ${board === b ? 'bg-slate-800 text-white' : ''}`}>{b ? 'بورد' : 'لیست'}</button>
+          ))}
+        </div>
         <input className="border rounded-lg px-3 py-1.5 text-sm" placeholder="جستجو" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         {can('Tasks.Create') && !archived && (
           <button onClick={() => setForm({})} className="ms-auto flex items-center gap-1 rounded-lg bg-blue-600 text-white px-3 py-1.5 text-sm"><Plus size={16} /> وظیفه جدید</button>
         )}
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
+      {board ? (
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {statuses.options.map((o: StatusOption) => {
+            const items = data?.items.filter((t) => statuses.keyOf(t.status, t.customStatusId) === o.key) ?? [];
+            return (
+              <div key={o.key} className="w-64 shrink-0 bg-slate-100 rounded-xl p-2 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium px-1">
+                  <span className="size-2.5 rounded-full" style={{ background: o.color ?? '#94a3b8' }} />{o.label}<span className="text-slate-400 ms-auto">{items.length}</span>
+                </div>
+                {items.map((t) => (
+                  <div key={t.id} className="bg-white rounded-lg border p-2 text-sm space-y-1">
+                    <div>{t.title}</div>
+                    <div className="flex items-center gap-2 text-xs text-slate-500"><span>{PriorityLabel[t.priority]}</span><span>{new Date(t.dueDate).toLocaleDateString('fa-IR')}</span></div>
+                    <StatusSelect t={t} />
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
       <div className="bg-white rounded-xl border overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-slate-500"><tr>
@@ -48,7 +89,7 @@ export function TasksPage() {
             {data?.items.map((t) => (
               <tr key={t.id} className="border-t">
                 <td className="px-3 py-2">{t.title}</td>
-                <td className="px-3 py-2">{StatusLabel[t.status]}</td>
+                <td className="px-3 py-2"><StatusSelect t={t} /></td>
                 <td className="px-3 py-2">{PriorityLabel[t.priority]}</td>
                 <td className="px-3 py-2">{new Date(t.dueDate).toLocaleDateString('fa-IR')}</td>
                 <td className="px-3 py-2">{t.assignedUser?.displayName ?? '—'}</td>
@@ -64,7 +105,8 @@ export function TasksPage() {
           </tbody>
         </table>
       </div>
-      {data && data.totalPages > 1 && (
+      )}
+      {!board && data && data.totalPages > 1 && (
         <div className="flex gap-2 items-center text-sm">
           <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="border rounded px-2 py-1 disabled:opacity-40">قبلی</button>
           <span>{page} / {data.totalPages}</span>
