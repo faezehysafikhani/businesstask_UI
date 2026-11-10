@@ -17,6 +17,9 @@ export const tasksApi = {
     api<TaskDetail>('PUT', `${B}/${id}`, b),
   // Exactly one: a built-in status (0..3) or a custom status id.
   setStatus: (id: string, b: { status: number } | { customStatusId: string }) => api<TaskDetail>('PATCH', `${B}/${id}/status`, b),
+  quick: (title: string) => api<TaskDetail>('POST', `${B}/quick`, { title }),
+  bulk: (b: { ids: string[]; action: 'Status' | 'CustomStatus' | 'Priority' | 'Archive' | 'Restore'; status?: number; customStatusId?: string; priority?: number }) =>
+    api<{ succeeded: string[]; failed: { id: string; code: string; message: string }[] }>('POST', `${B}/bulk`, b),
   archive: (id: string) => api('POST', `${B}/${id}/archive`),
   restore: (id: string) => api('POST', `${B}/${id}/restore`),
 };

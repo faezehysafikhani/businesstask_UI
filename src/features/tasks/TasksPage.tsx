@@ -10,6 +10,8 @@ export function TasksPage() {
   const { can } = useAuth();
   const statuses = useStatuses();
   const [board, setBoard] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [quick, setQuick] = useState('');
   const [archived, setArchived] = useState(false);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -21,6 +23,16 @@ export function TasksPage() {
     tasksApi.list({ pageNumber: page, pageSize: board ? 200 : 20, search: search || undefined, archived }).then(setData).catch((e) => setError(e.message));
   }, [page, search, archived, board]);
   useEffect(() => { const t = setTimeout(load, 250); return () => clearTimeout(t); }, [load]);
+
+  async function bulk(b: Omit<Parameters<typeof tasksApi.bulk>[0], 'ids'>) {
+    setError('');
+    try {
+      const r = await tasksApi.bulk({ ids: [...selected], ...b });
+      if (r.failed.length) setError(`${r.failed.length} مورد انجام نشد: ${r.failed[0].message}`);
+      setSelected(new Set()); load();
+    } catch (e) { setError((e as Error).message); }
+  }
+  const toggle = (id: string) => setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   async function act(fn: () => Promise<unknown>) {
     setError('');
@@ -45,7 +57,7 @@ export function TasksPage() {
         <h1 className="text-xl font-bold">وظایف</h1>
         <div className="flex rounded-lg border bg-white text-sm overflow-hidden">
           {[false, true].map((a) => (
-            <button key={String(a)} onClick={() => { setArchived(a); setPage(1); }} className={`px-3 py-1.5 ${archived === a ? 'bg-blue-600 text-white' : ''}`}>{a ? 'بایگانی' : 'فعال'}</button>
+            <button key={String(a)} onClick={() => { setArchived(a); setPage(1); setSelected(new Set()); }} className={`px-3 py-1.5 ${archived === a ? 'bg-blue-600 text-white' : ''}`}>{a ? 'بایگانی' : 'فعال'}</button>
           ))}
         </div>
         <div className="flex rounded-lg border bg-white text-sm overflow-hidden">
@@ -58,6 +70,30 @@ export function TasksPage() {
           <button onClick={() => setForm({})} className="ms-auto flex items-center gap-1 rounded-lg bg-blue-600 text-white px-3 py-1.5 text-sm"><Plus size={16} /> وظیفه جدید</button>
         )}
       </div>
+      {can('Tasks.Create') && !archived && (
+        <form onSubmit={(e) => { e.preventDefault(); const t = quick.trim(); if (t) act(async () => { await tasksApi.quick(t); setQuick(''); }); }}>
+          <input className="w-full border rounded-lg px-3 py-2 text-sm bg-white" placeholder="ثبت سریع: عنوان را بنویس و Enter بزن" value={quick} onChange={(e) => setQuick(e.target.value)} />
+        </form>
+      )}
+      {selected.size > 0 && can('Tasks.Edit') && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-sm">
+          <span>{selected.size} انتخاب شده</span>
+          {!archived && (
+            <>
+              <select className="border rounded px-1 py-0.5 bg-white" value="" onChange={(e) => { const o = statuses.options.find((x: StatusOption) => x.key === e.target.value); if (o) bulk('status' in o.payload ? { action: 'Status', status: o.payload.status } : { action: 'CustomStatus', customStatusId: o.payload.customStatusId }); }}>
+                <option value="">تغییر وضعیت…</option>
+                {statuses.options.map((o: StatusOption) => <option key={o.key} value={o.key}>{o.label}</option>)}
+              </select>
+              <select className="border rounded px-1 py-0.5 bg-white" value="" onChange={(e) => e.target.value && bulk({ action: 'Priority', priority: Number(e.target.value) })}>
+                <option value="">تغییر اولویت…</option>
+                {Object.entries(PriorityLabel).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </>
+          )}
+          <button className="underline" onClick={() => confirm(archived ? 'بازیابی شوند؟' : 'بایگانی شوند؟') && bulk({ action: archived ? 'Restore' : 'Archive' })}>{archived ? 'بازیابی' : 'بایگانی'}</button>
+          <button className="ms-auto underline text-slate-500" onClick={() => setSelected(new Set())}>لغو انتخاب</button>
+        </div>
+      )}
       {error && <p className="text-sm text-red-600">{error}</p>}
       {board ? (
         <div className="flex gap-3 overflow-x-auto pb-2">
@@ -83,11 +119,13 @@ export function TasksPage() {
       <div className="bg-white rounded-xl border overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-slate-500"><tr>
+            <th className="px-3 py-2 w-8"><input type="checkbox" aria-label="همه" checked={!!data?.items.length && data.items.every((t) => selected.has(t.id))} onChange={(e) => setSelected(e.target.checked ? new Set(data?.items.map((t) => t.id)) : new Set())} /></th>
             {['عنوان', 'وضعیت', 'اولویت', 'سررسید', 'مسئول', ''].map((h) => <th key={h} className="text-start px-3 py-2 font-normal">{h}</th>)}
           </tr></thead>
           <tbody>
             {data?.items.map((t) => (
               <tr key={t.id} className="border-t">
+                <td className="px-3 py-2"><input type="checkbox" checked={selected.has(t.id)} onChange={() => toggle(t.id)} /></td>
                 <td className="px-3 py-2">{t.title}</td>
                 <td className="px-3 py-2"><StatusSelect t={t} /></td>
                 <td className="px-3 py-2">{PriorityLabel[t.priority]}</td>
@@ -101,7 +139,7 @@ export function TasksPage() {
                 </td>
               </tr>
             ))}
-            {data && data.items.length === 0 && <tr><td colSpan={6} className="px-3 py-8 text-center text-slate-400">موردی نیست</td></tr>}
+            {data && data.items.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">موردی نیست</td></tr>}
           </tbody>
         </table>
       </div>
