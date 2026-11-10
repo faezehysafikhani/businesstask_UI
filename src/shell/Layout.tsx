@@ -1,9 +1,11 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { CheckSquare, ListChecks, LogOut } from 'lucide-react';
+import { CheckSquare, ClipboardCheck, ListChecks, LogOut, Route } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 
 // Each menu item shows only when the host grants its permission. New modules add a line here.
 const MENU = [{ to: '/tasks', label: 'وظایف', icon: CheckSquare, permission: 'Tasks.View' },
+  { to: '/reviews', label: 'بازبینی‌های من', icon: ClipboardCheck, permission: 'Workflow.View' },
+  { to: '/settings/review-flow', label: 'مسیر بازبینی', icon: Route, permission: 'Workflow.Configure' },
   { to: '/settings/statuses', label: 'وضعیت‌ها', icon: ListChecks, permission: 'Tasks.ManageStatuses' },
 ];
 

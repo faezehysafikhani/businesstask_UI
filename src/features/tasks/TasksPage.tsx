@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Archive, ArchiveRestore, Pencil, Plus } from 'lucide-react';
+import { Archive, ArchiveRestore, Pencil, Plus, SendHorizontal } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
 import { tasksApi } from '../../api/tasks';
-import { PriorityLabel, type Paged, type TaskListItem } from '../../api/types';
+import { PriorityLabel, ReviewLabel, type Paged, type TaskListItem } from '../../api/types';
 import { useStatuses, type StatusOption } from './useStatuses';
 import { TaskForm } from './TaskForm';
 
@@ -127,11 +127,12 @@ export function TasksPage() {
               <tr key={t.id} className="border-t">
                 <td className="px-3 py-2"><input type="checkbox" checked={selected.has(t.id)} onChange={() => toggle(t.id)} /></td>
                 <td className="px-3 py-2">{t.title}</td>
-                <td className="px-3 py-2"><StatusSelect t={t} /></td>
+                <td className="px-3 py-2"><StatusSelect t={t} />{!!t.reviewStatus && <span className={`ms-2 text-xs ${t.reviewStatus === 3 ? 'text-red-600' : t.reviewStatus === 1 ? 'text-amber-600' : 'text-green-600'}`}>{ReviewLabel[t.reviewStatus]}</span>}</td>
                 <td className="px-3 py-2">{PriorityLabel[t.priority]}</td>
                 <td className="px-3 py-2">{new Date(t.dueDate).toLocaleDateString('fa-IR')}</td>
                 <td className="px-3 py-2">{t.assignedUser?.displayName ?? '—'}</td>
                 <td className="px-3 py-2 text-end whitespace-nowrap">
+                  {can('Tasks.Edit') && !archived && t.status !== 3 && t.reviewStatus !== 1 && <button title="ارسال برای بازبینی" onClick={() => { const c = prompt('توضیح برای بازبین (اختیاری)'); if (c !== null) act(() => tasksApi.submitReview(t.id, c || undefined)); }} className="p-1 hover:text-purple-600"><SendHorizontal size={16} /></button>}
                   {can('Tasks.Edit') && !archived && <button title="ویرایش" onClick={() => setForm({ id: t.id })} className="p-1 hover:text-blue-600"><Pencil size={16} /></button>}
                   {can('Tasks.Edit') && (archived
                     ? <button title="بازیابی" onClick={() => act(() => tasksApi.restore(t.id))} className="p-1 hover:text-green-600"><ArchiveRestore size={16} /></button>
