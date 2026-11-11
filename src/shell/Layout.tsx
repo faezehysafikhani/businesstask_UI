@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { CheckSquare, BarChart3, Clock, ClipboardCheck, Copy, Inbox, ListChecks, LogOut, MessageSquarePlus, Route, Tags } from 'lucide-react';
+import { CheckSquare, BarChart3, Clock, Zap, ClipboardCheck, Copy, Inbox, ListChecks, LogOut, MessageSquarePlus, Route, Tags } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { TimerBar } from '../features/time/TimerBar';
 
@@ -14,6 +14,7 @@ const MENU = [{ to: '/tasks', label: 'وظایف', icon: CheckSquare, permission
   { to: '/reviews', label: 'بازبینی‌های من', icon: ClipboardCheck, permission: 'Workflow.View' },
   { to: '/settings/review-flow', label: 'مسیر بازبینی', icon: Route, permission: 'Workflow.Configure' },
   { to: '/settings/timesheet-flow', label: 'مسیر تأیید ساعت', icon: Route, permission: 'Workflow.Configure' },
+  { to: '/settings/automation', label: 'قاعده‌های خودکار', icon: Zap, permission: 'Automation.Manage' },
   { to: '/settings/statuses', label: 'وضعیت‌ها', icon: ListChecks, permission: 'Tasks.ManageStatuses' },
 ];
 

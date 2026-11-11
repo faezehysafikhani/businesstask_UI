@@ -38,10 +38,17 @@ export interface WorkloadRow { user: UserSummary; loggedMinutes: number; openTas
 export interface Workload { from: string; to: string; capacityPerPersonMinutes: number; people: WorkloadRow[] }
 export const fmtMinutes = (m: number) => `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`;
 
+export const TriggerLabel: Record<string, string> = { TaskCreated: 'ساخته شدن وظیفه', StatusChanged: 'تغییر وضعیت', SlaBreached: 'نقض SLA' };
+export const ActionLabel: Record<string, string> = { SetPriority: 'تعیین اولویت', SetStatus: 'تعیین وضعیت', AssignUser: 'واگذاری به کاربر', AssignManager: 'واگذاری به مدیر', AddTag: 'افزودن برچسب', StartSla: 'شروع SLA', Notify: 'اطلاع‌رسانی' };
+export interface AutomationAction { type: string; priority?: string | null; status?: string | null; userId?: string | null; tag?: string | null; hours?: number | null; businessDaysOnly?: boolean; message?: string | null }
+export interface AutomationConditions { priority?: string | null; status?: string | null; isProject?: boolean | null; titleContains?: string | null }
+export interface AutomationRule { id: string; name: string; trigger: string; conditions: AutomationConditions; actions: AutomationAction[]; sortOrder: number; isActive: boolean }
+export interface AutomationLog { id: string; ruleId: string; ruleName: string; taskId: string; trigger: string; outcome: string; detail?: string | null; atUtc: string }
+
 export interface UserSummary { id: string; displayName: string }
 export interface TaskListItem {
   id: string; title: string; isProject: boolean; status: number; priority: number; dueDate: string;
-  assignedUser?: UserSummary | null; subTaskCount: number; completedSubTaskCount: number; archivedAtUtc?: string | null; customStatusId?: string | null; reviewStatus?: number;
+  assignedUser?: UserSummary | null; subTaskCount: number; completedSubTaskCount: number; archivedAtUtc?: string | null; customStatusId?: string | null; reviewStatus?: number; slaDueAtUtc?: string | null; slaBreachedAtUtc?: string | null;
 }
 export interface TaskDetail {
   id: string; title: string; description?: string | null; isProject: boolean; status: number; priority: number;

@@ -98,3 +98,12 @@ export const timeApi = {
   setEstimate: (id: string, minutes: number | null) => api<import('./types').TaskTime>('PUT', `${B}/${id}/estimate`, { minutes }),
 };
 export const TIMESHEET = 'Timesheet';
+
+const A = '/api/task-management/automation';
+export const automationApi = {
+  rules: () => api<import('./types').AutomationRule[]>('GET', `${A}/rules`),
+  save: (id: string | null, b: { name: string; trigger: string; conditions: import('./types').AutomationConditions; actions: import('./types').AutomationAction[]; sortOrder?: number; isActive: boolean }) =>
+    id ? api<import('./types').AutomationRule>('PUT', `${A}/rules/${id}`, b) : api<import('./types').AutomationRule>('POST', `${A}/rules`, b),
+  remove: (id: string) => api('DELETE', `${A}/rules/${id}`),
+  log: () => api<import('./types').AutomationLog[]>('GET', `${A}/log`),
+};

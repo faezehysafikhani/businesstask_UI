@@ -129,7 +129,7 @@ export function TasksPage() {
               <tr key={t.id} className="border-t">
                 <td className="px-3 py-2"><input type="checkbox" checked={selected.has(t.id)} onChange={() => toggle(t.id)} /></td>
                 <td className="px-3 py-2">{t.title}</td>
-                <td className="px-3 py-2"><StatusSelect t={t} />{!!t.reviewStatus && <span className={`ms-2 text-xs ${t.reviewStatus === 3 ? 'text-red-600' : t.reviewStatus === 1 ? 'text-amber-600' : 'text-green-600'}`}>{ReviewLabel[t.reviewStatus]}</span>}</td>
+                <td className="px-3 py-2"><StatusSelect t={t} />{t.slaBreachedAtUtc ? <span className="ms-2 text-xs text-red-600">SLA نقض شد</span> : t.slaDueAtUtc && t.status !== 3 ? <span className="ms-2 text-xs text-slate-500" title="مهلت SLA">⏳ {new Date(t.slaDueAtUtc).toLocaleString('fa-IR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span> : null}{!!t.reviewStatus && <span className={`ms-2 text-xs ${t.reviewStatus === 3 ? 'text-red-600' : t.reviewStatus === 1 ? 'text-amber-600' : 'text-green-600'}`}>{ReviewLabel[t.reviewStatus]}</span>}</td>
                 <td className="px-3 py-2">{PriorityLabel[t.priority]}</td>
                 <td className="px-3 py-2">{new Date(t.dueDate).toLocaleDateString('fa-IR')}</td>
                 <td className="px-3 py-2">{t.assignedUser?.displayName ?? '—'}</td>
