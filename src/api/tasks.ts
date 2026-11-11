@@ -60,3 +60,24 @@ export async function listUsers(): Promise<{ id: string; displayName: string }[]
   const r = await api<{ id: string; displayName: string }[] | { items: { id: string; displayName: string }[] }>('GET', '/api/identity/users/?pageSize=200');
   return Array.isArray(r) ? r : r.items;
 }
+
+export const planningApi = {
+  get: (id: string) => api<import('./types').TaskPlanning>('GET', `${B}/${id}/planning`),
+  addDependency: (id: string, blockedByTaskId: string) => api<import('./types').TaskPlanning>('POST', `${B}/${id}/dependencies`, { blockedByTaskId }),
+  removeDependency: (id: string, blockedByTaskId: string) => api<import('./types').TaskPlanning>('DELETE', `${B}/${id}/dependencies/${blockedByTaskId}`),
+  setBlocker: (id: string, reason: string | null) => api<import('./types').TaskPlanning>('PUT', `${B}/${id}/blocker`, { reason }),
+  addCriterion: (id: string, text: string) => api<import('./types').TaskPlanning>('POST', `${B}/${id}/criteria`, { text }),
+  setMet: (id: string, criterionId: string, met: boolean) => api<import('./types').TaskPlanning>('PUT', `${B}/${id}/criteria/${criterionId}/met`, { met }),
+  deleteCriterion: (id: string, criterionId: string) => api<import('./types').TaskPlanning>('DELETE', `${B}/${id}/criteria/${criterionId}`),
+  addSubTasks: (id: string, titles: string[]) => api('POST', `${B}/${id}/subtasks/bulk`, { titles }),
+  saveAsTemplate: (id: string, name: string) => api<import('./types').TaskTemplate>('POST', `${B}/${id}/save-as-template`, { name }),
+  wip: () => api<{ limitPerUser: number | null }>('GET', '/api/task-management/wip/'),
+  setWip: (limitPerUser: number | null) => api<{ limitPerUser: number | null }>('PUT', '/api/task-management/wip/', { limitPerUser }),
+};
+
+export const templatesApi = {
+  list: () => api<import('./types').TaskTemplate[]>('GET', '/api/task-management/templates/'),
+  create: (name: string, body: import('./types').TemplateBody) => api<import('./types').TaskTemplate>('POST', '/api/task-management/templates/', { name, body }),
+  remove: (id: string) => api('DELETE', `/api/task-management/templates/${id}`),
+  instantiate: (id: string, b: { title?: string }) => api<TaskDetail>('POST', `/api/task-management/templates/${id}/instantiate`, b),
+};

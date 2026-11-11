@@ -8,6 +8,7 @@ import { ReviewFlowPage } from './features/reviews/ReviewFlowPage';
 import { RequestsPage } from './features/requests/RequestsPage';
 import { InboxPage } from './features/requests/InboxPage';
 import { CategoriesPage } from './features/requests/CategoriesPage';
+import { TemplatesPage } from './features/templates/TemplatesPage';
 import { StatusesPage } from './features/tasks/StatusesPage';
 
 export function App() {
@@ -24,6 +25,7 @@ export function App() {
         <Route path="/requests" element={can('Requests.Submit') ? <RequestsPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="/requests/inbox" element={can('Requests.Handle') ? <InboxPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="/settings/request-categories" element={can('Requests.Manage') ? <CategoriesPage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/templates" element={can('Tasks.View') ? <TemplatesPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="*" element={<Navigate to="/tasks" replace />} />
       </Route>
     </Routes>

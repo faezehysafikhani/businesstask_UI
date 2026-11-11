@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Archive, ArchiveRestore, Pencil, Plus, SendHorizontal } from 'lucide-react';
+import { Archive, ArchiveRestore, ListTodo, Pencil, Plus, SendHorizontal } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
 import { tasksApi } from '../../api/tasks';
 import { PriorityLabel, ReviewLabel, type Paged, type TaskListItem } from '../../api/types';
 import { useStatuses, type StatusOption } from './useStatuses';
 import { TaskForm } from './TaskForm';
+import { PlanningModal } from './PlanningModal';
 
 export function TasksPage() {
   const { can } = useAuth();
@@ -12,6 +13,7 @@ export function TasksPage() {
   const [board, setBoard] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [quick, setQuick] = useState('');
+  const [planning, setPlanning] = useState<TaskListItem | null>(null);
   const [archived, setArchived] = useState(false);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -132,6 +134,7 @@ export function TasksPage() {
                 <td className="px-3 py-2">{new Date(t.dueDate).toLocaleDateString('fa-IR')}</td>
                 <td className="px-3 py-2">{t.assignedUser?.displayName ?? '—'}</td>
                 <td className="px-3 py-2 text-end whitespace-nowrap">
+                  {!archived && <button title="برنامه‌ریزی (وابستگی، معیار پذیرش)" onClick={() => setPlanning(t)} className="p-1 hover:text-teal-600"><ListTodo size={16} /></button>}
                   {can('Tasks.Edit') && !archived && t.status !== 3 && t.reviewStatus !== 1 && <button title="ارسال برای بازبینی" onClick={() => { const c = prompt('توضیح برای بازبین (اختیاری)'); if (c !== null) act(() => tasksApi.submitReview(t.id, c || undefined)); }} className="p-1 hover:text-purple-600"><SendHorizontal size={16} /></button>}
                   {can('Tasks.Edit') && !archived && <button title="ویرایش" onClick={() => setForm({ id: t.id })} className="p-1 hover:text-blue-600"><Pencil size={16} /></button>}
                   {can('Tasks.Edit') && (archived
@@ -152,6 +155,7 @@ export function TasksPage() {
           <button disabled={page >= data.totalPages} onClick={() => setPage(page + 1)} className="border rounded px-2 py-1 disabled:opacity-40">بعدی</button>
         </div>
       )}
+      {planning && <PlanningModal task={planning} onClose={() => setPlanning(null)} onChanged={load} />}
       {form && <TaskForm taskId={form.id} onClose={() => setForm(null)} onSaved={() => { setForm(null); load(); }} />}
     </div>
   );

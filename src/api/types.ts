@@ -22,6 +22,12 @@ export interface TaskRequest {
   requester?: UserSummary | null; routedTo?: UserSummary | null; status: number; decisionNote?: string | null; convertedTaskId?: string | null; createdAtUtc: string;
 }
 
+export interface TaskBrief { id: string; title: string; status: number; isDone: boolean }
+export interface Criterion { id: string; text: string; isMet: boolean; sortOrder: number }
+export interface TaskPlanning { blockedReason?: string | null; blockedBy: TaskBrief[]; blocking: TaskBrief[]; criteria: Criterion[]; canComplete: boolean }
+export interface TemplateBody { title: string; description?: string | null; priority: number; isProject: boolean; dueInDays: number; subTasks: string[]; criteria: string[]; tags: string[] }
+export interface TaskTemplate { id: string; name: string; isProject: boolean; body: TemplateBody }
+
 export interface UserSummary { id: string; displayName: string }
 export interface TaskListItem {
   id: string; title: string; isProject: boolean; status: number; priority: number; dueDate: string;

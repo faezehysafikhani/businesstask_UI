@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Trash2 } from 'lucide-react';
-import { statusesApi } from '../../api/tasks';
+import { planningApi, statusesApi } from '../../api/tasks';
 import { StatusLabel, type TaskStatusDef } from '../../api/types';
 
 // Custom statuses: each counts as one of the four built-in statuses (reports and reminders keep working).
@@ -10,6 +10,8 @@ export function StatusesPage() {
   const [category, setCategory] = useState(1);
   const [color, setColor] = useState('#7c3aed');
   const [error, setError] = useState('');
+  const [wip, setWip] = useState('');
+  useEffect(() => { planningApi.wip().then((w) => setWip(w.limitPerUser?.toString() ?? '')).catch(() => {}); }, []);
 
   const load = useCallback(() => { statusesApi.list().then(setList).catch((e) => setError(e.message)); }, []);
   useEffect(load, [load]);
@@ -35,6 +37,11 @@ export function StatusesPage() {
         <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-8 w-8" />
         <button disabled={!name.trim()} className="rounded-lg bg-blue-600 text-white px-3 py-1.5 text-sm disabled:opacity-50">افزودن</button>
       </form>
+      <div className="flex items-center gap-2 text-sm bg-white rounded-xl border p-3">
+        <span>حداکثر وظیفه در حال انجام برای هر نفر (خالی = بدون محدودیت):</span>
+        <input type="number" min={1} className="w-20 border rounded px-2 py-1" value={wip} onChange={(e) => setWip(e.target.value)} />
+        <button className="border rounded-lg px-3 py-1" onClick={() => act(() => planningApi.setWip(wip.trim() ? Number(wip) : null))}>ثبت</button>
+      </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
       <ul className="bg-white rounded-xl border divide-y">
         {list.map((s) => (
