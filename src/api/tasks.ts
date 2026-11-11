@@ -44,3 +44,19 @@ export const workflowApi = {
   setSteps: (subjectType: string, steps: { name: string; approverUserId?: string | null; approverRoleId?: string | null; approverKey?: string | null; isOptional?: boolean }[]) =>
     api<WorkflowDefinition>('PUT', '/api/workflow/definitions/by-scope', { subjectType, name: 'بازبینی وظیفه', steps }),
 };
+
+export const requestsApi = {
+  categories: () => api<import('./types').RequestCategory[]>('GET', '/api/task-management/requests/categories'),
+  saveCategory: (id: string | null, b: { name: string; routeToUserId?: string | null; urgentRouteToUserId?: string | null; defaultPriority: number; isActive: boolean }) =>
+    id ? api<import('./types').RequestCategory>('PUT', `/api/task-management/requests/categories/${id}`, b) : api<import('./types').RequestCategory>('POST', '/api/task-management/requests/categories', b),
+  list: (mine: boolean) => api<import('./types').TaskRequest[]>('GET', `/api/task-management/requests/?mine=${mine}`),
+  submit: (b: { title: string; description?: string; categoryId?: string; priority?: number; neededBy?: string }) => api<import('./types').TaskRequest>('POST', '/api/task-management/requests/', b),
+  convert: (id: string, b: { dueDate?: string }) => api<TaskDetail>('POST', `/api/task-management/requests/${id}/convert`, b),
+  reject: (id: string, note?: string) => api<import('./types').TaskRequest>('POST', `/api/task-management/requests/${id}/reject`, { note }),
+};
+
+// Users for pickers (the host's user list; the caller needs permission to list users).
+export async function listUsers(): Promise<{ id: string; displayName: string }[]> {
+  const r = await api<{ id: string; displayName: string }[] | { items: { id: string; displayName: string }[] }>('GET', '/api/identity/users/?pageSize=200');
+  return Array.isArray(r) ? r : r.items;
+}

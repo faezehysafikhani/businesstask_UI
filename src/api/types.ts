@@ -15,6 +15,13 @@ export interface WorkflowInstance { id: string; subjectType: string; subjectId: 
 export interface WorkflowStep { id?: string; order: number; name: string; approverUserId?: string | null; approverKey?: string | null; isOptional?: boolean }
 export interface WorkflowDefinition { id: string; name: string; subjectType: string; scopeType: string; isActive: boolean; steps: WorkflowStep[] }
 
+export const RequestStatusLabel: Record<number, string> = { 0: 'در انتظار بررسی', 1: 'تبدیل به وظیفه شد', 2: 'رد شد' };
+export interface RequestCategory { id: string; name: string; routeToUserId?: string | null; urgentRouteToUserId?: string | null; defaultPriority: number; isActive: boolean }
+export interface TaskRequest {
+  id: string; categoryId?: string | null; categoryName?: string | null; title: string; description?: string | null; priority: number; neededBy?: string | null;
+  requester?: UserSummary | null; routedTo?: UserSummary | null; status: number; decisionNote?: string | null; convertedTaskId?: string | null; createdAtUtc: string;
+}
+
 export interface UserSummary { id: string; displayName: string }
 export interface TaskListItem {
   id: string; title: string; isProject: boolean; status: number; priority: number; dueDate: string;
