@@ -118,3 +118,24 @@ export const meetingsApi = {
   convertAll: (id: string) => api<{ meeting: import('./types').Meeting; converted: { index: number; taskId: string; title: string }[]; skipped: string[] }>('POST', `${M}/${id}/actions/convert-all`),
   holidays: (from: string, to: string) => api<import('./types').OfficialHoliday[]>('GET', `/api/calendar/work-calendars/official-holidays?from=${from}&to=${to}`),
 };
+
+const W = '/api/task-management/webhooks';
+export const webhooksApi = {
+  events: () => api<string[]>('GET', `${W}/events`),
+  list: () => api<import('./types').Webhook[]>('GET', `${W}/`),
+  create: (b: { name: string; url: string; events: string[] }) => api<{ webhook: import('./types').Webhook; secret: string }>('POST', `${W}/`, b),
+  update: (id: string, b: { name: string; url: string; events: string[]; isActive: boolean }) => api<import('./types').Webhook>('PUT', `${W}/${id}`, b),
+  rotate: (id: string) => api<{ webhook: import('./types').Webhook; secret: string }>('POST', `${W}/${id}/rotate-secret`),
+  ping: (id: string) => api('POST', `${W}/${id}/ping`),
+  deliveries: (id: string) => api<import('./types').WebhookDelivery[]>('GET', `${W}/${id}/deliveries`),
+  remove: (id: string) => api('DELETE', `${W}/${id}`),
+};
+
+const MB = '/api/task-management/membership';
+export const membershipApi = {
+  get: () => api<import('./types').Membership>('GET', `${MB}/`),
+  set: (b: { planName: string; maxUsers?: number | null; maxStorageMb?: number | null; validFrom?: string | null; validUntil?: string | null; notes?: string | null }) => api<import('./types').Membership>('PUT', `${MB}/`, b),
+  clear: () => api('DELETE', `${MB}/`),
+  retention: () => api<{ automationLogDays: number | null; webhookDeliveryDays: number | null }>('GET', `${MB}/retention`),
+  setRetention: (b: { automationLogDays: number | null; webhookDeliveryDays: number | null }) => api('PUT', `${MB}/retention`, b),
+};

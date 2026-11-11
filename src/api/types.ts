@@ -56,6 +56,14 @@ export interface MeetingPerson { id: string; name: string; positionTitle: string
 export interface MeetingPeople { canCreate: boolean; canInviteHigher: boolean; people: MeetingPerson[]; message?: string | null }
 export interface OfficialHoliday { date: string; reason: string }
 
+export interface Webhook { id: string; name: string; url: string; events: string[]; isActive: boolean; consecutiveFailures: number; lastDeliveredAtUtc?: string | null }
+export interface WebhookDelivery { id: string; eventType: string; attempts: number; delivered: boolean; gaveUp: boolean; lastStatusCode?: number | null; lastError?: string | null; createdAtUtc: string; deliveredAtUtc?: string | null }
+export const MembershipStatusLabel: Record<string, string> = { NoPlan: 'بدون پلن (بدون محدودیت)', Active: 'فعال', ExpiringSoon: 'در آستانه انقضا', Expired: 'منقضی', NotStarted: 'هنوز شروع نشده' };
+export interface Membership {
+  planName?: string | null; maxUsers?: number | null; maxStorageMb?: number | null; validFrom?: string | null; validUntil?: string | null; notes?: string | null;
+  status: string; daysLeft?: number | null; usage: { activeUsers: number; storageBytes: number; taskCount: number }; warnings: string[];
+}
+
 export interface UserSummary { id: string; displayName: string }
 export interface TaskListItem {
   id: string; title: string; isProject: boolean; status: number; priority: number; dueDate: string;

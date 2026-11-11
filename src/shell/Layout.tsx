@@ -1,7 +1,8 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { CheckSquare, BarChart3, CalendarDays, Clock, Zap, ClipboardCheck, Copy, Inbox, ListChecks, LogOut, MessageSquarePlus, Route, Tags } from 'lucide-react';
+import { CheckSquare, BarChart3, CalendarDays, Gauge, Webhook, Clock, Zap, ClipboardCheck, Copy, Inbox, ListChecks, LogOut, MessageSquarePlus, Route, Tags } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { TimerBar } from '../features/time/TimerBar';
+import { MembershipBanner } from '../features/admin/MembershipBanner';
 
 // Each menu item shows only when the host grants its permission. New modules add a line here.
 const MENU = [{ to: '/tasks', label: 'وظایف', icon: CheckSquare, permission: 'Tasks.View' },
@@ -16,6 +17,8 @@ const MENU = [{ to: '/tasks', label: 'وظایف', icon: CheckSquare, permission
   { to: '/settings/review-flow', label: 'مسیر بازبینی', icon: Route, permission: 'Workflow.Configure' },
   { to: '/settings/timesheet-flow', label: 'مسیر تأیید ساعت', icon: Route, permission: 'Workflow.Configure' },
   { to: '/settings/automation', label: 'قاعده‌های خودکار', icon: Zap, permission: 'Automation.Manage' },
+  { to: '/settings/membership', label: 'پلن و مصرف', icon: Gauge, permission: 'Membership.View' },
+  { to: '/settings/webhooks', label: 'وب‌هوک‌ها', icon: Webhook, permission: 'Webhooks.Manage' },
   { to: '/settings/statuses', label: 'وضعیت‌ها', icon: ListChecks, permission: 'Tasks.ManageStatuses' },
 ];
 
@@ -33,7 +36,7 @@ export function Layout() {
         <div className="mt-auto text-xs text-slate-500 px-2">{me?.user.displayName}</div>
         <button onClick={logout} className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-slate-100"><LogOut size={16} /> خروج</button>
       </aside>
-      <div className="flex-1 min-w-0"><TimerBar /><main className="p-6"><Outlet /></main></div>
+      <div className="flex-1 min-w-0"><MembershipBanner /><TimerBar /><main className="p-6"><Outlet /></main></div>
     </div>
   );
 }
