@@ -12,6 +12,7 @@ import { TemplatesPage } from './features/templates/TemplatesPage';
 import { TimesheetPage } from './features/time/TimesheetPage';
 import { WorkloadPage } from './features/time/WorkloadPage';
 import { AutomationPage } from './features/automation/AutomationPage';
+import { MeetingsPage } from './features/meetings/MeetingsPage';
 import { StatusesPage } from './features/tasks/StatusesPage';
 
 export function App() {
@@ -33,6 +34,7 @@ export function App() {
         <Route path="/workload" element={can('Timesheets.ViewAll') ? <WorkloadPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="/settings/timesheet-flow" element={can('Workflow.Configure') ? <ReviewFlowPage subject="Timesheet" /> : <p>دسترسی ندارید.</p>} />
         <Route path="/settings/automation" element={can('Automation.Manage') ? <AutomationPage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/meetings" element={can('Meetings.View') ? <MeetingsPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="*" element={<Navigate to="/tasks" replace />} />
       </Route>
     </Routes>

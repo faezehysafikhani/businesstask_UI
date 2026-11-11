@@ -107,3 +107,14 @@ export const automationApi = {
   remove: (id: string) => api('DELETE', `${A}/rules/${id}`),
   log: () => api<import('./types').AutomationLog[]>('GET', `${A}/log`),
 };
+
+const M = '/api/calendar/meetings';
+export const meetingsApi = {
+  list: (from: string, to: string) => api<import('./types').Meeting[]>('GET', `${M}/?from=${from}&to=${to}`),
+  people: () => api<import('./types').MeetingPeople>('GET', `${M}/people-options`),
+  save: (id: string | null, b: import('./types').MeetingInput) => id ? api<import('./types').Meeting>('PUT', `${M}/${id}`, b) : api<import('./types').Meeting>('POST', `${M}/`, b),
+  remove: (id: string, version: number) => api('DELETE', `${M}/${id}?version=${version}`),
+  convert: (id: string, index: number) => api<{ meeting: import('./types').Meeting; converted: { index: number; taskId: string; title: string }[]; skipped: string[] }>('POST', `${M}/${id}/actions/${index}/convert-to-task`),
+  convertAll: (id: string) => api<{ meeting: import('./types').Meeting; converted: { index: number; taskId: string; title: string }[]; skipped: string[] }>('POST', `${M}/${id}/actions/convert-all`),
+  holidays: (from: string, to: string) => api<import('./types').OfficialHoliday[]>('GET', `/api/calendar/work-calendars/official-holidays?from=${from}&to=${to}`),
+};

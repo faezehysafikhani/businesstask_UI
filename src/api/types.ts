@@ -45,6 +45,17 @@ export interface AutomationConditions { priority?: string | null; status?: strin
 export interface AutomationRule { id: string; name: string; trigger: string; conditions: AutomationConditions; actions: AutomationAction[]; sortOrder: number; isActive: boolean }
 export interface AutomationLog { id: string; ruleId: string; ruleName: string; taskId: string; trigger: string; outcome: string; detail?: string | null; atUtc: string }
 
+export interface MeetingAgenda { title: string; durationMinutes: number; presenterUserId?: string | null }
+export interface MeetingAction { title: string; assigneeUserId?: string | null; dueDate?: string | null; status: string; taskId?: string | null }
+export interface MeetingInput {
+  title: string; type: string; date: string; startTime: string; endTime: string; location?: string | null; organizerUserId: string; description?: string | null;
+  participantIds: string[]; agenda: MeetingAgenda[]; minutes?: string | null; actions: MeetingAction[]; taskIds: string[]; sendInvitationSms?: boolean; version?: number | null;
+}
+export interface Meeting { id: string; createdByUserId: string; version: number; details: MeetingInput; canEdit: boolean; canDelete: boolean; notice?: string | null }
+export interface MeetingPerson { id: string; name: string; positionTitle: string; relation: string }
+export interface MeetingPeople { canCreate: boolean; canInviteHigher: boolean; people: MeetingPerson[]; message?: string | null }
+export interface OfficialHoliday { date: string; reason: string }
+
 export interface UserSummary { id: string; displayName: string }
 export interface TaskListItem {
   id: string; title: string; isProject: boolean; status: number; priority: number; dueDate: string;

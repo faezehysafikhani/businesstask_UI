@@ -1,10 +1,11 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { CheckSquare, BarChart3, Clock, Zap, ClipboardCheck, Copy, Inbox, ListChecks, LogOut, MessageSquarePlus, Route, Tags } from 'lucide-react';
+import { CheckSquare, BarChart3, CalendarDays, Clock, Zap, ClipboardCheck, Copy, Inbox, ListChecks, LogOut, MessageSquarePlus, Route, Tags } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { TimerBar } from '../features/time/TimerBar';
 
 // Each menu item shows only when the host grants its permission. New modules add a line here.
 const MENU = [{ to: '/tasks', label: 'وظایف', icon: CheckSquare, permission: 'Tasks.View' },
+  { to: '/meetings', label: 'جلسات و تقویم', icon: CalendarDays, permission: 'Meetings.View' },
   { to: '/timesheet', label: 'ساعت کاری', icon: Clock, permission: 'Timesheets.Log' },
   { to: '/workload', label: 'بار کاری', icon: BarChart3, permission: 'Timesheets.ViewAll' },
   { to: '/templates', label: 'قالب‌ها', icon: Copy, permission: 'Tasks.View' },
