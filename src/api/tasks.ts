@@ -139,3 +139,37 @@ export const membershipApi = {
   retention: () => api<{ automationLogDays: number | null; webhookDeliveryDays: number | null }>('GET', `${MB}/retention`),
   setRetention: (b: { automationLogDays: number | null; webhookDeliveryDays: number | null }) => api('PUT', `${MB}/retention`, b),
 };
+
+export interface ReportSubscription { id: string; frequency: string; dayOfWeek?: string | null; dayOfMonth?: number | null; hour: number; bySms: boolean; byEmail: boolean; isActive: boolean; nextRunAtUtc: string; lastSentAtUtc?: string | null }
+export const reportsApi = {
+  list: () => api<ReportSubscription[]>('GET', '/api/task-management/report-subscriptions/'),
+  save: (id: string | null, b: { frequency: string; dayOfWeek?: string | null; dayOfMonth?: number | null; hour: number; bySms: boolean; byEmail: boolean; isActive: boolean }) =>
+    id ? api<ReportSubscription>('PUT', `/api/task-management/report-subscriptions/${id}`, b) : api<ReportSubscription>('POST', '/api/task-management/report-subscriptions/', b),
+  remove: (id: string) => api('DELETE', `/api/task-management/report-subscriptions/${id}`),
+};
+
+export interface ImportRow { line: number; title?: string | null; dueDate?: string | null; priority?: string | null; assignee?: string | null; valid: boolean; errors: string[] }
+export const importApi = {
+  preview: (csv: string) => api<{ total: number; valid: number; invalid: number; rows: ImportRow[] }>('POST', '/api/task-management/tasks/import/preview', { csv }),
+  run: (csv: string, skipInvalid: boolean) => api<{ created: number; skipped: number; taskIds: string[]; failed: ImportRow[] }>('POST', '/api/task-management/tasks/import', { csv, skipInvalid }),
+};
+
+export interface SmsChannel { enabled: boolean; provider: string; apiUrl?: string | null; lineNumber?: string | null; apiKeyConfigured?: boolean; usernameConfigured?: boolean; passwordConfigured?: boolean }
+export const smsApi = {
+  get: () => api<{ sms: SmsChannel }>('GET', '/api/platform/notification-channels/'),
+  providers: () => api<{ key: string; displayName: string; defaultBaseUrl: string }[]>('GET', '/api/platform/notification-channels/providers'),
+  save: (sms: { enabled: boolean; provider: string; apiUrl?: string | null; apiKey?: string | null; lineNumber?: string | null; username?: string | null; password?: string | null }) =>
+    api('PUT', '/api/platform/notification-channels/', { sms }),
+  test: (phoneNumber: string) => api<{ success: boolean; message: string }>('POST', '/api/platform/notification-channels/test-sms', { phoneNumber }),
+};
+
+export interface LdapSettings { enabled: boolean; host?: string | null; port: number; useSsl: boolean; useStartTls: boolean; domain?: string | null; baseDn?: string | null; bindUsername?: string | null; bindPassword?: string | null; userSearchBase?: string | null; userFilter?: string | null; connectionTimeoutSeconds: number; trustServerCertificate?: boolean; bindPasswordConfigured?: boolean }
+export interface LdapSyncRow { username?: string | null; displayName?: string | null; action: string; reason?: string | null }
+export interface LdapSyncReport { applied: boolean; created: number; updated: number; deactivated: number; reactivated: number; unchanged: number; skipped: number; rows: LdapSyncRow[] }
+export const ldapApi = {
+  get: () => api<LdapSettings>('GET', '/api/platform/ldap/'),
+  save: (s: LdapSettings) => api<LdapSettings>('PUT', '/api/platform/ldap/', s),
+  test: (s: LdapSettings | null) => api<{ success: boolean; message: string; entriesFound?: number | null }>('POST', '/api/platform/ldap/test', s),
+  preview: (attributes?: Record<string, string>) => api<LdapSyncReport>('POST', '/api/platform/ldap/sync/preview', { attributes: attributes ?? null, deactivateMissing: true }),
+  sync: (attributes?: Record<string, string>) => api<LdapSyncReport>('POST', '/api/platform/ldap/sync', { attributes: attributes ?? null, deactivateMissing: true }),
+};

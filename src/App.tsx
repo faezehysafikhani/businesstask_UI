@@ -17,6 +17,10 @@ import { WebhooksPage } from './features/admin/WebhooksPage';
 import { MembershipPage } from './features/admin/MembershipPage';
 import { SecurityPage } from './features/security/SecurityPage';
 import { UsersPage } from './features/security/UsersPage';
+import { MyReportsPage } from './features/integrations/MyReportsPage';
+import { ImportPage } from './features/integrations/ImportPage';
+import { SmsSettingsPage } from './features/integrations/SmsSettingsPage';
+import { LdapPage } from './features/integrations/LdapPage';
 import { StatusesPage } from './features/tasks/StatusesPage';
 
 export function App() {
@@ -43,6 +47,10 @@ export function App() {
         <Route path="/settings/membership" element={can('Membership.View') ? <MembershipPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="/security" element={<SecurityPage />} />
         <Route path="/settings/users" element={can('users.view') ? <UsersPage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/my-reports" element={can('Tasks.View') ? <MyReportsPage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/import" element={can('Tasks.Create') ? <ImportPage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/settings/sms" element={can('sms_settings.view') ? <SmsSettingsPage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/settings/ldap" element={can('ldap_settings.view') ? <LdapPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="*" element={<Navigate to="/tasks" replace />} />
       </Route>
     </Routes>

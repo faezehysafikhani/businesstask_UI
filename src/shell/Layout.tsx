@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { CheckSquare, BarChart3, CalendarDays, Gauge, ShieldCheck, Users, Webhook, Clock, Zap, ClipboardCheck, Copy, Inbox, ListChecks, LogOut, MessageSquarePlus, Route, Tags } from 'lucide-react';
+import { CheckSquare, BarChart3, CalendarDays, FileUp, MessageSquare, Network, Send, Gauge, ShieldCheck, Users, Webhook, Clock, Zap, ClipboardCheck, Copy, Inbox, ListChecks, LogOut, MessageSquarePlus, Route, Tags } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { TimerBar } from '../features/time/TimerBar';
 import { MembershipBanner } from '../features/admin/MembershipBanner';
@@ -20,6 +20,10 @@ const MENU = [{ to: '/tasks', label: 'وظایف', icon: CheckSquare, permission
   { to: '/settings/membership', label: 'پلن و مصرف', icon: Gauge, permission: 'Membership.View' },
   { to: '/settings/webhooks', label: 'وب‌هوک‌ها', icon: Webhook, permission: 'Webhooks.Manage' },
   { to: '/settings/users', label: 'کاربران و حساب سرویس', icon: Users, permission: 'users.view' },
+  { to: '/my-reports', label: 'گزارش زمان‌بندی‌شده', icon: Send, permission: 'Tasks.View' },
+  { to: '/import', label: 'ورود از CSV', icon: FileUp, permission: 'Tasks.Create' },
+  { to: '/settings/sms', label: 'پنل پیامک', icon: MessageSquare, permission: 'sms_settings.view' },
+  { to: '/settings/ldap', label: 'Active Directory', icon: Network, permission: 'ldap_settings.view' },
   { to: '/settings/statuses', label: 'وضعیت‌ها', icon: ListChecks, permission: 'Tasks.ManageStatuses' },
 ];
 
