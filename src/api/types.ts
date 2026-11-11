@@ -1,5 +1,9 @@
-export interface User { id: string; tenantId: string; displayName: string; email?: string | null }
-export interface AuthResponse { accessToken: string; refreshToken: string; user: User }
+export interface User { id: string; tenantId: string; displayName: string; email?: string | null; username?: string | null; phoneNumber?: string | null; isActive?: boolean; kind?: string; mfaEnabled?: boolean }
+export interface MfaChallenge { challengeId: string; maskedPhone: string; expiresInSeconds: number }
+export interface AuthResponse { accessToken: string; refreshToken: string; user: User; mfa?: MfaChallenge | null }
+export interface Captcha { captchaId: string; imageDataUrl: string; expiresInSeconds: number }
+export interface ApiKeyInfo { id: string; name: string; createdAtUtc: string; expiresAtUtc?: string | null; lastUsedAtUtc?: string | null; revoked: boolean }
+export interface ServiceAccount { id: string; name: string; isActive: boolean; keys: ApiKeyInfo[] }
 export interface Me { user: User; permissions: string[] }
 export interface Paged<T> { items: T[]; pageNumber: number; pageSize: number; totalCount: number; totalPages: number }
 

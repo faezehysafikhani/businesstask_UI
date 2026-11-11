@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { CheckSquare, BarChart3, CalendarDays, Gauge, Webhook, Clock, Zap, ClipboardCheck, Copy, Inbox, ListChecks, LogOut, MessageSquarePlus, Route, Tags } from 'lucide-react';
+import { CheckSquare, BarChart3, CalendarDays, Gauge, ShieldCheck, Users, Webhook, Clock, Zap, ClipboardCheck, Copy, Inbox, ListChecks, LogOut, MessageSquarePlus, Route, Tags } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { TimerBar } from '../features/time/TimerBar';
 import { MembershipBanner } from '../features/admin/MembershipBanner';
@@ -19,6 +19,7 @@ const MENU = [{ to: '/tasks', label: 'وظایف', icon: CheckSquare, permission
   { to: '/settings/automation', label: 'قاعده‌های خودکار', icon: Zap, permission: 'Automation.Manage' },
   { to: '/settings/membership', label: 'پلن و مصرف', icon: Gauge, permission: 'Membership.View' },
   { to: '/settings/webhooks', label: 'وب‌هوک‌ها', icon: Webhook, permission: 'Webhooks.Manage' },
+  { to: '/settings/users', label: 'کاربران و حساب سرویس', icon: Users, permission: 'users.view' },
   { to: '/settings/statuses', label: 'وضعیت‌ها', icon: ListChecks, permission: 'Tasks.ManageStatuses' },
 ];
 
@@ -33,7 +34,8 @@ export function Layout() {
             <m.icon size={16} /> {m.label}
           </NavLink>
         ))}
-        <div className="mt-auto text-xs text-slate-500 px-2">{me?.user.displayName}</div>
+        <NavLink to="/security" className="mt-auto flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-slate-100"><ShieldCheck size={16} /> امنیت حساب</NavLink>
+        <div className="text-xs text-slate-500 px-2">{me?.user.displayName}</div>
         <button onClick={logout} className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-slate-100"><LogOut size={16} /> خروج</button>
       </aside>
       <div className="flex-1 min-w-0"><MembershipBanner /><TimerBar /><main className="p-6"><Outlet /></main></div>
