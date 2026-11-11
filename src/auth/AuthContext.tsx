@@ -1,12 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api, sessionStore, setSignedOutHandler } from '../api/client';
-import type { AuthResponse, MfaChallenge, Me } from '../api/types';
+import type { AuthResponse, MfaChallenge, Me, PendingSignIn } from '../api/types';
 
 interface AuthState {
   me: Me | null; loading: boolean;
   can: (permission: string) => boolean;
   /** Resolves with the SMS-code challenge when the account needs a second step; otherwise signs in. */
-  login: (identifier: string, password: string, captcha?: { id: string; answer: string }) => Promise<MfaChallenge | null>;
+  login: (identifier: string, password: string, captcha?: { id: string; answer: string }) => Promise<{ mfa: MfaChallenge | null; pending: PendingSignIn | null }>;
+  /** Step 2 of a sign-in stopped at the host's session limit: the chosen sessions are closed and the sign-in finishes. */
+  completeLogin: (ticket: string, closeSessionIds: string[]) => Promise<void>;
   completeMfa: (challengeId: string, code: string) => Promise<void>;
   reloadMe: () => Promise<void>;
   logout: () => Promise<void>;
@@ -30,10 +32,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     can: (p) => !!me?.permissions.includes(p),
     async login(identifier, password, captcha) {
       const r = await api<AuthResponse>('POST', '/api/identity/auth/login', { identifier, password, captchaId: captcha?.id, captchaAnswer: captcha?.answer });
-      if (r.mfa) return r.mfa;
+      if (r.mfa) return { mfa: r.mfa, pending: null };
+      // The host stopped the sign-in at its session limit: no token yet, a ticket to finish with.
+      if (!r.accessToken && r.sessionLimit) return { mfa: null, pending: r.sessionLimit };
       sessionStore.set({ accessToken: r.accessToken, refreshToken: r.refreshToken });
       await loadMe();
-      return null;
+      return { mfa: null, pending: null };
+    },
+    async completeLogin(ticket, closeSessionIds) {
+      const r = await api<AuthResponse>('POST', '/api/identity/auth/login/complete', { ticket, closeSessionIds });
+      sessionStore.set({ accessToken: r.accessToken, refreshToken: r.refreshToken });
+      await loadMe();
     },
     async completeMfa(challengeId, code) {
       const r = await api<AuthResponse>('POST', '/api/identity/auth/login/mfa', { challengeId, code });

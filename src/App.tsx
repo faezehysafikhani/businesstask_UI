@@ -22,11 +22,16 @@ import { ImportPage } from './features/integrations/ImportPage';
 import { SmsSettingsPage } from './features/integrations/SmsSettingsPage';
 import { LdapPage } from './features/integrations/LdapPage';
 import { StatusesPage } from './features/tasks/StatusesPage';
+import { OrgChartPage } from './features/org/OrgChartPage';
+import { OrgNodePage } from './features/org/OrgNodePage';
+import { OrgPeoplePage } from './features/org/OrgPeoplePage';
+import { ORG_PERMISSIONS } from './api/org';
 
 export function App() {
   const { me, loading, can } = useAuth();
   if (loading) return <div className="p-8 text-slate-500">...</div>;
   if (!me) return <LoginPage />;
+  const anyOrg = ORG_PERMISSIONS.some(can);
   return (
     <Routes>
       <Route element={<Layout />}>
@@ -51,6 +56,9 @@ export function App() {
         <Route path="/import" element={can('Tasks.Create') ? <ImportPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="/settings/sms" element={can('sms_settings.view') ? <SmsSettingsPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="/settings/ldap" element={can('ldap_settings.view') ? <LdapPage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/organization" element={anyOrg ? <OrgChartPage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/organization/nodes/:id" element={anyOrg ? <OrgNodePage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/organization/people" element={anyOrg ? <OrgPeoplePage /> : <p>دسترسی ندارید.</p>} />
         <Route path="*" element={<Navigate to="/tasks" replace />} />
       </Route>
     </Routes>

@@ -1,6 +1,10 @@
 export interface User { id: string; tenantId: string; displayName: string; email?: string | null; username?: string | null; phoneNumber?: string | null; isActive?: boolean; kind?: string; mfaEnabled?: boolean }
 export interface MfaChallenge { challengeId: string; maskedPhone: string; expiresInSeconds: number }
-export interface AuthResponse { accessToken: string; refreshToken: string; user: User; mfa?: MfaChallenge | null }
+/** A live sign-in session of the user (the host's concurrent-session limit). */
+export interface ActiveSession { id: string; deviceLabel?: string | null; userAgent?: string | null; createdAtUtc: string; lastActivityAtUtc?: string | null; isCurrent: boolean; isActive: boolean }
+/** The host stopped the sign-in at the session limit: a ticket and the sessions the user may close. */
+export interface PendingSignIn { ticket: string; expiresAtUtc: string; maxConcurrent: number; mustClose: number; sessions: ActiveSession[] }
+export interface AuthResponse { accessToken: string; refreshToken: string; user: User; mfa?: MfaChallenge | null; sessionLimit?: PendingSignIn | null }
 export interface Captcha { captchaId: string; imageDataUrl: string; expiresInSeconds: number }
 export interface ApiKeyInfo { id: string; name: string; createdAtUtc: string; expiresAtUtc?: string | null; lastUsedAtUtc?: string | null; revoked: boolean }
 export interface ServiceAccount { id: string; name: string; isActive: boolean; keys: ApiKeyInfo[] }

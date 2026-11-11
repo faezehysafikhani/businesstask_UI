@@ -1,16 +1,18 @@
 import { useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api/client';
-import type { Captcha, MfaChallenge } from '../api/types';
+import type { Captcha, MfaChallenge, PendingSignIn } from '../api/types';
 import { useAuth } from './AuthContext';
 
 export function LoginPage() {
-  const { login, completeMfa } = useAuth();
+  const { login, completeLogin, completeMfa } = useAuth();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [captcha, setCaptcha] = useState<Captcha | null>(null);
   const [answer, setAnswer] = useState('');
   const [mfa, setMfa] = useState<MfaChallenge | null>(null);
   const [code, setCode] = useState('');
+  const [pending, setPending] = useState<PendingSignIn | null>(null);
+  const [chosen, setChosen] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -20,8 +22,17 @@ export function LoginPage() {
     e.preventDefault(); setBusy(true); setError('');
     try {
       if (mfa) { await completeMfa(mfa.challengeId, code.trim()); return; }
-      const waiting = await login(identifier.trim(), password, captcha ? { id: captcha.captchaId, answer: answer.trim() } : undefined);
-      if (waiting) setMfa(waiting);
+      if (pending) {
+        // The host stopped the sign-in at its session limit: the chosen sessions are closed first.
+        await completeLogin(pending.ticket, chosen);
+        return;
+      }
+      const result = await login(identifier.trim(), password, captcha ? { id: captcha.captchaId, answer: answer.trim() } : undefined);
+      if (result.mfa) setMfa(result.mfa);
+      if (result.pending) {
+        setPending(result.pending);
+        setChosen(result.pending.sessions.slice(0, result.pending.mustClose).map((s) => s.id));
+      }
     } catch (x) {
       if (x instanceof ApiError && (x.code === 'unauthorized.captcha_required' || x.code === 'captcha.required' || x.code.startsWith('captcha'))) {
         // After a failed attempt the host asks for a CAPTCHA: show it, and a new one after every refusal.
@@ -30,6 +41,8 @@ export function LoginPage() {
       setError(x instanceof ApiError ? x.message : 'اتصال به سرور برقرار نشد');
     } finally { setBusy(false); }
   }
+
+  const oldest = pending ? [...pending.sessions].sort((a, b) => a.createdAtUtc.localeCompare(b.createdAtUtc)).slice(0, pending.mustClose).map((s) => s.id) : [];
 
   return (
     <div className="min-h-screen grid place-items-center p-4">
@@ -40,6 +53,26 @@ export function LoginPage() {
             <p className="text-sm text-slate-600">کد ورود به شماره <b dir="ltr">{mfa.maskedPhone}</b> پیامک شد. تا {Math.round(mfa.expiresInSeconds / 60)} دقیقه معتبر است.</p>
             <input className="w-full border rounded-lg px-3 py-2 text-center tracking-widest" inputMode="numeric" autoFocus placeholder="کد پیامکی" value={code} onChange={(e) => setCode(e.target.value)} dir="ltr" />
             <button type="button" className="text-xs underline" onClick={() => { setMfa(null); setCode(''); setError(''); }}>بازگشت</button>
+          </>
+        ) : pending ? (
+          <>
+            <p className="text-sm text-slate-600">
+              بیش از {pending.maxConcurrent} نشست هم‌زمان باز است. برای ادامه، {pending.mustClose} نشست را ببندید:
+            </p>
+            <ul className="space-y-1 text-sm">
+              {pending.sessions.map((s) => (
+                <li key={s.id} className="flex items-start gap-2">
+                  <input type="checkbox" className="mt-1" checked={chosen.includes(s.id)}
+                    onChange={(e) => setChosen(e.target.checked ? [...chosen, s.id] : chosen.filter((id) => id !== s.id))} />
+                  <span>
+                    <span className="block">{s.deviceLabel || 'دستگاه ناشناس'}</span>
+                    <span className="text-xs text-slate-400">از {new Date(s.createdAtUtc).toLocaleString('fa-IR')}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <button type="button" className="text-xs underline" onClick={() => setChosen(oldest)}>بستن {pending.mustClose} نشست قدیمی‌تر</button>
+            <button type="button" className="text-xs underline" onClick={() => { setPending(null); setChosen([]); setError(''); }}>بازگشت به ورود</button>
           </>
         ) : (
           <>
@@ -59,7 +92,9 @@ export function LoginPage() {
           </>
         )}
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <button disabled={busy || (mfa ? !code.trim() : !identifier || !password || (!!captcha && !answer.trim()))} className="w-full rounded-lg bg-blue-600 text-white py-2 disabled:opacity-50">{busy ? '...' : mfa ? 'تأیید کد' : 'ورود'}</button>
+        <button disabled={busy || (mfa ? !code.trim() : pending ? chosen.length < pending.mustClose : !identifier || !password || (!!captcha && !answer.trim()))} className="w-full rounded-lg bg-blue-600 text-white py-2 disabled:opacity-50">
+          {busy ? '...' : mfa ? 'تأیید کد' : pending ? 'بستن نشست‌ها و ورود' : 'ورود'}
+        </button>
       </form>
     </div>
   );

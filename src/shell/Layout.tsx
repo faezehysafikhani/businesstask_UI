@@ -1,12 +1,16 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { CheckSquare, BarChart3, CalendarDays, FileUp, MessageSquare, Network, Send, Gauge, ShieldCheck, Users, Webhook, Clock, Zap, ClipboardCheck, Copy, Inbox, ListChecks, LogOut, MessageSquarePlus, Route, Tags } from 'lucide-react';
+import { CheckSquare, BarChart3, CalendarDays, FileUp, MessageSquare, Network, Send, Gauge, ShieldCheck, Users, Webhook, Clock, Zap, ClipboardCheck, Copy, Inbox, ListChecks, LogOut, MessageSquarePlus, Route, Tags, Building2, UsersRound, type LucideIcon } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { TimerBar } from '../features/time/TimerBar';
 import { MembershipBanner } from '../features/admin/MembershipBanner';
+import { ORG_PERMISSIONS } from '../api/org';
 
-// Each menu item shows only when the host grants its permission. New modules add a line here.
-const MENU = [{ to: '/tasks', label: 'وظایف', icon: CheckSquare, permission: 'Tasks.View' },
+// Each menu item shows only when the host grants its permission (a list: any one of them). New modules add a line here.
+interface MenuItem { to: string; label: string; icon: LucideIcon; permission: string | string[] }
+const MENU: MenuItem[] = [{ to: '/tasks', label: 'وظایف', icon: CheckSquare, permission: 'Tasks.View' },
   { to: '/meetings', label: 'جلسات و تقویم', icon: CalendarDays, permission: 'Meetings.View' },
+  { to: '/organization', label: 'ساختار سازمانی', icon: Building2, permission: ORG_PERMISSIONS },
+  { to: '/organization/people', label: 'جایگاه افراد', icon: UsersRound, permission: ORG_PERMISSIONS },
   { to: '/timesheet', label: 'ساعت کاری', icon: Clock, permission: 'Timesheets.Log' },
   { to: '/workload', label: 'بار کاری', icon: BarChart3, permission: 'Timesheets.ViewAll' },
   { to: '/templates', label: 'قالب‌ها', icon: Copy, permission: 'Tasks.View' },
@@ -33,7 +37,7 @@ export function Layout() {
     <div className="min-h-screen flex">
       <aside className="w-56 bg-white border-l p-3 flex flex-col gap-1">
         <div className="font-bold px-2 py-3">مدیریت وظایف</div>
-        {MENU.filter((m) => can(m.permission)).map((m) => (
+        {MENU.filter((m) => Array.isArray(m.permission) ? m.permission.some(can) : can(m.permission)).map((m) => (
           <NavLink key={m.to} to={m.to} className={({ isActive }) => `flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${isActive ? 'bg-blue-50 text-blue-700' : 'hover:bg-slate-100'}`}>
             <m.icon size={16} /> {m.label}
           </NavLink>
