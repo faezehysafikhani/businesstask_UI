@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import { planningApi, tasksApi } from '../../api/tasks';
-import { StatusLabel, type TaskListItem, type TaskPlanning } from '../../api/types';
+import { planningApi, tasksApi, timeApi } from '../../api/tasks';
+import { StatusLabel, fmtMinutes, type TaskListItem, type TaskPlanning, type TaskTime } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import { Modal } from '../../ui/Modal';
 
@@ -13,6 +13,8 @@ export function PlanningModal({ task, onClose, onChanged }: { task: TaskListItem
   const [blocker, setBlocker] = useState('');
   const [criterion, setCriterion] = useState('');
   const [lines, setLines] = useState('');
+  const [time, setTime] = useState<TaskTime | null>(null);
+  const [est, setEst] = useState('');
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
 
@@ -26,6 +28,7 @@ export function PlanningModal({ task, onClose, onChanged }: { task: TaskListItem
 
   useEffect(() => {
     planningApi.get(task.id).then((r) => { setP(r); setBlocker(r.blockedReason ?? ''); }).catch((e) => setError(e.message));
+    timeApi.taskTime(task.id).then((t) => { setTime(t); setEst(t.estimatedMinutes ? String(Math.round(t.estimatedMinutes / 60 * 100) / 100) : ''); }).catch(() => {});
     tasksApi.list({ pageSize: 200 }).then((r) => setOthers(r.items.filter((t) => t.id !== task.id))).catch(() => {});
   }, [task.id]);
 
@@ -34,6 +37,17 @@ export function PlanningModal({ task, onClose, onChanged }: { task: TaskListItem
     <Modal title={`برنامه‌ریزی: ${task.title}`} onClose={onClose}>
       <div className="space-y-4 text-sm max-h-[70vh] overflow-y-auto">
         {p && !p.canComplete && <p className="rounded-lg bg-amber-50 text-amber-800 px-3 py-2">این وظیفه تا برطرف شدن موارد زیر انجام‌شده نمی‌شود.</p>}
+
+        <section className="space-y-1">
+          <h3 className="font-medium">برآورد و زمان واقعی</h3>
+          <div className="flex items-center gap-2">
+            <span>برآورد (ساعت):</span>
+            <input type="number" min={0} step={0.25} className="w-20 border rounded-lg px-2 py-1" disabled={!edit} value={est} onChange={(e) => setEst(e.target.value)} />
+            {edit && <button className="border rounded-lg px-2" onClick={() => timeApi.setEstimate(task.id, est ? Math.round(Number(est) * 60) : null).then((t) => { setTime(t); onChanged(); }).catch((e) => setError(e.message))}>ثبت</button>}
+            {time && <span className="text-slate-500">واقعی: <b dir="ltr">{fmtMinutes(time.actualMinutes)}</b>{time.estimatedMinutes ? ` از ${fmtMinutes(time.estimatedMinutes)}` : ''}</span>}
+          </div>
+          {time?.estimatedMinutes ? <div className="h-2 rounded bg-slate-100 overflow-hidden"><div className={time.actualMinutes > time.estimatedMinutes ? 'h-full bg-red-500' : 'h-full bg-green-500'} style={{ width: `${Math.min(100, (time.actualMinutes / time.estimatedMinutes) * 100)}%` }} /></div> : null}
+        </section>
 
         <section className="space-y-1">
           <h3 className="font-medium">مانع</h3>

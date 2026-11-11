@@ -52,5 +52,7 @@ export async function api<T = void>(method: string, path: string, body?: unknown
   if (r.status === 401 && s) { sessionStore.set(null); onSignedOut(); }
   if (!r.ok) throw await toError(r);
   if (r.status === 204) return undefined as T;
-  return (await r.json()) as T;
+  // An answer of "nothing" (for example no running timer) has an empty body.
+  const text = await r.text();
+  return (text ? JSON.parse(text) : null) as T;
 }

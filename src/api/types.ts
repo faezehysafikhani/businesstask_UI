@@ -28,6 +28,16 @@ export interface TaskPlanning { blockedReason?: string | null; blockedBy: TaskBr
 export interface TemplateBody { title: string; description?: string | null; priority: number; isProject: boolean; dueInDays: number; subTasks: string[]; criteria: string[]; tags: string[] }
 export interface TaskTemplate { id: string; name: string; isProject: boolean; body: TemplateBody }
 
+export const ApprovalLabel: Record<number, string> = { 0: 'پیش‌نویس', 1: 'در انتظار تأیید', 2: 'تأیید شده', 3: 'برگشت‌خورده' };
+export interface TimeEntry { id: string; taskId: string; taskTitle?: string | null; userId: string; userName?: string | null; date: string; minutes: number; note?: string | null; source: number; status: number }
+export interface TimesheetWeek { weekStart: string; entries: TimeEntry[]; minutesPerDay: Record<string, number>; totalMinutes: number; status: number; submissionId?: string | null; decisionComment?: string | null; canSubmit: boolean }
+export interface RunningTimer { taskId: string; taskTitle?: string | null; startedAtUtc: string; elapsedMinutes: number }
+export interface TaskTime { estimatedMinutes?: number | null; actualMinutes: number; entries: TimeEntry[] }
+export interface TimesheetReviewItem { id: string; user?: UserSummary | null; weekStart: string; totalMinutes: number; submittedAtUtc: string }
+export interface WorkloadRow { user: UserSummary; loggedMinutes: number; openTasks: number; remainingEstimatedMinutes: number; capacityMinutes: number; utilization: number }
+export interface Workload { from: string; to: string; capacityPerPersonMinutes: number; people: WorkloadRow[] }
+export const fmtMinutes = (m: number) => `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`;
+
 export interface UserSummary { id: string; displayName: string }
 export interface TaskListItem {
   id: string; title: string; isProject: boolean; status: number; priority: number; dueDate: string;

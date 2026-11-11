@@ -81,3 +81,20 @@ export const templatesApi = {
   remove: (id: string) => api('DELETE', `/api/task-management/templates/${id}`),
   instantiate: (id: string, b: { title?: string }) => api<TaskDetail>('POST', `/api/task-management/templates/${id}/instantiate`, b),
 };
+
+const S = '/api/task-management/timesheets';
+export const timeApi = {
+  week: (day: string, userId?: string) => api<import('./types').TimesheetWeek>('GET', `${S}/week?day=${day}${userId ? `&userId=${userId}` : ''}`),
+  log: (b: { taskId: string; date: string; minutes: number; note?: string }) => api<import('./types').TimeEntry>('POST', `${S}/entries`, b),
+  update: (id: string, b: { date: string; minutes: number; note?: string }) => api<import('./types').TimeEntry>('PUT', `${S}/entries/${id}`, b),
+  remove: (id: string) => api('DELETE', `${S}/entries/${id}`),
+  timer: () => api<import('./types').RunningTimer | null>('GET', `${S}/timer`),
+  start: (taskId: string) => api<import('./types').RunningTimer>('POST', `${S}/timer/start`, { taskId }),
+  stop: () => api<import('./types').TimeEntry>('POST', `${S}/timer/stop`),
+  submit: (weekStart: string) => api<import('./types').TimesheetWeek>('POST', `${S}/submit`, { weekStart }),
+  inReview: (ids: string[]) => api<import('./types').TimesheetReviewItem[]>('POST', `${S}/in-review`, { ids }),
+  workload: (from?: string, to?: string, capacityMinutes?: number) => api<import('./types').Workload>('GET', `${S}/workload?${new URLSearchParams(Object.entries({ from, to, capacityMinutes }).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)]))}`),
+  taskTime: (id: string) => api<import('./types').TaskTime>('GET', `${B}/${id}/time`),
+  setEstimate: (id: string, minutes: number | null) => api<import('./types').TaskTime>('PUT', `${B}/${id}/estimate`, { minutes }),
+};
+export const TIMESHEET = 'Timesheet';

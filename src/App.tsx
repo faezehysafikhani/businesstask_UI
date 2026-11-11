@@ -9,6 +9,8 @@ import { RequestsPage } from './features/requests/RequestsPage';
 import { InboxPage } from './features/requests/InboxPage';
 import { CategoriesPage } from './features/requests/CategoriesPage';
 import { TemplatesPage } from './features/templates/TemplatesPage';
+import { TimesheetPage } from './features/time/TimesheetPage';
+import { WorkloadPage } from './features/time/WorkloadPage';
 import { StatusesPage } from './features/tasks/StatusesPage';
 
 export function App() {
@@ -26,6 +28,9 @@ export function App() {
         <Route path="/requests/inbox" element={can('Requests.Handle') ? <InboxPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="/settings/request-categories" element={can('Requests.Manage') ? <CategoriesPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="/templates" element={can('Tasks.View') ? <TemplatesPage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/timesheet" element={can('Timesheets.Log') ? <TimesheetPage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/workload" element={can('Timesheets.ViewAll') ? <WorkloadPage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/settings/timesheet-flow" element={can('Workflow.Configure') ? <ReviewFlowPage subject="Timesheet" /> : <p>دسترسی ندارید.</p>} />
         <Route path="*" element={<Navigate to="/tasks" replace />} />
       </Route>
     </Routes>
