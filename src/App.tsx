@@ -26,12 +26,16 @@ import { OrgChartPage } from './features/org/OrgChartPage';
 import { OrgNodePage } from './features/org/OrgNodePage';
 import { OrgPeoplePage } from './features/org/OrgPeoplePage';
 import { ORG_PERMISSIONS } from './api/org';
+import { ProjectsPage } from './features/projects/ProjectsPage';
+import { ProjectPage } from './features/projects/ProjectPage';
+import { PROJECT_PERMISSIONS } from './api/projects';
 
 export function App() {
   const { me, loading, can } = useAuth();
   if (loading) return <div className="p-8 text-slate-500">...</div>;
   if (!me) return <LoginPage />;
   const anyOrg = ORG_PERMISSIONS.some(can);
+  const anyProject = PROJECT_PERMISSIONS.some(can);
   return (
     <Routes>
       <Route element={<Layout />}>
@@ -59,6 +63,8 @@ export function App() {
         <Route path="/organization" element={anyOrg ? <OrgChartPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="/organization/nodes/:id" element={anyOrg ? <OrgNodePage /> : <p>دسترسی ندارید.</p>} />
         <Route path="/organization/people" element={anyOrg ? <OrgPeoplePage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/projects" element={anyProject ? <ProjectsPage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/projects/:id" element={anyProject ? <ProjectPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="*" element={<Navigate to="/tasks" replace />} />
       </Route>
     </Routes>

@@ -1,9 +1,10 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { CheckSquare, BarChart3, CalendarDays, FileUp, MessageSquare, Network, Send, Gauge, ShieldCheck, Users, Webhook, Clock, Zap, ClipboardCheck, Copy, Inbox, ListChecks, LogOut, MessageSquarePlus, Route, Tags, Building2, UsersRound, type LucideIcon } from 'lucide-react';
+import { CheckSquare, BarChart3, CalendarDays, FileUp, MessageSquare, Network, Send, Gauge, ShieldCheck, Users, Webhook, Clock, Zap, ClipboardCheck, Copy, Inbox, ListChecks, LogOut, MessageSquarePlus, Route, Tags, Building2, UsersRound, FolderKanban, type LucideIcon } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { TimerBar } from '../features/time/TimerBar';
 import { MembershipBanner } from '../features/admin/MembershipBanner';
 import { ORG_PERMISSIONS } from '../api/org';
+import { PROJECT_PERMISSIONS } from '../api/projects';
 
 // Each menu item shows only when the host grants its permission (a list: any one of them). New modules add a line here.
 interface MenuItem { to: string; label: string; icon: LucideIcon; permission: string | string[] }
@@ -11,6 +12,7 @@ const MENU: MenuItem[] = [{ to: '/tasks', label: 'وظایف', icon: CheckSquare
   { to: '/meetings', label: 'جلسات و تقویم', icon: CalendarDays, permission: 'Meetings.View' },
   { to: '/organization', label: 'ساختار سازمانی', icon: Building2, permission: ORG_PERMISSIONS },
   { to: '/organization/people', label: 'جایگاه افراد', icon: UsersRound, permission: ORG_PERMISSIONS },
+  { to: '/projects', label: 'پروژه‌ها', icon: FolderKanban, permission: PROJECT_PERMISSIONS },
   { to: '/timesheet', label: 'ساعت کاری', icon: Clock, permission: 'Timesheets.Log' },
   { to: '/workload', label: 'بار کاری', icon: BarChart3, permission: 'Timesheets.ViewAll' },
   { to: '/templates', label: 'قالب‌ها', icon: Copy, permission: 'Tasks.View' },
