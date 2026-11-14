@@ -1,4 +1,100 @@
 @import "tailwindcss";
 @import "@fontsource-variable/vazirmatn";
-@theme { --font-sans: "Vazirmatn Variable", system-ui, sans-serif; }
-body { @apply bg-slate-50 text-slate-800 antialiased; }
+@import "@fontsource-variable/noto-sans-arabic";
+@import "@fontsource/ibm-plex-sans-arabic/300.css";
+@import "@fontsource/ibm-plex-sans-arabic/400.css";
+@import "@fontsource/ibm-plex-sans-arabic/500.css";
+@import "@fontsource/ibm-plex-sans-arabic/600.css";
+@import "@fontsource/ibm-plex-sans-arabic/700.css";
+
+/* ---- Design tokens. Every colour below comes from these variables, so themes and dark mode just swap them. ---- */
+:root {
+  --primary: #5b4bff; --secondary: #8a5cff; --accent: #c06bff; --primary-dark: #4b3df0;
+  --tint: #f0eeff; --tint2: #f6f5ff; --line: #eceafc;
+  --surface: #ffffff; --page: #f6f7fb; --ink: #1e2140; --mute: #7a7fa8;
+  --glow1: #ece8ff; --glow2: #e3f0ff;
+  --shadow: 0 4px 18px rgba(60, 50, 160, .08); --shadow-lg: 0 12px 36px rgba(60, 50, 160, .14);
+  --radius: 16px; --row-pad: .75rem;
+  --s100: #eeeff9; --s300: #d9d7f3; --s400: #a3a7c8; --s600: #4f5380; --s700: #343862;
+  --font-ui: "Vazirmatn Variable", system-ui, sans-serif;
+}
+html[data-color="blue"]   { --primary: #2563eb; --secondary: #38bdf8; --accent: #60a5fa; --primary-dark: #1d4ed8; --tint: #eaf2ff; --tint2: #f3f8ff; --line: #e4ecfa; --glow1: #e0edff; --glow2: #e0f6ff; }
+html[data-color="green"]  { --primary: #059669; --secondary: #34d399; --accent: #6ee7b7; --primary-dark: #047857; --tint: #e8f8f1; --tint2: #f2fbf7; --line: #e1f3ea; --glow1: #dcf6ea; --glow2: #e4f7f3; }
+html[data-color="orange"] { --primary: #ea580c; --secondary: #fb923c; --accent: #fdba74; --primary-dark: #c2410c; --tint: #fff1e6; --tint2: #fff8f2; --line: #fbebdd; --glow1: #ffeede; --glow2: #fff6df; }
+
+html.dark {
+  --surface: #1c2042; --page: #12142b; --ink: #eceeff; --mute: #a3a8d6;
+  --tint: color-mix(in srgb, var(--primary) 24%, #1c2042); --tint2: color-mix(in srgb, var(--primary) 12%, #1c2042);
+  --line: #2e3263; --glow1: #1b1a4a; --glow2: #14234a;
+  --shadow: 0 4px 18px rgba(0, 0, 0, .35); --shadow-lg: 0 12px 36px rgba(0, 0, 0, .5);
+  --s100: #232750; --s300: #3d4280; --s400: #8d92c4; --s600: #c3c7ec; --s700: #d9dbf5;
+  color-scheme: dark;
+}
+html[data-font="noto"] { --font-ui: "Noto Sans Arabic Variable", system-ui, sans-serif; }
+html[data-font="plex"] { --font-ui: "IBM Plex Sans Arabic", system-ui, sans-serif; }
+html[data-density="compact"] { --row-pad: .4rem; --radius: 12px; }
+
+/* Existing pages use Tailwind's slate/white/blue names: they now read the tokens above. */
+@theme {
+  --font-sans: var(--font-ui);
+  --color-white: var(--surface);
+  --color-slate-50: var(--tint2);
+  --color-slate-100: var(--s100);
+  --color-slate-200: var(--line);
+  --color-slate-300: var(--s300);
+  --color-slate-400: var(--s400);
+  --color-slate-500: var(--mute);
+  --color-slate-600: var(--s600);
+  --color-slate-700: var(--s700);
+  --color-slate-800: var(--ink);
+  --color-slate-900: var(--ink);
+  --color-blue-50: var(--tint);
+  --color-blue-100: color-mix(in srgb, var(--primary) 18%, var(--surface));
+  --color-blue-500: var(--secondary);
+  --color-blue-600: var(--primary);
+  --color-blue-700: var(--primary-dark);
+}
+
+@layer base {
+  html { font-family: var(--font-ui); }
+  body {
+    color: var(--ink); -webkit-font-smoothing: antialiased; min-height: 100vh;
+    background: radial-gradient(900px 500px at 100% -10%, var(--glow1), transparent 70%),
+                radial-gradient(800px 500px at 0% 0%, var(--glow2), transparent 70%), var(--page);
+    background-attachment: fixed;
+  }
+  input, select, textarea { background: var(--surface); color: var(--ink); border-radius: 10px; }
+  input:focus, select:focus, textarea:focus, button:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent); outline-offset: 1px;
+  }
+  button { transition: transform .18s, background-color .18s, box-shadow .18s; }
+  button:not(:disabled):hover { transform: translateY(-1px); }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(var(--secondary), var(--primary)); border-radius: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  /* tables: soft card, striped rows, a coloured edge on hover */
+  table { background: var(--surface); }
+  thead th { position: sticky; top: 0; background: var(--tint2); }
+  th, td { padding-block: var(--row-pad); }
+  tbody tr:nth-child(even) { background: color-mix(in srgb, var(--tint2) 55%, transparent); }
+  tbody tr { transition: background-color .18s; }
+  tbody tr:hover { background: var(--tint); box-shadow: inset 3px 0 0 var(--primary); }
+}
+
+@layer components {
+  .glass { background: color-mix(in srgb, var(--surface) 78%, transparent); backdrop-filter: blur(14px); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .nav-active { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 40%, transparent); }
+  .page-enter { animation: pageIn .35s ease both; }
+  .tip { position: relative; }
+  .tip::after {
+    content: attr(data-tip); position: absolute; top: calc(100% + 6px); inset-inline-start: 50%; transform: translateX(50%);
+    background: var(--ink); color: var(--surface); font-size: 11px; padding: 3px 8px; border-radius: 8px; white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 70;
+  }
+  .tip:hover::after { opacity: 1; }
+  .backdrop { background: rgb(15 15 40 / .45); backdrop-filter: blur(5px); }
+}
+@keyframes pageIn { from { opacity: 0; transform: translateY(8px); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
+@media (prefers-reduced-motion: reduce) { .page-enter { animation: none; } }
