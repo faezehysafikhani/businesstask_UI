@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Bell, LayoutGrid, LayoutPanelTop, Menu, Search, Settings2, WifiOff, Wifi } from 'lucide-react';
 import { TimerBar } from '../features/time/TimerBar';
 import { MembershipBanner } from '../features/admin/MembershipBanner';
+import { Toaster } from '../ui/toast';
 import { LoginPage } from '../auth/LoginPage';
 import { SidebarBody } from './Sidebar';
 import { Palette } from './Palette';
@@ -117,6 +118,7 @@ export function Layout() {
         <main key={pathname} className="page-enter p-4 min-[900px]:px-8 min-[900px]:py-7"><Outlet /></main>
       </div>
       {p.focus && <button onClick={() => p.set({ focus: false })} className="fixed top-3.5 left-3.5 z-[60] rounded-full bg-slate-800 text-white text-xs font-semibold px-4 py-2 shadow-[var(--shadow-lg)]">خروج از حالت تمرکز</button>}
+      <Toaster />
       {palette && <Palette onClose={() => setPalette(false)} />}
       {hub && <SettingsCenter onClose={() => setHub(false)} />}
       {loginPreview && (

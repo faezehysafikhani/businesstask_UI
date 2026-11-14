@@ -1,3 +1,5 @@
+import { notify } from '../ui/toast';
+
 // One fetch wrapper: bearer token, one silent refresh on 401, errors as ApiError (code = problem title).
 const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? '';
 const KEY = 'tm.session';
@@ -68,7 +70,16 @@ export async function api<T = void>(method: string, path: string, body?: unknown
   });
   if (r.status === 401 && retry && s && await refresh()) return api<T>(method, path, body, false);
   if (r.status === 401 && s) { sessionStore.set(null); onSignedOut(); }
-  if (!r.ok) throw await toError(r);
+  const change = method !== 'GET' && !auth;
+  if (!r.ok) {
+    const err = await toError(r);
+    if (change && r.status !== 401) notify('error', err.message);
+    throw err;
+  }
+  // Reads that use POST (preview, check, analysis) are not changes: no "saved" message for them.
+  if (change && !/(preview|check|analy[sz]e|progress|for-projects|in-review|matrix)/.test(path)) {
+    notify('success', method === 'DELETE' ? 'حذف شد' : method === 'PUT' ? 'ذخیره شد' : 'انجام شد');
+  }
   if (r.status === 204) return undefined as T;
   // An answer of "nothing" (for example no running timer) has an empty body.
   const text = await r.text();
