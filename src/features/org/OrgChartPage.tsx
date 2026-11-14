@@ -62,7 +62,7 @@ export function OrgChartPage() {
       {loading && <p className="text-sm text-slate-500">...</p>}
 
       {chart && !loading && (
-        <section className="bg-white rounded-xl border p-4 space-y-3">
+        <section className="orgtree bg-white rounded-xl border p-4 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <Building2 size={18} className="text-slate-400" />
             <h2 className="font-bold">{chart.name}</h2>
@@ -73,7 +73,7 @@ export function OrgChartPage() {
           </div>
 
           {chart.units.length === 0 && <p className="text-sm text-slate-500">برای این شرکت هنوز گره‌ای در چارت ساخته نشده است.</p>}
-          {chart.units.length > 0 && <ul className="space-y-0.5">{chart.units.map((unit) => <UnitRow key={unit.unitId} unit={unit} />)}</ul>}
+          {chart.units.length > 0 && <ul className="roots space-y-0.5">{chart.units.map((unit) => <UnitRow key={unit.unitId} unit={unit} />)}</ul>}
 
           {chart.members.length > 0 && (
             <div className="pt-2 border-t text-xs text-slate-500">
@@ -100,7 +100,7 @@ function UnitRow({ unit }: { unit: OrgChartUnit }) {
   const posts = unit.positions ?? [];
   return (
     <li>
-      <details open className="border-s border-slate-200 ps-3">
+      <details open>
         <summary className="flex flex-wrap items-center gap-2 cursor-pointer list-none py-1.5">
           <span className="size-2 rounded-full shrink-0" style={{ background: unit.nodeType?.color ?? '#94a3b8' }} />
           <Link to={`/organization/nodes/${unit.unitId}`} className="font-medium hover:text-blue-700">{unit.name}</Link>

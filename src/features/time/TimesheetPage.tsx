@@ -26,7 +26,7 @@ export function TimesheetPage() {
   const days = week ? Array.from({ length: 7 }, (_, i) => addDays(week.weekStart, i)) : [];
 
   return (
-    <div className="space-y-4 max-w-4xl">
+    <div className="space-y-4 max-w-5xl">
       <div className="flex items-center gap-3">
         <h1 className="text-xl font-bold">ساعت کاری من</h1>
         <button className="border rounded-lg px-2 py-1 text-sm bg-white" onClick={() => setDay(addDays(day, -7))}>هفته قبل</button>
@@ -37,6 +37,24 @@ export function TimesheetPage() {
       {week?.decisionComment && week.status === 3 && <p className="text-sm rounded-lg bg-red-50 text-red-700 px-3 py-2">برگشت داده شد: {week.decisionComment}</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
 
+      {week && (
+        <div className="card p-4">
+          <h4 className="font-bold text-sm mb-3">ساعت این هفته <span className="text-slate-500 font-normal" dir="ltr">({fmtMinutes(week.totalMinutes)})</span></h4>
+          <div className="flex items-end gap-3 h-36">
+            {days.map((d) => {
+              const m = week.minutesPerDay[d] ?? 0;
+              const top = Math.max(60, ...days.map((x) => week.minutesPerDay[x] ?? 0));
+              return (
+                <div key={d} className="flex-1 h-full flex flex-col items-center justify-end gap-1.5 text-[11px] text-slate-500">
+                  <b className="text-xs text-slate-800" dir="ltr">{m ? fmtMinutes(m) : ''}</b>
+                  <i className="block w-full rounded-t-xl rounded-b-sm min-h-1 transition-[height] duration-500" style={{ height: `${(m / top) * 100}%`, background: m ? 'linear-gradient(180deg, var(--secondary), var(--primary))' : 'var(--line)' }} />
+                  <span>{new Date(d).toLocaleDateString('fa-IR', { weekday: 'short' })}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-7 gap-1 text-center text-xs">
         {days.map((d) => (
           <div key={d} className="bg-white rounded-lg border py-2"><div className="text-slate-400">{new Date(d).toLocaleDateString('fa-IR', { weekday: 'short', day: 'numeric' })}</div>

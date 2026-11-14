@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FolderKanban, Pencil, Plus } from 'lucide-react';
 import { Modal } from '../../ui/Modal';
+import { Gantt } from './Gantt';
 import { useAuth } from '../../auth/AuthContext';
 import { listUsers } from '../../api/tasks';
 import { orgApi, type OrgNode } from '../../api/org';
@@ -95,6 +96,7 @@ export function ProjectsPage() {
       {error && <p className="text-sm text-red-600">{error}</p>}
       {loading && <p className="text-sm text-slate-500">...</p>}
 
+      {!loading && <Gantt rows={rows} />}
       {!loading && (
         <div className="bg-white rounded-xl border overflow-x-auto">
           <table className="w-full text-sm">
