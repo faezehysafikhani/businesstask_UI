@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { SortTh, useSort } from '../../ui/table';
+import { Empty } from '../../ui/Empty';
 import { Link } from 'react-router-dom';
 import { ArrowRight, UserRoundX, ArrowLeftRight } from 'lucide-react';
 import { Modal } from '../../ui/Modal';
@@ -41,12 +43,15 @@ export function OrgPeoplePage() {
     return rows.filter((r) => [r.displayName, r.companyName, r.unitName, r.positionTitle, ...(r.positions ?? []).map((p) => `${p.title} ${p.unitName}`)]
       .some((value) => value?.toLowerCase().includes(text)));
   }, [rows, query]);
+  const { sorted: sortedRows, sort, toggle } = useSort(shown, {
+    who: (r) => r.displayName, company: (r) => `${r.companyName} ${r.unitName ?? ''}`, post: (r) => r.positionTitle ?? '', manager: (r) => r.manager?.displayName ?? '',
+  });
 
   return (
     <div className="space-y-5 max-w-6xl">
       <div className="flex flex-wrap items-end gap-3">
         <div>
-          <h1 className="text-xl font-bold">جایگاه افراد</h1>
+          <h1 className="text-2xl font-bold">جایگاه افراد</h1>
           <p className="text-xs text-slate-500 mt-1">شرکت، واحد، سمت و مدیر هر فرد و همه‌ی پست‌هایی که دارد؛ خروج از سازمان و انتقال پست‌ها از همین‌جا.</p>
         </div>
         <Link to="/organization" className="ms-auto inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50"><ArrowRight size={15} /> چارت سازمانی</Link>
@@ -60,7 +65,7 @@ export function OrgPeoplePage() {
           </select>
         </label>
         <label className="block flex-1 min-w-48">جستجو
-          <input className="mt-1 block w-full border rounded-lg px-2 py-1.5" placeholder="نام، واحد یا سمت" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <input data-search autoComplete="off" className="mt-1 block w-full border rounded-lg px-2 py-1.5" placeholder="نام، واحد یا سمت" value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
         <span className="text-xs text-slate-500 self-center">{shown.length} نفر</span>
       </div>
@@ -69,35 +74,35 @@ export function OrgPeoplePage() {
       {loading && <p className="text-sm text-slate-500">...</p>}
 
       {!loading && (
-        <div className="bg-white rounded-xl border overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-xs text-slate-500 bg-slate-50">
+        <div className="rounded-[20px] bg-white shadow-[0_10px_40px_rgba(60,50,160,.10)]">
+          <table className="cards w-full text-sm">
+            <thead className="text-xs text-slate-500">
               <tr>
-                <th className="text-start p-3 font-medium">فرد</th>
-                <th className="text-start p-3 font-medium">شرکت / واحد</th>
-                <th className="text-start p-3 font-medium">سمت و پست‌ها</th>
-                <th className="text-start p-3 font-medium">مدیر</th>
+                <SortTh k="who" sort={sort} onSort={toggle}>فرد</SortTh>
+                <SortTh k="company" sort={sort} onSort={toggle}>شرکت / واحد</SortTh>
+                <SortTh k="post" sort={sort} onSort={toggle}>سمت و پست‌ها</SortTh>
+                <SortTh k="manager" sort={sort} onSort={toggle}>مدیر</SortTh>
                 <th className="p-3" />
               </tr>
             </thead>
-            <tbody className="divide-y">
-              {shown.map((row) => (
+            <tbody>
+              {sortedRows.map((row) => (
                 <tr key={row.userId} className="align-top">
-                  <td className="p-3">
+                  <td className="p-3" data-label="فرد">
                     <div className={row.isUserActive ? 'font-medium' : 'font-medium line-through text-slate-400'}>{row.displayName}</div>
                     {!row.isUserActive && <span className="text-[11px] text-slate-400">حساب غیرفعال</span>}
                   </td>
-                  <td className="p-3 text-slate-600">
+                  <td className="p-3 text-slate-600" data-label="شرکت / واحد">
                     <div>{row.companyName}</div>
                     {row.unitName && <div className="text-xs text-slate-500">{row.unitName}</div>}
                   </td>
-                  <td className="p-3 text-slate-600">
+                  <td className="p-3 text-slate-600" data-label="سمت">
                     <div>{row.positionTitle ?? '—'}</div>
                     {row.positions && row.positions.length > 1 && (
                       <div className="text-xs text-slate-500">{row.positions.map((p) => `${p.title} (${p.unitName})`).join(' · ')}</div>
                     )}
                   </td>
-                  <td className="p-3 text-slate-600">{row.manager?.displayName ?? '—'}</td>
+                  <td className="p-3 text-slate-600" data-label="مدیر">{row.manager?.displayName ?? '—'}</td>
                   <td className="p-3">
                     <div className="flex flex-wrap justify-end gap-3 text-xs whitespace-nowrap">
                       <button className="underline text-slate-600" onClick={() => setDialog({ kind: 'history', person: row })}>سابقه</button>
@@ -107,9 +112,9 @@ export function OrgPeoplePage() {
                   </td>
                 </tr>
               ))}
-              {shown.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-slate-400">کسی با این مشخصات نیست.</td></tr>}
             </tbody>
           </table>
+          {shown.length === 0 && <Empty icon="👥" text="کسی با این مشخصات نیست." />}
         </div>
       )}
 

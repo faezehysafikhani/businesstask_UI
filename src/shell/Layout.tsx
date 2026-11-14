@@ -64,7 +64,12 @@ export function Layout() {
       if (e.key === 'Escape' && p.focus) p.set({ focus: false });
       if (typing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === '/') { const s = document.querySelector<HTMLInputElement>('main input[data-search], main input[type=search]'); if (s) { e.preventDefault(); s.focus(); } }
-      else if (e.key.toLowerCase() === 'n') document.querySelector<HTMLElement>('main [data-primary]')?.click();
+      else if (e.key.toLowerCase() === 'n') {
+        // the page's main "new" button, or else the first field of the form that makes new things there
+        const primary = document.querySelector<HTMLElement>('main [data-primary]');
+        if (primary) primary.click();
+        else document.querySelector<HTMLElement>('main form input:not([type=checkbox]):not([type=radio]):not([type=hidden]), main form select')?.focus();
+      }
       else if (e.key.toLowerCase() === 'f') p.set({ focus: !p.focus });
     };
     window.addEventListener('keydown', onKey);
@@ -100,8 +105,8 @@ export function Layout() {
           <header className="glass sticky top-0 z-30 h-14 flex items-center gap-3 px-4 min-[900px]:px-8 border-b border-slate-200">
             <button onClick={() => setMobileNav(true)} className={`${btn} min-[900px]:hidden`} data-tip="منو" aria-label="منو"><Menu size={17} /></button>
             <button onClick={() => p.set({ collapsed: !p.collapsed })} className={`${btn} max-[899px]:hidden`} data-tip="جمع‌کردن منو" aria-label="جمع‌کردن منو"><LayoutPanelTop size={17} className="-rotate-90" /></button>
-            <button onClick={() => setPalette(true)} className="flex-1 max-w-md flex items-center gap-2 bg-white rounded-2xl px-4 py-2 text-sm text-slate-400 shadow-[var(--shadow)]">
-              <Search size={15} />جستجو و رفتن به صفحه…<kbd className="ms-auto max-[899px]:hidden text-[11px] bg-blue-50 text-blue-600 rounded-md px-2">Ctrl K</kbd>
+            <button onClick={() => setPalette(true)} className="flex-1 min-w-0 max-w-md flex items-center gap-2 bg-white rounded-2xl px-4 py-2 text-sm text-slate-400 shadow-[var(--shadow)] whitespace-nowrap overflow-hidden" aria-label="جستجو">
+              <Search size={15} className="shrink-0" /><span className="truncate max-[640px]:hidden">جستجو و رفتن به صفحه…</span><kbd className="ms-auto max-[899px]:hidden text-[11px] bg-blue-50 text-blue-600 rounded-md px-2">Ctrl K</kbd>
             </button>
             <span className="ms-auto text-xs text-slate-500 max-[899px]:hidden">{todayFa}</span>
             <button onClick={() => p.set({ focus: true })} className={btn} data-tip="حالت تمرکز (F)" aria-label="حالت تمرکز"><LayoutGrid size={17} /></button>

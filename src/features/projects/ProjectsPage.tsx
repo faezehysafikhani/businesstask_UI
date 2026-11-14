@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { FolderKanban, Pencil, Plus } from 'lucide-react';
 import { Modal } from '../../ui/Modal';
 import { Gantt } from './Gantt';
+import { SortTh, useSort } from '../../ui/table';
+import { Empty } from '../../ui/Empty';
 import { useAuth } from '../../auth/AuthContext';
 import { listUsers } from '../../api/tasks';
 import { orgApi, type OrgNode } from '../../api/org';
@@ -41,6 +43,10 @@ export function ProjectsPage() {
   useEffect(() => { listUsers().then(setUsers).catch(() => setUsers([])); }, []);
 
   const nameOf = useMemo(() => new Map(users.map((u) => [u.id, u.displayName])), [users]);
+  const { sorted, sort, toggle } = useSort(rows, {
+    name: (r) => r.name, type: (r) => PROJECT_TYPE_LABEL[r.type] ?? r.type, status: (r) => PROJECT_STATUS_LABEL[r.status] ?? r.status,
+    manager: (r) => (r.managerUserId ? nameOf.get(r.managerUserId) : '') ?? '', time: (r) => r.startDate ?? '',
+  });
 
   async function act(action: () => Promise<unknown>, done: string) {
     setError('');
@@ -58,11 +64,11 @@ export function ProjectsPage() {
     <div className="space-y-5 max-w-6xl">
       <div className="flex flex-wrap items-end gap-3">
         <div>
-          <h1 className="text-xl font-bold">پروژه‌ها</h1>
+          <h1 className="text-2xl font-bold">پروژه‌ها</h1>
           <p className="text-xs text-slate-500 mt-1">پروژه‌های سازمان: منشور پروژه، وضعیت و اعضای تیم.</p>
         </div>
         {can('Projects.Create') && (
-          <button className="ms-auto inline-flex items-center gap-1 rounded-lg bg-blue-600 text-white px-4 py-1.5" onClick={() => setEditing('new')}>
+          <button data-primary className="ms-auto inline-flex items-center gap-1 rounded-2xl bg-blue-600 text-white px-5 py-2.5 font-semibold" onClick={() => setEditing('new')}>
             <Plus size={15} /> پروژه جدید
           </button>
         )}
@@ -98,32 +104,32 @@ export function ProjectsPage() {
 
       {!loading && <Gantt rows={rows} />}
       {!loading && (
-        <div className="bg-white rounded-xl border overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-xs text-slate-500 bg-slate-50">
+        <div className="rounded-[20px] bg-white shadow-[0_10px_40px_rgba(60,50,160,.10)]">
+          <table className="cards w-full text-sm">
+            <thead className="text-xs text-slate-500">
               <tr>
-                <th className="text-start p-3 font-medium">پروژه</th>
-                <th className="text-start p-3 font-medium">نوع</th>
-                <th className="text-start p-3 font-medium">وضعیت</th>
-                <th className="text-start p-3 font-medium">مدیر</th>
-                <th className="text-start p-3 font-medium">زمان</th>
+                <SortTh k="name" sort={sort} onSort={toggle}>پروژه</SortTh>
+                <SortTh k="type" sort={sort} onSort={toggle}>نوع</SortTh>
+                <SortTh k="status" sort={sort} onSort={toggle}>وضعیت</SortTh>
+                <SortTh k="manager" sort={sort} onSort={toggle}>مدیر</SortTh>
+                <SortTh k="time" sort={sort} onSort={toggle}>زمان</SortTh>
                 <th className="p-3" />
               </tr>
             </thead>
-            <tbody className="divide-y">
-              {rows.map((row) => (
+            <tbody>
+              {sorted.map((row) => (
                 <tr key={row.id} className="align-top">
-                  <td className="p-3">
+                  <td className="p-3" data-label="پروژه">
                     <Link to={`/projects/${row.id}`} className="font-medium hover:text-blue-700">{row.name}</Link>
                     <div className="text-xs text-slate-400" dir="ltr">{row.code}</div>
                     {row.approvalStatus !== 'NotSubmitted' && (
                       <div className="text-[11px] text-slate-500">تأیید: {APPROVAL_STATUS_LABEL[row.approvalStatus]}</div>
                     )}
                   </td>
-                  <td className="p-3 text-slate-600">{PROJECT_TYPE_LABEL[row.type] ?? row.type}</td>
-                  <td className="p-3 text-slate-600">{PROJECT_STATUS_LABEL[row.status] ?? row.status}</td>
-                  <td className="p-3 text-slate-600">{row.managerUserId ? nameOf.get(row.managerUserId) ?? '—' : '—'}</td>
-                  <td className="p-3 text-xs text-slate-500">
+                  <td className="p-3 text-slate-600" data-label="نوع">{PROJECT_TYPE_LABEL[row.type] ?? row.type}</td>
+                  <td className="p-3 text-slate-600" data-label="وضعیت">{PROJECT_STATUS_LABEL[row.status] ?? row.status}</td>
+                  <td className="p-3 text-slate-600" data-label="مدیر">{row.managerUserId ? nameOf.get(row.managerUserId) ?? '—' : '—'}</td>
+                  <td className="p-3 text-xs text-slate-500" data-label="زمان">
                     {row.startDate ?? '—'} تا {row.endDate ?? '—'}
                   </td>
                   <td className="p-3">
@@ -135,9 +141,9 @@ export function ProjectsPage() {
                   </td>
                 </tr>
               ))}
-              {rows.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-slate-400">پروژه‌ای نیست.</td></tr>}
             </tbody>
           </table>
+          {rows.length === 0 && <Empty icon="📁" text="پروژه‌ای نیست." actionLabel={can('Projects.Create') ? 'اولین پروژه را بساز' : undefined} onAction={can('Projects.Create') ? () => setEditing('new') : undefined} />}
         </div>
       )}
 

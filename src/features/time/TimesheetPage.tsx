@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Trash2 } from 'lucide-react';
+import { SortTh, useSort } from '../../ui/table';
+import { Empty } from '../../ui/Empty';
 import { tasksApi, timeApi } from '../../api/tasks';
 import { ApprovalLabel, fmtMinutes, type TaskListItem, type TimesheetWeek } from '../../api/types';
 
@@ -23,12 +25,15 @@ export function TimesheetPage() {
     const minutes = Number(f.hours || 0) * 60 + Number(f.minutes || 0);
     act(() => timeApi.log({ taskId: f.taskId, date: f.date, minutes, note: f.note || undefined }).then(() => setF({ ...f, note: '' })));
   }
+  const { sorted: entries, sort, toggle } = useSort(week?.entries, {
+    day: (e) => e.date, task: (e) => e.taskTitle ?? '', time: (e) => e.minutes, status: (e) => e.status,
+  });
   const days = week ? Array.from({ length: 7 }, (_, i) => addDays(week.weekStart, i)) : [];
 
   return (
     <div className="space-y-4 max-w-5xl">
       <div className="flex items-center gap-3">
-        <h1 className="text-xl font-bold">ساعت کاری من</h1>
+        <h1 className="text-2xl font-bold">ساعت کاری من</h1>
         <button className="border rounded-lg px-2 py-1 text-sm bg-white" onClick={() => setDay(addDays(day, -7))}>هفته قبل</button>
         <button className="border rounded-lg px-2 py-1 text-sm bg-white" onClick={() => setDay(iso(new Date()))}>این هفته</button>
         <button className="border rounded-lg px-2 py-1 text-sm bg-white" onClick={() => setDay(addDays(day, 7))}>هفته بعد</button>
@@ -73,20 +78,20 @@ export function TimesheetPage() {
         <button disabled={!f.taskId} className="rounded-lg bg-blue-600 text-white px-3 py-1 disabled:opacity-50">ثبت</button>
       </form>
 
-      <table className="w-full text-sm bg-white rounded-xl border overflow-hidden">
-        <thead className="bg-slate-50 text-slate-500"><tr>{['روز', 'وظیفه', 'زمان', 'توضیح', 'وضعیت', ''].map((h) => <th key={h} className="text-start px-3 py-2 font-normal">{h}</th>)}</tr></thead>
+      <div className="rounded-[20px] bg-white shadow-[0_10px_40px_rgba(60,50,160,.10)]"><table className="cards w-full text-sm">
+        <thead><tr><SortTh k="day" sort={sort} onSort={toggle}>روز</SortTh><SortTh k="task" sort={sort} onSort={toggle}>وظیفه</SortTh><SortTh k="time" sort={sort} onSort={toggle}>زمان</SortTh><th className="text-start px-3 py-2 font-medium">توضیح</th><SortTh k="status" sort={sort} onSort={toggle}>وضعیت</SortTh><th /></tr></thead>
         <tbody>
-          {week?.entries.map((e) => (
-            <tr key={e.id} className="border-t">
-              <td className="px-3 py-2">{new Date(e.date).toLocaleDateString('fa-IR')}</td><td className="px-3 py-2">{e.taskTitle ?? '—'}</td>
-              <td className="px-3 py-2" dir="ltr">{fmtMinutes(e.minutes)}{e.source === 1 && ' ⏱'}</td><td className="px-3 py-2">{e.note}</td>
-              <td className="px-3 py-2">{ApprovalLabel[e.status]}</td>
+          {entries.map((e) => (
+            <tr key={e.id}>
+              <td className="px-3 py-2" data-label="روز">{new Date(e.date).toLocaleDateString('fa-IR')}</td><td className="px-3 py-2" data-label="وظیفه">{e.taskTitle ?? '—'}</td>
+              <td className="px-3 py-2" data-label="زمان" dir="ltr">{fmtMinutes(e.minutes)}{e.source === 1 && ' ⏱'}</td><td className="px-3 py-2" data-label="توضیح">{e.note}</td>
+              <td className="px-3 py-2" data-label="وضعیت">{ApprovalLabel[e.status]}</td>
               <td className="px-3 py-2 text-end">{(e.status === 0 || e.status === 3) && <button className="p-1 hover:text-red-600" title="حذف" onClick={() => confirm('حذف شود؟') && act(() => timeApi.remove(e.id))}><Trash2 size={16} /></button>}</td>
             </tr>
           ))}
-          {week && week.entries.length === 0 && <tr><td colSpan={6} className="px-3 py-8 text-center text-slate-400">زمانی ثبت نشده است</td></tr>}
         </tbody>
       </table>
+      {week && week.entries.length === 0 && <Empty icon="⏱️" text="زمانی ثبت نشده است" />}</div>
       {week?.canSubmit && <button className="rounded-lg bg-green-600 text-white px-4 py-2 text-sm" onClick={() => confirm('هفته برای تأیید ارسال شود؟ بعد از ارسال قابل ویرایش نیست.') && act(() => timeApi.submit(week.weekStart))}>ارسال هفته برای تأیید</button>}
     </div>
   );

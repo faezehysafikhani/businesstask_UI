@@ -178,3 +178,7 @@ td[colspan]::before { content: '🗂️'; display: block; font-size: 2.4rem; mar
 /* bg-white follows the surface token (white text stays white, so only the background is remapped) */
 .bg-white { background-color: var(--surface); }
 .bg-white\/80 { background-color: color-mix(in srgb, var(--surface) 80%, transparent); }
+
+/* every primary button (the old blue-600 ones too) gets the gradient and a soft shadow */
+button.bg-blue-600:not(:disabled) { background-image: linear-gradient(135deg, var(--primary), var(--secondary)); box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 30%, transparent); }
+button.bg-blue-600:not(:disabled):hover { filter: brightness(1.08); }
