@@ -62,7 +62,7 @@ export const projectsApi = {
   create: (tenantId: string, b: ProjectInput) => api<Project>('POST', `${P}/projects/`, { ...b, tenantId }),
   update: (id: string, b: ProjectInput) => api<Project>('PUT', `${P}/projects/${id}`, b),
   remove: (id: string) => api('DELETE', `${P}/projects/${id}`),
-  archive: (id: string) => api<Project>('POST', `${P}/projects/${id}/archive`),
+  archive: (id: string) => api<void>('POST', `${P}/projects/${id}/archive`),
   setStatus: (id: string, status: string) => api<Project>('PUT', `${P}/projects/${id}/status`, { status }),
 
   members: (projectId: string) => api<ProjectMember[]>('GET', `${P}/team/members/?projectId=${projectId}`),

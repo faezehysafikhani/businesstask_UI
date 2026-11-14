@@ -17,14 +17,24 @@ export const sessionStore = {
 let onSignedOut: () => void = () => {};
 export const setSignedOutHandler = (fn: () => void) => { onSignedOut = fn; };
 
+// The host keeps the refresh token in an HttpOnly cookie (Identity:Session), not in the body.
+// A request that relies on that cookie asks for it with X-Nexus-Session: cookie and proves it is
+// not a cross-site form with X-Requested-With; without both headers the host refuses the cookie.
+const AUTH_PREFIX = '/api/identity/auth/';
+const COOKIE_SESSION_HEADERS = { 'X-Nexus-Session': 'cookie', 'X-Requested-With': 'XMLHttpRequest' };
+
 let refreshing: Promise<boolean> | null = null;
 async function refresh(): Promise<boolean> {
   const s = sessionStore.get();
-  if (!s?.refreshToken) return false;
+  if (!s) return false;
   refreshing ??= (async () => {
     try {
       const r = await fetch(`${BASE}/api/identity/auth/refresh`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refreshToken: s.refreshToken }),
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', ...COOKIE_SESSION_HEADERS },
+        // Older hosts take the token from the body; the current one only reads the cookie.
+        body: JSON.stringify(s.refreshToken ? { refreshToken: s.refreshToken } : {}),
       });
       if (!r.ok) return false;
       const d = await r.json();
@@ -43,9 +53,17 @@ async function toError(r: Response): Promise<ApiError> {
 
 export async function api<T = void>(method: string, path: string, body?: unknown, retry = true): Promise<T> {
   const s = sessionStore.get();
+  const auth = path.startsWith(AUTH_PREFIX);
   const r = await fetch(`${BASE}${path}`, {
     method,
-    headers: { ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(s ? { Authorization: `Bearer ${s.accessToken}` } : {}) },
+    // The refresh cookie travels with the auth calls (the same origin in development through the
+    // proxy; a cross-origin deployment must also allow credentials in its CORS policy).
+    credentials: auth ? 'include' : 'same-origin',
+    headers: {
+      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      ...(s ? { Authorization: `Bearer ${s.accessToken}` } : {}),
+      ...(auth ? COOKIE_SESSION_HEADERS : {}),
+    },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   if (r.status === 401 && retry && s && await refresh()) return api<T>(method, path, body, false);
