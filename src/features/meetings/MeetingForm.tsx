@@ -6,6 +6,7 @@ import type { Meeting, MeetingInput, MeetingPerson } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import { Modal } from '../../ui/Modal';
 import { DateInput, TimeInput } from '../../ui/dates';
+import { askConfirm } from '../../ui/dialog';
 
 const TYPES: Record<string, string> = { meeting: 'جلسه', online: 'آنلاین', committee: 'کمیته' };
 export const emptyMeeting = (organizerUserId: string, date: string): MeetingInput => ({
@@ -86,7 +87,7 @@ export function MeetingForm({ meeting, people, initial, onClose, onSaved }: { me
         {msg && <p className="text-green-700">{msg}</p>}
         {error && <p className="text-red-600">{error}</p>}
         {editable && <button disabled={!m.title.trim()} className="w-full rounded-lg bg-blue-600 text-white py-2 disabled:opacity-50">ذخیره</button>}
-        {meeting?.canDelete && <button type="button" className="w-full rounded-lg border border-red-200 text-red-600 py-2" onClick={() => confirm('این جلسه حذف شود؟') && meetingsApi.remove(meeting.id, meeting.version).then(() => { onSaved(); onClose(); }).catch((e) => setError((e as Error).message))}>حذف جلسه</button>}
+        {meeting?.canDelete && <button type="button" className="w-full rounded-lg border border-red-200 text-red-600 py-2" onClick={async () => (await askConfirm('این جلسه حذف شود؟')) && meetingsApi.remove(meeting.id, meeting.version).then(() => { onSaved(); onClose(); }).catch((e) => setError((e as Error).message))}>حذف جلسه</button>}
       </form>
     </Modal>
   );

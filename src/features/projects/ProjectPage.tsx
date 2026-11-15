@@ -10,6 +10,7 @@ import {
   QUADRANT_LABEL, projectsApi, type Project, type ProjectMember, type Stakeholder,
 } from '../../api/projects';
 import { StakeholderMatrix } from './StakeholderMatrix';
+import { askConfirm, askText } from '../../ui/dialog';
 
 const STATUSES = ['Draft', 'Active', 'OnHold', 'Completed'];
 const LEVELS = ['Low', 'Medium', 'High'];
@@ -89,12 +90,12 @@ export function ProjectPage() {
           </button>
         ))}
         {can('Projects.Edit') && project.status !== 'Archived' && (
-          <button className="rounded-lg border px-3 py-1.5 text-xs" onClick={() => confirm('پروژه بایگانی شود؟') && act(() => projectsApi.archive(project.id), 'پروژه بایگانی شد')}>بایگانی</button>
+          <button className="rounded-lg border px-3 py-1.5 text-xs" onClick={async () => (await askConfirm('پروژه بایگانی شود؟')) && act(() => projectsApi.archive(project.id), 'پروژه بایگانی شد')}>بایگانی</button>
         )}
         {can('Projects.Remove') && (
           <button className="rounded-lg border border-red-200 text-red-600 px-3 py-1.5 text-xs"
-            onClick={() => {
-              if (!confirm(`پروژه «${project.name}» حذف شود؟`)) return;
+            onClick={async () => {
+              if (!(await askConfirm(`پروژه «${project.name}» حذف شود؟`))) return;
               projectsApi.remove(project.id).then(() => navigate('/projects')).catch((e: Error) => setError(e.message));
             }}>حذف پروژه</button>
         )}
@@ -132,12 +133,12 @@ export function ProjectPage() {
                   {m.roleTitle && <span className="text-xs text-slate-500">{m.roleTitle}</span>}
                   {can('ProjectTeam.ManageMembers') && (
                     <span className="ms-auto flex gap-3 text-xs">
-                      <button className="underline" onClick={() => {
-                        const title = prompt('عنوان نقش (خالی = بدون نقش)', m.roleTitle ?? '');
+                      <button className="underline" onClick={async () => {
+                        const title = await askText('عنوان نقش (خالی = بدون نقش)', m.roleTitle ?? '');
                         if (title === null) return;
                         act(() => projectsApi.updateMember(m.id, title || null), 'نقش ذخیره شد');
                       }}>نقش</button>
-                      <button className="underline text-red-600" onClick={() => confirm('عضو از تیم حذف شود؟') && act(() => projectsApi.removeMember(m.id), 'عضو حذف شد')}>حذف</button>
+                      <button className="underline text-red-600" onClick={async () => (await askConfirm('عضو از تیم حذف شود؟')) && act(() => projectsApi.removeMember(m.id), 'عضو حذف شد')}>حذف</button>
                     </span>
                   )}
                 </li>
@@ -166,7 +167,7 @@ export function ProjectPage() {
                   {can('Stakeholders.Edit') && (
                     <span className="ms-auto flex gap-3 text-xs">
                       <button className="inline-flex items-center gap-1 underline text-blue-700" onClick={() => setEditStakeholder(s)}><Pencil size={12} /> ویرایش</button>
-                      <button className="underline text-red-600" onClick={() => confirm(`«${s.name}» حذف شود؟`) && act(() => projectsApi.removeStakeholder(s.id), 'ذی‌نفع حذف شد')}>حذف</button>
+                      <button className="underline text-red-600" onClick={async () => (await askConfirm(`«${s.name}» حذف شود؟`)) && act(() => projectsApi.removeStakeholder(s.id), 'ذی‌نفع حذف شد')}>حذف</button>
                     </span>
                   )}
                 </li>

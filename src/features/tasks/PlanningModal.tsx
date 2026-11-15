@@ -4,6 +4,7 @@ import { planningApi, tasksApi, timeApi } from '../../api/tasks';
 import { StatusLabel, fmtMinutes, type TaskListItem, type TaskPlanning, type TaskTime } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import { Modal } from '../../ui/Modal';
+import { askConfirm, askText } from '../../ui/dialog';
 
 // Everything between a task and "done": what it waits for, what blocks it, its acceptance criteria, many subtasks at once.
 export function PlanningModal({ task, onClose, onChanged }: { task: TaskListItem; onClose: () => void; onChanged: () => void }) {
@@ -104,7 +105,7 @@ export function PlanningModal({ task, onClose, onChanged }: { task: TaskListItem
         )}
 
         {can('Tasks.ManageTemplates') && (
-          <button className="underline" onClick={() => { const n = prompt('نام قالب'); if (n?.trim()) run(async () => { await planningApi.saveAsTemplate(task.id, n.trim()); setMsg('قالب ذخیره شد'); }); }}>ذخیره به‌عنوان قالب</button>
+          <button className="underline" onClick={async () => { const n = await askText('نام قالب'); if (n?.trim()) run(async () => { await planningApi.saveAsTemplate(task.id, n.trim()); setMsg('قالب ذخیره شد'); }); }}>ذخیره به‌عنوان قالب</button>
         )}
         {msg && <p className="text-green-700">{msg}</p>}
         {error && <p className="text-red-600">{error}</p>}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ldapApi, type LdapSettings, type LdapSyncReport } from '../../api/tasks';
 import { useAuth } from '../../auth/AuthContext';
+import { askConfirm } from '../../ui/dialog';
 
 const ACTION: Record<string, string> = { Create: 'ساخته می‌شود', Update: 'به‌روز می‌شود', Deactivate: 'غیرفعال می‌شود', Reactivate: 'دوباره فعال می‌شود', Unchanged: 'بدون تغییر', Skipped: 'رد شد' };
 
@@ -45,7 +46,7 @@ export function LdapPage() {
           <p className="text-slate-500">نام کاربری در سامانه کد ملی ۱۰ رقمی است؛ ویژگی دایرکتوری که کد ملی را نگه می‌دارد انتخاب کنید (مثلاً <code dir="ltr">employeeID</code>). کاربرانِ همگام‌شده با رمز دایرکتوری وارد می‌شوند. سقف کاربران پلن رعایت می‌شود و کسی حذف نمی‌شود.</p>
           <div className="flex gap-2 items-center"><span>ویژگی نام کاربری:</span><input className="border rounded-lg px-2 py-1" dir="ltr" value={attr} onChange={(e) => setAttr(e.target.value)} />
             <button className="border rounded-lg px-3 py-1" onClick={() => act(async () => setReport(await ldapApi.preview({ username: attr })))}>پیش‌نمایش</button>
-            <button className="rounded-lg bg-green-600 text-white px-3 py-1" onClick={() => confirm('همگام‌سازی انجام شود؟') && act(async () => { setReport(await ldapApi.sync({ username: attr })); })}>اجرا</button></div>
+            <button className="rounded-lg bg-green-600 text-white px-3 py-1" onClick={async () => (await askConfirm('همگام‌سازی انجام شود؟')) && act(async () => { setReport(await ldapApi.sync({ username: attr })); })}>اجرا</button></div>
           {report && (
             <div className="space-y-1">
               <p>{report.applied ? 'انجام شد' : 'پیش‌نمایش'}: ساخته {report.created} · به‌روز {report.updated} · غیرفعال {report.deactivated} · فعال‌شده {report.reactivated} · بدون تغییر {report.unchanged} · رد {report.skipped}</p>

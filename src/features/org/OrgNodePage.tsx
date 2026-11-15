@@ -8,6 +8,7 @@ import {
   type Appointment, type NodePathItem, type OrgNode, type OrgNodeType, type OrgPosition, type UnitPosition, type UserAssignment,
 } from '../../api/org';
 import { DateInput } from '../../ui/dates';
+import { askConfirm, askText } from '../../ui/dialog';
 
 // One node (unit) of the chart: its name and type, when it exists (validity dates), its manager and
 // place, and its posts - who holds each, appointing someone, ending an appointment and its history.
@@ -152,9 +153,9 @@ export function OrgNodePage() {
                     <button className="underline text-slate-600" onClick={() => setHistoryOf(post)}>سابقه</button>
                     {canAppoint && <button className="underline text-blue-700" onClick={() => setAppointTo(post)}>انتصاب</button>}
                     {canAppoint && post.holders.length > 0 && (
-                      <button className="underline text-red-600" onClick={() => confirm(`انتصاب ${post.holders.map((h) => h.displayName).join('، ')} روی «${post.title}» امروز تمام شود؟`) && act(() => orgApi.endAppointment(post.id), 'انتصاب تمام شد')}>پایان انتصاب</button>
+                      <button className="underline text-red-600" onClick={async () => (await askConfirm(`انتصاب ${post.holders.map((h) => h.displayName).join('، ')} روی «${post.title}» امروز تمام شود؟`)) && act(() => orgApi.endAppointment(post.id), 'انتصاب تمام شد')}>پایان انتصاب</button>
                     )}
-                    {canManagePosts && <button className="underline text-red-600" onClick={() => confirm(`پست «${post.title}» حذف شود؟`) && act(() => orgApi.removePost(post.id), 'پست حذف شد')}>حذف پست</button>}
+                    {canManagePosts && <button className="underline text-red-600" onClick={async () => (await askConfirm(`پست «${post.title}» حذف شود؟`)) && act(() => orgApi.removePost(post.id), 'پست حذف شد')}>حذف پست</button>}
                   </span>
                 </li>
               ))}
@@ -210,8 +211,8 @@ export function OrgNodePage() {
             <p className="text-xs text-slate-500">{node.isActive ? 'گره فعال است و در چارت دیده می‌شود.' : 'گره غیرفعال است و در چارت امروز دیده نمی‌شود.'}</p>
             {canDeactivate && (
               <button className="rounded-lg border px-3 py-1.5 disabled:opacity-50" disabled={node.childCount > 0}
-                onClick={() => {
-                  if (node.isActive && !confirm(`«${node.name}» غیرفعال شود؟`)) return;
+                onClick={async () => {
+                  if (node.isActive && !(await askConfirm(`«${node.name}» غیرفعال شود؟`))) return;
                   act(() => orgApi.setActive(node.id, !node.isActive, node.rowVersion), node.isActive ? 'گره غیرفعال شد' : 'گره فعال شد');
                 }}>{node.isActive ? 'غیرفعال کردن' : 'فعال کردن'}</button>
             )}
@@ -297,7 +298,7 @@ function PostHistoryDialog({ post, onClose, onChange }: { post: UnitPosition; on
         {upcoming && (
           <button className="rounded-lg border border-amber-300 text-amber-800 px-3 py-1.5 text-xs"
             onClick={async () => {
-              if (!confirm(`انتصاب آینده ${upcoming.person.displayName} لغو شود؟`)) return;
+              if (!(await askConfirm(`انتصاب آینده ${upcoming.person.displayName} لغو شود؟`))) return;
               try {
                 await orgApi.cancelUpcoming(post.id);
                 await onChange();

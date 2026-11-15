@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Trash2 } from 'lucide-react';
 import { automationApi, listUsers } from '../../api/tasks';
 import { ActionLabel, PriorityLabel, StatusLabel, TriggerLabel, type AutomationAction, type AutomationLog, type AutomationRule } from '../../api/types';
+import { askConfirm } from '../../ui/dialog';
 
 const PRIORITIES = ['Low', 'Medium', 'High'];
 const STATUSES = ['Todo', 'InProgress', 'Paused', 'Completed'];
@@ -63,7 +64,7 @@ export function AutomationPage() {
             <div className="flex items-center gap-2"><span className={`font-medium ${r.isActive ? '' : 'line-through text-slate-400'}`}>{r.name}</span>
               <span className="text-xs text-slate-500">وقتی: {TriggerLabel[r.trigger]}</span>
               <button className="ms-auto text-xs underline" onClick={() => act(() => automationApi.save(r.id, { name: r.name, trigger: r.trigger, conditions: r.conditions, actions: r.actions, sortOrder: r.sortOrder, isActive: !r.isActive }))}>{r.isActive ? 'غیرفعال' : 'فعال'}</button>
-              <button title="حذف" className="p-1 hover:text-red-600" onClick={() => confirm('حذف شود؟') && act(() => automationApi.remove(r.id))}><Trash2 size={16} /></button></div>
+              <button title="حذف" className="p-1 hover:text-red-600" onClick={async () => (await askConfirm('حذف شود؟')) && act(() => automationApi.remove(r.id))}><Trash2 size={16} /></button></div>
             <div className="text-xs text-slate-500">
               {[r.conditions.priority && `اولویت ${prioLabel(r.conditions.priority)}`, r.conditions.status && `وضعیت ${statusLabel(r.conditions.status)}`, r.conditions.titleContains && `عنوان شامل «${r.conditions.titleContains}»`].filter(Boolean).join(' · ') || 'بدون شرط'}
               {' ⟵ '}{r.actions.map((a) => describe(a, userMap)).join('، ')}

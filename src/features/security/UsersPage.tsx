@@ -3,6 +3,7 @@ import { Copy } from 'lucide-react';
 import { api, ApiError } from '../../api/client';
 import type { ApiKeyInfo, Paged, ServiceAccount, User } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
+import { askConfirm, askText } from '../../ui/dialog';
 
 const KIND: Record<string, string> = { Normal: 'عادی', Guest: 'مهمان', ServiceAccount: 'حساب سرویس' };
 
@@ -41,7 +42,7 @@ export function UsersPage() {
               {u.mfaEnabled && <span className="text-xs rounded-full bg-green-50 text-green-700 px-2">رمز دوم</span>}
               {update && <span className="ms-auto flex gap-3 text-xs">
                 <button className="underline" onClick={() => act(() => api('PUT', `/api/identity/users/${u.id}/kind`, { kind: u.kind === 'Guest' ? 'Normal' : 'Guest' }))}>{u.kind === 'Guest' ? 'عادی شود' : 'مهمان شود'}</button>
-                {u.mfaEnabled && <button className="underline" onClick={() => confirm('رمز دوم این کاربر خاموش شود؟') && act(() => api('POST', `/api/identity/users/${u.id}/mfa/reset`))}>بازنشانی رمز دوم</button>}
+                {u.mfaEnabled && <button className="underline" onClick={async () => (await askConfirm('رمز دوم این کاربر خاموش شود؟')) && act(() => api('POST', `/api/identity/users/${u.id}/mfa/reset`))}>بازنشانی رمز دوم</button>}
               </span>}
             </li>
           ))}
@@ -57,11 +58,11 @@ export function UsersPage() {
           {accounts.map((a) => (
             <li key={a.id} className="p-3 space-y-1">
               <div className="flex items-center gap-2"><span className="font-medium">{a.name}</span>
-                {can('users.update') && <button className="ms-auto text-xs underline" onClick={() => act(async () => { const k = await api<{ key: ApiKeyInfo; secret: string }>('POST', `/api/identity/service-accounts/${a.id}/api-keys`, { name: prompt('نام کلید', 'کلید جدید') || 'key' }); setSecret({ label: k.key.name, value: k.secret }); })}>کلید جدید</button>}</div>
+                {can('users.update') && <button className="ms-auto text-xs underline" onClick={() => act(async () => { const k = await api<{ key: ApiKeyInfo; secret: string }>('POST', `/api/identity/service-accounts/${a.id}/api-keys`, { name: (await askText('نام کلید', 'کلید جدید')) || 'key' }); setSecret({ label: k.key.name, value: k.secret }); })}>کلید جدید</button>}</div>
               <ul className="text-xs text-slate-500 space-y-0.5">
                 {a.keys.map((k) => <li key={k.id} className="flex gap-2"><span className={k.revoked ? 'line-through' : ''}>{k.name}</span><span>ساخته‌شده {new Date(k.createdAtUtc).toLocaleDateString('fa-IR')}</span>
                   <span>{k.lastUsedAtUtc ? `آخرین استفاده ${new Date(k.lastUsedAtUtc).toLocaleDateString('fa-IR')}` : 'استفاده نشده'}</span>
-                  {!k.revoked && can('users.update') && <button className="ms-auto underline text-red-600" onClick={() => confirm('کلید باطل شود؟') && act(() => api('DELETE', `/api/identity/service-accounts/${a.id}/api-keys/${k.id}`))}>ابطال</button>}</li>)}
+                  {!k.revoked && can('users.update') && <button className="ms-auto underline text-red-600" onClick={async () => (await askConfirm('کلید باطل شود؟')) && act(() => api('DELETE', `/api/identity/service-accounts/${a.id}/api-keys/${k.id}`))}>ابطال</button>}</li>)}
               </ul>
             </li>
           ))}

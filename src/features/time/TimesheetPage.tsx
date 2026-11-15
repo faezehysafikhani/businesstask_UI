@@ -5,6 +5,7 @@ import { Empty } from '../../ui/Empty';
 import { tasksApi, timeApi } from '../../api/tasks';
 import { ApprovalLabel, fmtMinutes, type TaskListItem, type TimesheetWeek } from '../../api/types';
 import { DateInput } from '../../ui/dates';
+import { askConfirm, askText } from '../../ui/dialog';
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 const addDays = (s: string, n: number) => { const d = new Date(s + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return iso(d); };
@@ -87,13 +88,13 @@ export function TimesheetPage() {
               <td className="px-3 py-2" data-label="روز">{new Date(e.date).toLocaleDateString('fa-IR')}</td><td className="px-3 py-2" data-label="وظیفه">{e.taskTitle ?? '—'}</td>
               <td className="px-3 py-2" data-label="زمان" dir="ltr">{fmtMinutes(e.minutes)}{e.source === 1 && ' ⏱'}</td><td className="px-3 py-2" data-label="توضیح">{e.note}</td>
               <td className="px-3 py-2" data-label="وضعیت">{ApprovalLabel[e.status]}</td>
-              <td className="px-3 py-2 text-end whitespace-nowrap">{(e.status === 0 || e.status === 3) && <button className="p-1 hover:text-blue-600" title="ویرایش" onClick={() => { const v = prompt('زمان (دقیقه)', String(e.minutes)); if (v === null) return; const n = Number(v); if (!Number.isFinite(n) || n <= 0) return; const note = prompt('توضیح', e.note ?? ''); act(() => timeApi.update(e.id, { date: e.date, minutes: n, note: note ?? undefined })); }}><Pencil size={16} /></button>}{(e.status === 0 || e.status === 3) && <button className="p-1 hover:text-red-600" title="حذف" onClick={() => confirm('حذف شود؟') && act(() => timeApi.remove(e.id))}><Trash2 size={16} /></button>}</td>
+              <td className="px-3 py-2 text-end whitespace-nowrap">{(e.status === 0 || e.status === 3) && <button className="p-1 hover:text-blue-600" title="ویرایش" onClick={async () => { const v = await askText('زمان (دقیقه)', String(e.minutes)); if (v === null) return; const n = Number(v); if (!Number.isFinite(n) || n <= 0) return; const note = await askText('توضیح', e.note ?? ''); act(() => timeApi.update(e.id, { date: e.date, minutes: n, note: note ?? undefined })); }}><Pencil size={16} /></button>}{(e.status === 0 || e.status === 3) && <button className="p-1 hover:text-red-600" title="حذف" onClick={async () => (await askConfirm('حذف شود؟')) && act(() => timeApi.remove(e.id))}><Trash2 size={16} /></button>}</td>
             </tr>
           ))}
         </tbody>
       </table>
       {week && week.entries.length === 0 && <Empty icon="⏱️" text="زمانی ثبت نشده است" />}</div>
-      {week?.canSubmit && <button className="rounded-lg bg-green-600 text-white px-4 py-2 text-sm" onClick={() => confirm('هفته برای تأیید ارسال شود؟ بعد از ارسال قابل ویرایش نیست.') && act(() => timeApi.submit(week.weekStart))}>ارسال هفته برای تأیید</button>}
+      {week?.canSubmit && <button className="rounded-lg bg-green-600 text-white px-4 py-2 text-sm" onClick={async () => (await askConfirm('هفته برای تأیید ارسال شود؟ بعد از ارسال قابل ویرایش نیست.')) && act(() => timeApi.submit(week.weekStart))}>ارسال هفته برای تأیید</button>}
     </div>
   );
 }

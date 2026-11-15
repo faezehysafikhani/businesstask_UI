@@ -13,6 +13,7 @@ import {
   projectsApi, type Project, type ProjectInput,
 } from '../../api/projects';
 import { DateInput, showJalali } from '../../ui/dates';
+import { askConfirm } from '../../ui/dialog';
 
 const STATUSES = ['Draft', 'Active', 'OnHold', 'Completed'];
 const TYPES = ['Waterfall', 'Agile'];
@@ -137,7 +138,7 @@ export function ProjectsPage() {
                     <div className="flex flex-wrap justify-end gap-3 text-xs whitespace-nowrap">
                       <Link to={`/projects/${row.id}`} className="inline-flex items-center gap-1 underline text-slate-600"><FolderKanban size={12} /> جزئیات</Link>
                       {can('Projects.Edit') && <button className="inline-flex items-center gap-1 underline text-blue-700" onClick={() => setEditing(row)}><Pencil size={12} /> ویرایش</button>}
-                      {can('Projects.Remove') && <button className="underline text-red-600" onClick={() => confirm(`پروژه «${row.name}» حذف شود؟`) && act(() => projectsApi.remove(row.id), '')}>حذف</button>}
+                      {can('Projects.Remove') && <button className="underline text-red-600" onClick={async () => (await askConfirm(`پروژه «${row.name}» حذف شود؟`)) && act(() => projectsApi.remove(row.id), '')}>حذف</button>}
                     </div>
                   </td>
                 </tr>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { requestsApi } from '../../api/tasks';
 import { PriorityLabel, RequestStatusLabel, type TaskRequest } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
+import { askConfirm, askText } from '../../ui/dialog';
 
 // For request handlers: every request; convert a new one into a task or reject it with a note.
 export function InboxPage() {
@@ -34,7 +35,7 @@ export function InboxPage() {
             {r.status === 0 && (
               <div className="flex gap-2">
                 <button className="rounded-lg bg-green-600 text-white px-3 py-1" onClick={() => act(() => requestsApi.convert(r.id, {}))}>تبدیل به وظیفه</button>
-                <button className="rounded-lg bg-red-600 text-white px-3 py-1" onClick={() => { const n = prompt('دلیل رد (اختیاری)'); if (n !== null) act(() => requestsApi.reject(r.id, n || undefined)); }}>رد</button>
+                <button className="rounded-lg bg-red-600 text-white px-3 py-1" onClick={async () => { const n = await askText('دلیل رد (اختیاری)'); if (n !== null) act(() => requestsApi.reject(r.id, n || undefined)); }}>رد</button>
               </div>
             )}
           </li>

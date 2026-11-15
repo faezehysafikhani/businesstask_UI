@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import { templatesApi } from '../../api/tasks';
 import { PriorityLabel, type TaskTemplate } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
+import { askConfirm } from '../../ui/dialog';
 
 const lines = (s: string) => s.split('\n').map((x) => x.trim()).filter(Boolean);
 
@@ -36,7 +37,7 @@ export function TemplatesPage() {
             <div><div className="font-medium">{t.name}{t.isProject && <span className="ms-2 text-xs text-purple-600">پروژه</span>}</div>
               <div className="text-xs text-slate-500">{t.body.title} · {PriorityLabel[t.body.priority]} · {t.body.subTasks.length} زیرکار · {t.body.criteria.length} معیار</div></div>
             {can('Tasks.Create') && <button className="ms-auto rounded-lg bg-blue-600 text-white px-3 py-1" onClick={() => act(() => templatesApi.instantiate(t.id, { assignedUserId: me?.user.id }), 'وظیفه از قالب ساخته شد؛ در لیست وظایف است')}>ساخت از قالب</button>}
-            {can('Tasks.ManageTemplates') && <button title="حذف" className="p-1 hover:text-red-600" onClick={() => confirm('حذف شود؟') && act(() => templatesApi.remove(t.id))}><Trash2 size={16} /></button>}
+            {can('Tasks.ManageTemplates') && <button title="حذف" className="p-1 hover:text-red-600" onClick={async () => (await askConfirm('حذف شود؟')) && act(() => templatesApi.remove(t.id))}><Trash2 size={16} /></button>}
           </li>
         ))}
         {list.length === 0 && <li className="p-6 text-center text-slate-400">قالبی نیست</li>}

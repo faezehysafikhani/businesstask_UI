@@ -5,6 +5,7 @@ import './index.css';
 import { App } from './App';
 import { AuthProvider } from './auth/AuthContext';
 import { Toaster } from './ui/toast';
+import { DialogHost } from './ui/dialog';
 import { PrefsProvider } from './shell/prefs';
 
 createRoot(document.getElementById('root')!).render(
@@ -14,6 +15,7 @@ createRoot(document.getElementById('root')!).render(
         <AuthProvider>
           <App />
           <Toaster />
+          <DialogHost />
         </AuthProvider>
       </PrefsProvider>
     </BrowserRouter>

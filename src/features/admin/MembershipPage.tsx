@@ -3,6 +3,7 @@ import { membershipApi } from '../../api/tasks';
 import { MembershipStatusLabel, type Membership } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import { DateInput } from '../../ui/dates';
+import { askConfirm } from '../../ui/dialog';
 
 const mb = (b: number) => `${(b / 1024 / 1024).toFixed(1)} مگابایت`;
 function Bar({ label, used, max, text }: { label: string; used: number; max?: number | null; text: string }) {
@@ -53,7 +54,7 @@ export function MembershipPage() {
               <label>پایان <DateInput className="border rounded-lg px-2 py-1 w-full" value={f.validUntil} onChange={(e) => setF({ ...f, validUntil: e.target.value })} /></label>
             </div>
             <div className="flex gap-2"><button disabled={!f.planName.trim()} className="rounded-lg bg-blue-600 text-white px-4 py-1.5 disabled:opacity-50">ذخیره</button>
-              <button type="button" className="border rounded-lg px-3 py-1.5" onClick={() => confirm('پلن حذف شود؟ هیچ محدودیتی نمی‌ماند.') && act(() => membershipApi.clear(), 'پلن حذف شد')}>حذف پلن</button></div>
+              <button type="button" className="border rounded-lg px-3 py-1.5" onClick={async () => (await askConfirm('پلن حذف شود؟ هیچ محدودیتی نمی‌ماند.')) && act(() => membershipApi.clear(), 'پلن حذف شد')}>حذف پلن</button></div>
           </form>
         )}
         {manage && (

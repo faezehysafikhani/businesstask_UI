@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Trash2 } from 'lucide-react';
 import { planningApi, statusesApi } from '../../api/tasks';
 import { StatusLabel, type TaskStatusDef } from '../../api/types';
+import { askConfirm } from '../../ui/dialog';
 
 // Custom statuses: each counts as one of the four built-in statuses (reports and reminders keep working).
 export function StatusesPage() {
@@ -52,7 +53,7 @@ export function StatusesPage() {
             <button className="ms-auto text-xs underline" onClick={() => act(() => statusesApi.update(s.id, { name: s.name, category: s.category, color: s.color, sortOrder: s.sortOrder, isActive: !s.isActive }))}>
               {s.isActive ? 'غیرفعال' : 'فعال'}
             </button>
-            <button title="حذف" className="p-1 hover:text-red-600" onClick={() => confirm('حذف شود؟ وظایف این وضعیت، وضعیت پایه خود را نگه می‌دارند.') && act(() => statusesApi.remove(s.id))}><Trash2 size={16} /></button>
+            <button title="حذف" className="p-1 hover:text-red-600" onClick={async () => (await askConfirm('حذف شود؟ وظایف این وضعیت، وضعیت پایه خود را نگه می‌دارند.')) && act(() => statusesApi.remove(s.id))}><Trash2 size={16} /></button>
           </li>
         ))}
         {list.length === 0 && <li className="px-3 py-6 text-center text-slate-400">وضعیت سفارشی تعریف نشده است</li>}

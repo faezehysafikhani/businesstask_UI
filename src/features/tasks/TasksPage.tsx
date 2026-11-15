@@ -11,6 +11,7 @@ import { Avatar, PRIORITY_COLOR, SortTh, useSort } from '../../ui/table';
 import { Drawer } from '../../ui/Drawer';
 import { Confetti, useCountUp } from '../../ui/effects';
 import { Empty } from '../../ui/Empty';
+import { askConfirm, askText } from '../../ui/dialog';
 
 type Chip = 'all' | 'today' | 'overdue' | 'mine';
 const PAGE = 20;
@@ -121,12 +122,12 @@ export function TasksPage() {
       <>
         {can('Timesheets.Log') && !archived && <button title="شروع تایمر" aria-label="شروع تایمر" onClick={() => act(async () => { await timeApi.start(t.id); window.dispatchEvent(new Event('timer-changed')); })} className={cls('hover:text-emerald-600')}><Play size={16} />{big && 'شروع تایمر'}</button>}
         {!archived && <button title="برنامه‌ریزی (وابستگی، معیار پذیرش)" aria-label="برنامه‌ریزی" onClick={() => setPlanning(t)} className={cls('hover:text-teal-600')}><ListTodo size={16} />{big && 'برنامه‌ریزی'}</button>}
-        {can('Tasks.Edit') && !archived && t.status !== 3 && t.reviewStatus !== 1 && <button title="ارسال برای بازبینی" aria-label="ارسال برای بازبینی" onClick={() => { const c = prompt('توضیح برای بازبین (اختیاری)'); if (c !== null) act(() => tasksApi.submitReview(t.id, c || undefined)); }} className={cls('hover:text-purple-600')}><SendHorizontal size={16} />{big && 'بازبینی'}</button>}
+        {can('Tasks.Edit') && !archived && t.status !== 3 && t.reviewStatus !== 1 && <button title="ارسال برای بازبینی" aria-label="ارسال برای بازبینی" onClick={async () => { const c = await askText('توضیح برای بازبین (اختیاری)'); if (c !== null) act(() => tasksApi.submitReview(t.id, c || undefined)); }} className={cls('hover:text-purple-600')}><SendHorizontal size={16} />{big && 'بازبینی'}</button>}
         {can('Tasks.Edit') && !archived && <button title="ویرایش" aria-label="ویرایش" onClick={() => { setDetail(null); setForm({ id: t.id }); }} className={cls('hover:text-blue-600')}><Pencil size={16} />{big && 'ویرایش'}</button>}
         {can('Tasks.Edit') && (archived
           ? <><button title="بازیابی" aria-label="بازیابی" onClick={() => { setDetail(null); act(() => tasksApi.restore(t.id)); }} className={cls('hover:text-green-600')}><ArchiveRestore size={16} />{big && 'بازیابی'}</button>
-            <button title="حذف" aria-label="حذف" onClick={() => confirm('این وظیفه برای همیشه حذف شود؟') && (setDetail(null), act(() => tasksApi.remove(t.id)))} className={cls('hover:text-red-600')}><Trash2 size={16} />{big && 'حذف'}</button></>
-          : <button title="بایگانی" aria-label="بایگانی" onClick={() => confirm('این وظیفه بایگانی شود؟') && act(() => tasksApi.archive(t.id))} className={cls('hover:text-amber-600')}><Archive size={16} />{big && 'بایگانی'}</button>)}
+            <button title="حذف" aria-label="حذف" onClick={async () => (await askConfirm('این وظیفه برای همیشه حذف شود؟')) && (setDetail(null), act(() => tasksApi.remove(t.id)))} className={cls('hover:text-red-600')}><Trash2 size={16} />{big && 'حذف'}</button></>
+          : <button title="بایگانی" aria-label="بایگانی" onClick={async () => (await askConfirm('این وظیفه بایگانی شود؟')) && act(() => tasksApi.archive(t.id))} className={cls('hover:text-amber-600')}><Archive size={16} />{big && 'بایگانی'}</button>)}
       </>
     );
   };
@@ -201,7 +202,7 @@ export function TasksPage() {
               </select>
             </>
           )}
-          <button onClick={() => confirm(archived ? 'بازیابی شوند؟' : 'بایگانی شوند؟') && bulk({ action: archived ? 'Restore' : 'Archive' })}>{archived ? 'بازیابی' : 'بایگانی'}</button>
+          <button onClick={async () => (await askConfirm(archived ? 'بازیابی شوند؟' : 'بایگانی شوند؟')) && bulk({ action: archived ? 'Restore' : 'Archive' })}>{archived ? 'بازیابی' : 'بایگانی'}</button>
           <button className="ghost" aria-label="لغو انتخاب" onClick={() => setSelected(new Set())}>✕</button>
         </div>
       )}

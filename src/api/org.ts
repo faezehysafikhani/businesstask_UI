@@ -116,7 +116,7 @@ export const orgApi = {
   positions: () => api<OrgPosition[]>('GET', `${O}/positions`),
   // Gives a person (or changes) their place: company, unit, position and manager.
   // People with no place in the organization yet (any user with the org permission may read it).
-  unplaced: () => api<{ id: string; displayName: string }[]>('GET', `${O}/unplaced-users`),
+  unplaced: () => api<{ userId: string; displayName: string }[]>('GET', `${O}/unplaced-users`).then((l) => l.map((u) => ({ id: u.userId, displayName: u.displayName }))),
   setAssignment: (userId: string, b: { companyId: string; unitId?: string | null; positionId?: string | null; managerUserId?: string | null }) =>
     api('PUT', `${O}/assignments/${userId}`, b),
   addPost: (unitId: string, b: { positionId: string; code?: string | null; parentPostId?: string | null }) => api<UnitPosition>('POST', `${O}/units/${unitId}/positions`, b),
