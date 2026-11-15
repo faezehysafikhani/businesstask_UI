@@ -1,4 +1,5 @@
 import { notify } from '../ui/toast';
+import { faMessage, statusMessage } from './messages';
 
 // One fetch wrapper: bearer token, one silent refresh on 401, errors as ApiError (code = problem title).
 const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? '';
@@ -77,37 +78,40 @@ function numberEnums(v: unknown, tables: Record<string, Table>): unknown {
   return v;
 }
 
-// Messages the host sends in English, shown in Persian.
-const FA: [RegExp, string][] = [
-  [/Choose who is responsible/i, 'مسئول وظیفه را انتخاب کنید.'],
-  [/End date must be (on or )?after/i, 'تاریخ پایان باید بعد از تاریخ شروع باشد.'],
-  [/End date must be/i, 'تاریخ پایان نباید قبل از تاریخ شروع باشد.'],
-  [/not found/i, 'مورد پیدا نشد.'],
-  [/forbidden|not allowed|access denied/i, 'اجازه‌ی این کار را ندارید.'],
-];
-const faMessage = (m: string) => (/[\u0600-\u06FF]/.test(m) ? m : FA.find(([re]) => re.test(m))?.[1] ?? m);
-
 async function toError(r: Response): Promise<ApiError> {
-  let code = 'error', msg = `خطا (${r.status})`;
-  try { const p = await r.json(); code = p.title ?? code; msg = p.detail ?? p.title ?? msg; } catch { /* no body */ }
-  return new ApiError(r.status, code, faMessage(msg));
+  let code = 'error', msg = '';
+  try {
+    const p = await r.json();
+    code = p.title ?? code;
+    // A validation answer lists the fields' messages; those say more than its title.
+    const fields = p.errors && typeof p.errors === 'object' ? Object.values(p.errors).flat().map(String) : [];
+    msg = fields.length ? fields.map((x) => faMessage(x, r.status)).join(' ') : faMessage(p.detail ?? p.title ?? '', r.status);
+  } catch { /* no body */ }
+  return new ApiError(r.status, code, msg || statusMessage(r.status));
 }
 
 export async function api<T = void>(method: string, path: string, body?: unknown, retry = true): Promise<T> {
   const s = sessionStore.get();
   const auth = path.startsWith(AUTH_PREFIX);
-  const r = await fetch(`${BASE}${path}`, {
-    method,
-    // The refresh cookie travels with the auth calls (the same origin in development through the
-    // proxy; a cross-origin deployment must also allow credentials in its CORS policy).
-    credentials: auth ? 'include' : 'same-origin',
-    headers: {
-      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-      ...(s ? { Authorization: `Bearer ${s.accessToken}` } : {}),
-      ...(auth ? COOKIE_SESSION_HEADERS : {}),
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  let r: Response;
+  try {
+    r = await fetch(`${BASE}${path}`, {
+      method,
+      // The refresh cookie travels with the auth calls (the same origin in development through the
+      // proxy; a cross-origin deployment must also allow credentials in its CORS policy).
+      credentials: auth ? 'include' : 'same-origin',
+      headers: {
+        ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        ...(s ? { Authorization: `Bearer ${s.accessToken}` } : {}),
+        ...(auth ? COOKIE_SESSION_HEADERS : {}),
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    // No answer at all: the network or the server is down.
+    if (method !== 'GET') notify('error', statusMessage(0));
+    throw new ApiError(0, 'network', statusMessage(0));
+  }
   if (r.status === 401 && retry && s && await refresh()) return api<T>(method, path, body, false);
   if (r.status === 401 && s) { sessionStore.set(null); notify('error', 'نشست شما به پایان رسید؛ دوباره وارد شوید.'); onSignedOut(); }
   const change = method !== 'GET' && !auth;
@@ -123,7 +127,8 @@ export async function api<T = void>(method: string, path: string, body?: unknown
   if (r.status === 204) return undefined as T;
   // An answer of "nothing" (for example no running timer) has an empty body.
   const text = await r.text();
-  const data: unknown = text ? JSON.parse(text) : null;
+  let data: unknown;
+  try { data = text ? JSON.parse(text) : null; } catch { throw new ApiError(r.status, 'bad_response', 'پاسخ سرور قابل خواندن نیست؛ کمی بعد دوباره تلاش کنید.'); }
   const rule = RULES.find(([re]) => re.test(path));
   return (rule ? numberEnums(data, rule[1]) : data) as T;
 }
