@@ -4,6 +4,7 @@ import { Bell, LayoutGrid, LayoutPanelTop, Menu, Search, Settings2, WifiOff, Wif
 import { TimerBar } from '../features/time/TimerBar';
 import { MembershipBanner } from '../features/admin/MembershipBanner';
 import { LoginPage } from '../auth/LoginPage';
+import { SessionWatcher } from './SessionWatcher';
 import { SidebarBody } from './Sidebar';
 import { Palette } from './Palette';
 import { SettingsCenter } from './SettingsCenter';
@@ -122,6 +123,7 @@ export function Layout() {
         <main key={pathname} className="page-enter p-4 min-[900px]:px-8 min-[900px]:py-7"><Outlet /></main>
       </div>
       {p.focus && <button onClick={() => p.set({ focus: false })} className="fixed top-3.5 left-3.5 z-[60] rounded-full bg-slate-800 text-white text-xs font-semibold px-4 py-2 shadow-[var(--shadow-lg)]">خروج از حالت تمرکز</button>}
+      <SessionWatcher />
       {palette && <Palette onClose={() => setPalette(false)} />}
       {hub && <SettingsCenter onClose={() => setHub(false)} />}
       {loginPreview && (

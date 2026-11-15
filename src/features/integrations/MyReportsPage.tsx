@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Trash2 } from 'lucide-react';
 import { reportsApi, type ReportSubscription } from '../../api/tasks';
+import { Segmented } from '../../ui/fields';
 
 const FREQ: Record<string, string> = { Daily: 'روزانه', Weekly: 'هفتگی', Monthly: 'ماهانه' };
 const DAYS: Record<string, string> = { Saturday: 'شنبه', Sunday: 'یکشنبه', Monday: 'دوشنبه', Tuesday: 'سه‌شنبه', Wednesday: 'چهارشنبه', Thursday: 'پنجشنبه', Friday: 'جمعه' };
@@ -33,7 +34,7 @@ export function MyReportsPage() {
         {list.length === 0 && <li className="p-6 text-center text-slate-400">گزارشی تنظیم نشده است</li>}
       </ul>
       <form onSubmit={add} className="bg-white rounded-xl border p-3 flex flex-wrap items-center gap-2 text-sm">
-        <select className="border rounded-lg px-2 py-1" value={f.frequency} onChange={(e) => setF({ ...f, frequency: e.target.value })}>{Object.entries(FREQ).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+        <Segmented value={f.frequency} onChange={(v) => setF({ ...f, frequency: v })} options={Object.entries(FREQ).map(([value, label]) => ({ value, label }))} />
         {f.frequency === 'Weekly' && <select className="border rounded-lg px-2 py-1" value={f.dayOfWeek} onChange={(e) => setF({ ...f, dayOfWeek: e.target.value })}>{Object.entries(DAYS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>}
         {f.frequency === 'Monthly' && <label>روز ماه <input type="number" min={1} max={28} className="w-16 border rounded px-1" value={f.dayOfMonth} onChange={(e) => setF({ ...f, dayOfMonth: Number(e.target.value) })} /></label>}
         <label>ساعت <input type="number" min={0} max={23} className="w-16 border rounded px-1" value={f.hour} onChange={(e) => setF({ ...f, hour: Number(e.target.value) })} /></label>

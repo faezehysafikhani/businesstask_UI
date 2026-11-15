@@ -11,6 +11,7 @@ import {
 } from '../../api/projects';
 import { StakeholderMatrix } from './StakeholderMatrix';
 import { askConfirm, askText } from '../../ui/dialog';
+import { Segmented, Select } from '../../ui/fields';
 
 const STATUSES = ['Draft', 'Active', 'OnHold', 'Completed'];
 const LEVELS = ['Low', 'Medium', 'High'];
@@ -218,10 +219,10 @@ function AddMemberDialog({ projectId, users, onClose, onSaved }: {
     <Modal title="افزودن عضو به تیم پروژه" onClose={onClose}>
       <div className="space-y-3 text-sm">
         <label className="block">فرد
-          <select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={userId} onChange={(e) => setUserId(e.target.value)}>
+          <Select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={userId} onChange={(e) => setUserId(e.target.value)}>
             <option value="">انتخاب فرد…</option>
             {available.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}
-          </select>
+          </Select>
         </label>
         <label className="block">عنوان نقش (اختیاری)
           <input className="mt-1 w-full border rounded-lg px-2 py-1.5" value={roleTitle} onChange={(e) => setRoleTitle(e.target.value)} />
@@ -268,14 +269,10 @@ function StakeholderDialog({ project, stakeholder, onClose, onSaved }: {
         <label className="flex items-center gap-2"><input type="checkbox" checked={form.isInternal} onChange={(e) => setForm({ ...form, isInternal: e.target.checked })} /> داخل سازمان است</label>
         <div className="grid grid-cols-2 gap-2">
           <label className="block">قدرت
-            <select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={form.power} onChange={(e) => setForm({ ...form, power: e.target.value })}>
-              {LEVELS.map((l) => <option key={l} value={l}>{POWER_LABEL[l]}</option>)}
-            </select>
+            <div className="mt-1"><Segmented value={form.power} onChange={(v) => setForm({ ...form, power: v })} options={LEVELS.map((l) => ({ value: l, label: POWER_LABEL[l] }))} /></div>
           </label>
           <label className="block">اینترست
-            <select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={form.interest} onChange={(e) => setForm({ ...form, interest: e.target.value })}>
-              {LEVELS.map((l) => <option key={l} value={l}>{INTEREST_LABEL[l]}</option>)}
-            </select>
+            <div className="mt-1"><Segmented value={form.interest} onChange={(v) => setForm({ ...form, interest: v })} options={LEVELS.map((l) => ({ value: l, label: INTEREST_LABEL[l] }))} /></div>
           </label>
         </div>
         <label className="block">راهبرد تعامل

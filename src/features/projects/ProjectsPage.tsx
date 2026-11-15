@@ -14,6 +14,7 @@ import {
 } from '../../api/projects';
 import { DateInput, showJalali } from '../../ui/dates';
 import { askConfirm } from '../../ui/dialog';
+import { Segmented, Select } from '../../ui/fields';
 
 const STATUSES = ['Draft', 'Active', 'OnHold', 'Completed'];
 const TYPES = ['Waterfall', 'Agile'];
@@ -206,27 +207,25 @@ function ProjectForm({ project, users, onClose, onSaved }: {
             <input className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" placeholder={project ? '' : 'خودکار'} value={form.code ?? ''} onChange={(e) => set({ code: e.target.value })} />
           </label>
           <label className="block">نوع
-            <select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={form.type} onChange={(e) => set({ type: e.target.value })}>
-              {TYPES.map((t) => <option key={t} value={t}>{PROJECT_TYPE_LABEL[t]}</option>)}
-            </select>
+            <div className="mt-1"><Segmented value={form.type} onChange={(v) => set({ type: v })} options={TYPES.map((t) => ({ value: t, label: PROJECT_TYPE_LABEL[t] }))} /></div>
           </label>
           <label className="block">مدیر
-            <select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={form.managerUserId ?? ''} onChange={(e) => set({ managerUserId: e.target.value || null })}>
+            <Select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={form.managerUserId ?? ''} onChange={(e) => set({ managerUserId: e.target.value || null })}>
               <option value="">ندارد</option>
               {users.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}
-            </select>
+            </Select>
           </label>
           <label className="block">مالک
-            <select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={form.ownerUserId ?? ''} onChange={(e) => set({ ownerUserId: e.target.value || null })}>
+            <Select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={form.ownerUserId ?? ''} onChange={(e) => set({ ownerUserId: e.target.value || null })}>
               <option value="">ندارد</option>
               {users.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}
-            </select>
+            </Select>
           </label>
           <label className="block">واحد سازمانی
-            <select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={form.organizationUnitId ?? ''} onChange={(e) => set({ organizationUnitId: e.target.value || null })}>
+            <Select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={form.organizationUnitId ?? ''} onChange={(e) => set({ organizationUnitId: e.target.value || null })}>
               <option value="">ندارد</option>
               {nodes.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}
-            </select>
+            </Select>
           </label>
           <label className="block">هزینه (اختیاری)
             <input type="number" className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={form.cost ?? ''} onChange={(e) => set({ cost: e.target.value ? Number(e.target.value) : null })} />

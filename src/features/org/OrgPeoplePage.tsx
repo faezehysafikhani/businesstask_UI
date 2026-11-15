@@ -12,6 +12,7 @@ import {
 import { DateInput } from '../../ui/dates';
 import { listUsers } from '../../api/tasks';
 import type { OrgNode, OrgPosition } from '../../api/org';
+import { Select } from '../../ui/fields';
 
 // The people's places: each person's company, unit, position, manager and every post they hold -
 // with leaving the organization (posts freed or handed to a successor) and moving posts to someone.
@@ -176,10 +177,10 @@ function OffboardDialog({ person, people, companies, onClose, onDone }: {
         ) : (
           <>
             <label className="block">جانشین (اختیاری)
-              <select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={successor} onChange={(e) => setSuccessor(e.target.value)}>
+              <Select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={successor} onChange={(e) => setSuccessor(e.target.value)}>
                 <option value="">بدون جانشین — همه آزاد شوند</option>
                 {others.map((p) => <option key={p.userId} value={p.userId}>{p.displayName} — {p.unitName || p.companyName}</option>)}
-              </select>
+              </Select>
             </label>
 
             <div className="space-y-1">
@@ -242,10 +243,10 @@ function TransferDialog({ person, people, onClose, onDone }: { person: UserAssig
         ) : (
           <>
             <label className="block">به فرد
-              <select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={toUser} onChange={(e) => setToUser(e.target.value)}>
+              <Select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={toUser} onChange={(e) => setToUser(e.target.value)}>
                 <option value="">انتخاب فرد…</option>
                 {others.map((p) => <option key={p.userId} value={p.userId}>{p.displayName} — {p.unitName || p.companyName}</option>)}
-              </select>
+              </Select>
             </label>
             <label className="block">از تاریخ (خالی = همین حالا)
               <DateInput className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -330,17 +331,17 @@ function AddPersonDialog({ companies, placed, defaultCompany, onClose, onDone }:
   return (
     <Modal title="ثبت جایگاه فرد" onClose={onClose}>
       <div className="space-y-3 text-sm">
-        <label className="block">فرد<select className={sel} value={f.userId} onChange={(e) => setF({ ...f, userId: e.target.value })}>
-          <option value="">انتخاب…</option>{free.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}</select></label>
+        <label className="block">فرد<Select className={sel} value={f.userId} onChange={(e) => setF({ ...f, userId: e.target.value })}>
+          <option value="">انتخاب…</option>{free.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}</Select></label>
         {free.length === 0 && <p className="text-xs text-slate-500">همه‌ی کاربران جایگاه دارند، یا فهرست کاربران در دسترس نیست.</p>}
         <label className="block">شرکت<select className={sel} value={f.companyId} onChange={(e) => setF({ ...f, companyId: e.target.value, unitId: '' })}>
           {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
-        <label className="block">واحد (اختیاری)<select className={sel} value={f.unitId} onChange={(e) => setF({ ...f, unitId: e.target.value })}>
-          <option value="">مستقیم در شرکت</option>{nodes.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}</select></label>
-        <label className="block">سمت (اختیاری)<select className={sel} value={f.positionId} onChange={(e) => setF({ ...f, positionId: e.target.value })}>
-          <option value="">بدون سمت</option>{positions.filter((p) => p.isActive).map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select></label>
-        <label className="block">مدیر (اختیاری)<select className={sel} value={f.managerUserId} onChange={(e) => setF({ ...f, managerUserId: e.target.value })}>
-          <option value="">بدون مدیر</option>{managers.filter((u) => u.id !== f.userId).map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}</select></label>
+        <label className="block">واحد (اختیاری)<Select className={sel} value={f.unitId} onChange={(e) => setF({ ...f, unitId: e.target.value })}>
+          <option value="">مستقیم در شرکت</option>{nodes.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}</Select></label>
+        <label className="block">سمت (اختیاری)<Select className={sel} value={f.positionId} onChange={(e) => setF({ ...f, positionId: e.target.value })}>
+          <option value="">بدون سمت</option>{positions.filter((p) => p.isActive).map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</Select></label>
+        <label className="block">مدیر (اختیاری)<Select className={sel} value={f.managerUserId} onChange={(e) => setF({ ...f, managerUserId: e.target.value })}>
+          <option value="">بدون مدیر</option>{managers.filter((u) => u.id !== f.userId).map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}</Select></label>
         {error && <p className="text-red-600">{error}</p>}
         <div className="flex justify-end gap-2"><button className="rounded-lg border px-4 py-1.5" onClick={onClose}>انصراف</button>
           <button className="rounded-lg bg-blue-600 text-white px-4 py-1.5 disabled:opacity-50" disabled={!f.userId || !f.companyId || busy} onClick={submit}>ثبت</button></div>

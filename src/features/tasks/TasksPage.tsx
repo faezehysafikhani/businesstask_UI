@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Archive, ArchiveRestore, Trash2, CheckCircle2, CircleDashed, ClipboardList, ListTodo, Loader, Pencil, Play, Plus, SendHorizontal } from 'lucide-react';
+import { Archive, ArchiveRestore, Trash2, ListTodo, Pencil, Play, Plus, SendHorizontal } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
 import { tasksApi, timeApi } from '../../api/tasks';
 import { PriorityLabel, ReviewLabel, type Paged, type TaskDetail, type TaskListItem } from '../../api/types';
@@ -9,7 +9,7 @@ import { TaskForm } from './TaskForm';
 import { PlanningModal } from './PlanningModal';
 import { Avatar, PRIORITY_COLOR, SortTh, useSort } from '../../ui/table';
 import { Drawer } from '../../ui/Drawer';
-import { Confetti, useCountUp } from '../../ui/effects';
+import { Confetti } from '../../ui/effects';
 import { Empty } from '../../ui/Empty';
 import { askConfirm, askText } from '../../ui/dialog';
 
@@ -19,10 +19,6 @@ const ST_KIND: Record<number, string> = { 0: 'wait', 1: 'prog', 2: 'other', 3: '
 const dayStart = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); };
 const sameDay = (iso: string) => new Date(iso).toDateString() === new Date().toDateString();
 
-function Stat({ label, value, icon, tint }: { label: string; value: number; icon: React.ReactNode; tint: string }) {
-  const n = useCountUp(value);
-  return <div className="stat"><span className="ic" style={{ background: `color-mix(in srgb, ${tint} 16%, transparent)`, color: tint }}>{icon}</span><div><small>{label}</small><strong>{n.toLocaleString('fa-IR')}</strong></div></div>;
-}
 
 export function TasksPage() {
   const { can, me } = useAuth();
@@ -142,24 +138,6 @@ export function TasksPage() {
 
   return (
     <div className="space-y-4">
-      {!archived && data && (
-        <div className="hero">
-          <div className="space-y-2 min-w-0 flex-1">
-            <b>{hello}{me?.user.displayName ? `، ${me.user.displayName}` : ''}</b>
-            <span>{new Intl.DateTimeFormat('fa-IR', { dateStyle: 'full' }).format(new Date())} · {waiting + prog > 0 ? `${(waiting + prog).toLocaleString('fa-IR')} وظیفه منتظر شماست` : 'همه‌ی وظیفه‌ها انجام شده‌اند'}</span>
-            <div className="meter max-w-sm"><i style={{ width: `${pct}%` }} /></div>
-          </div>
-          <div className="text-3xl font-bold">{pct.toLocaleString('fa-IR')}٪</div>
-        </div>
-      )}
-      {!archived && data && (
-        <div className="stat-grid grid grid-cols-4 gap-3.5">
-          <Stat label="کل وظیفه‌ها" value={all.length} icon={<ClipboardList size={20} />} tint="#5b4bff" />
-          <Stat label="انجام‌شده" value={done} icon={<CheckCircle2 size={20} />} tint="#10b981" />
-          <Stat label="در حال انجام" value={prog} icon={<Loader size={20} />} tint="#2563eb" />
-          <Stat label="در انتظار" value={waiting} icon={<CircleDashed size={20} />} tint="#f59e0b" />
-        </div>
-      )}
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold">وظایف</h1>
         <div className="flex rounded-2xl bg-white text-sm p-1 gap-0.5 shadow-[var(--shadow)]">

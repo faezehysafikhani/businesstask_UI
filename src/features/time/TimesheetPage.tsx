@@ -6,6 +6,7 @@ import { tasksApi, timeApi } from '../../api/tasks';
 import { ApprovalLabel, fmtMinutes, type TaskListItem, type TimesheetWeek } from '../../api/types';
 import { DateInput } from '../../ui/dates';
 import { askConfirm, askText } from '../../ui/dialog';
+import { Select } from '../../ui/fields';
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 const addDays = (s: string, n: number) => { const d = new Date(s + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return iso(d); };
@@ -70,9 +71,9 @@ export function TimesheetPage() {
       </div>
 
       <form onSubmit={add} className="bg-white rounded-xl border p-3 flex flex-wrap gap-2 items-center text-sm">
-        <select className="border rounded-lg px-2 py-1 flex-1 min-w-40" value={f.taskId} onChange={(e) => setF({ ...f, taskId: e.target.value })}>
+        <Select className="border rounded-lg px-2 py-1 flex-1 min-w-40" value={f.taskId} onChange={(e) => setF({ ...f, taskId: e.target.value })}>
           <option value="">وظیفه…</option>{tasks.map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}
-        </select>
+        </Select>
         <DateInput className="border rounded-lg px-2 py-1" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} />
         <input type="number" min={0} className="w-16 border rounded-lg px-2 py-1" value={f.hours} onChange={(e) => setF({ ...f, hours: e.target.value })} /> ساعت
         <input type="number" min={0} max={59} className="w-16 border rounded-lg px-2 py-1" value={f.minutes} onChange={(e) => setF({ ...f, minutes: e.target.value })} /> دقیقه

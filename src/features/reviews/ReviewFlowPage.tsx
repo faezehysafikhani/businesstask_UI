@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { TASK_REVIEW, TIMESHEET, listUsers, workflowApi } from '../../api/tasks';
+import { Select } from '../../ui/fields';
 
 // The approval chain every "submit for review" goes through. Empty chain = no review: submitting completes the task.
 const KEYS: Record<string, string> = { Owner: 'سازنده وظیفه', Manager: 'مدیر', Approver1: 'تأییدکننده ۱', Approver2: 'تأییدکننده ۲', Approver3: 'تأییدکننده ۳' };
@@ -37,9 +38,9 @@ export function ReviewFlowPage({ subject = TASK_REVIEW }: { subject?: string }) 
             <span className="text-slate-400 w-5">{i + 1}</span>
             <input className="flex-1 border rounded-lg px-2 py-1" value={s.name} onChange={(e) => setSteps(steps.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} placeholder="نام مرحله" />
             {isSheet ? (
-              <select className="border rounded-lg px-2 py-1" value={s.approverUserId ?? ''} onChange={(e) => setSteps(steps.map((x, j) => j === i ? { ...x, approverUserId: e.target.value || null } : x))}>
+              <Select className="border rounded-lg px-2 py-1" value={s.approverUserId ?? ''} onChange={(e) => setSteps(steps.map((x, j) => j === i ? { ...x, approverUserId: e.target.value || null } : x))}>
                 <option value="">تأییدکننده…</option>{users.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}
-              </select>
+              </Select>
             ) : (
               <select className="border rounded-lg px-2 py-1" value={s.approverKey} onChange={(e) => setSteps(steps.map((x, j) => j === i ? { ...x, approverKey: e.target.value } : x))}>
                 {Object.entries(KEYS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}

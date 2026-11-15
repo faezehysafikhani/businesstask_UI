@@ -5,6 +5,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { PriorityLabel, type TaskDetail } from '../../api/types';
 import { Modal } from '../../ui/Modal';
 import { DateInput } from '../../ui/dates';
+import { Segmented, Select } from '../../ui/fields';
 
 // Create (taskId undefined) or edit. Edit sends the rowVersion it read; a 409 means someone else
 // saved first: we show it, reload the fresh task and the user can retry (phase 2 behaviour).
@@ -53,15 +54,13 @@ export function TaskForm({ taskId, onClose, onSaved }: { taskId?: string; onClos
         <input className="w-full border rounded-lg px-3 py-2" placeholder="عنوان" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
         <textarea className="w-full border rounded-lg px-3 py-2" placeholder="توضیحات" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
         <label className="block text-sm">مسئول
-          <select className="mt-1 w-full border rounded-lg px-3 py-2" value={assignee} onChange={(e) => setAssignee(e.target.value)}>
+          <Select className="mt-1 w-full border rounded-lg px-3 py-2" value={assignee} onChange={(e) => setAssignee(e.target.value)}>
             {users.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}
-          </select>
+          </Select>
         </label>
         <div className="flex gap-2">
           <DateInput className="flex-1 border rounded-lg px-3 py-2" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-          <select className="border rounded-lg px-3 py-2" value={priority} onChange={(e) => setPriority(Number(e.target.value))}>
-            {Object.entries(PriorityLabel).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-          </select>
+          <Segmented value={priority} onChange={setPriority} options={[{ value: 0, label: 'کم' }, { value: 1, label: 'متوسط' }, { value: 2, label: 'زیاد' }]} />
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button disabled={busy || !title.trim() || !assignee} className="w-full rounded-lg bg-blue-600 text-white py-2 disabled:opacity-50">ذخیره</button>

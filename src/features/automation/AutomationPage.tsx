@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import { automationApi, listUsers } from '../../api/tasks';
 import { ActionLabel, PriorityLabel, StatusLabel, TriggerLabel, type AutomationAction, type AutomationLog, type AutomationRule } from '../../api/types';
 import { askConfirm } from '../../ui/dialog';
+import { Select } from '../../ui/fields';
 
 const PRIORITIES = ['Low', 'Medium', 'High'];
 const STATUSES = ['Todo', 'InProgress', 'Paused', 'Completed'];
@@ -91,7 +92,7 @@ export function AutomationPage() {
             <select className="border rounded-lg px-2 py-1" value={draft.type} onChange={(e) => setDraft({ type: e.target.value })}>{Object.entries(ActionLabel).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
             {draft.type === 'SetPriority' && <select className="border rounded-lg px-2 py-1" value={draft.priority ?? ''} onChange={(e) => setDraft({ ...draft, priority: e.target.value })}><option value="">…</option>{PRIORITIES.map((p) => <option key={p} value={p}>{prioLabel(p)}</option>)}</select>}
             {draft.type === 'SetStatus' && <select className="border rounded-lg px-2 py-1" value={draft.status ?? ''} onChange={(e) => setDraft({ ...draft, status: e.target.value })}><option value="">…</option>{STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}</select>}
-            {(draft.type === 'AssignUser' || draft.type === 'Notify') && <select className="border rounded-lg px-2 py-1" value={draft.userId ?? ''} onChange={(e) => setDraft({ ...draft, userId: e.target.value || null })}><option value="">{draft.type === 'Notify' ? 'سازنده وظیفه' : 'کاربر…'}</option>{users.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}</select>}
+            {(draft.type === 'AssignUser' || draft.type === 'Notify') && <Select className="border rounded-lg px-2 py-1" value={draft.userId ?? ''} onChange={(e) => setDraft({ ...draft, userId: e.target.value || null })}><option value="">{draft.type === 'Notify' ? 'سازنده وظیفه' : 'کاربر…'}</option>{users.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}</Select>}
             {draft.type === 'AddTag' && <input className="border rounded-lg px-2 py-1" placeholder="برچسب" value={draft.tag ?? ''} onChange={(e) => setDraft({ ...draft, tag: e.target.value })} />}
             {draft.type === 'StartSla' && <><input type="number" min={1} className="w-20 border rounded-lg px-2 py-1" placeholder="ساعت" value={draft.hours ?? ''} onChange={(e) => setDraft({ ...draft, hours: Number(e.target.value) })} /><label className="flex items-center gap-1"><input type="checkbox" checked={!!draft.businessDaysOnly} onChange={(e) => setDraft({ ...draft, businessDaysOnly: e.target.checked })} /> فقط روز کاری</label></>}
             <button type="button" disabled={!draftOk(draft)} className="border rounded-lg px-2 py-1 disabled:opacity-50" onClick={() => { setActions([...actions, draft]); setDraft({ type: 'AddTag' }); }}>افزودن اقدام</button>

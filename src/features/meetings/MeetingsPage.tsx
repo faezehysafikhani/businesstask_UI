@@ -13,6 +13,7 @@ export function MeetingsPage() {
   const { me, can } = useAuth();
   const [cursor, setCursor] = useState(() => noon(iso(new Date())));
   const [view, setView] = useState<'month' | 'week'>('month');
+  const [day, setDay] = useState(iso(new Date()));
   const [list, setList] = useState<Meeting[]>([]);
   const [holidays, setHolidays] = useState<OfficialHoliday[]>([]);
   const [people, setPeople] = useState<MeetingPeople | null>(null);
@@ -49,13 +50,45 @@ export function MeetingsPage() {
         <div className="flex rounded-2xl bg-white p-1 text-sm shadow-[var(--shadow)]">
           {(['month', 'week'] as const).map((v) => <button key={v} onClick={() => setView(v)} className={`px-4 py-1.5 rounded-xl ${view === v ? 'nav-active' : 'text-slate-600'}`}>{v === 'month' ? 'ماه' : 'هفته'}</button>)}
         </div>
-        {can('Meetings.Create') && people?.canCreate && <button data-primary className="ms-auto flex items-center gap-1 rounded-2xl text-white px-5 py-2.5 text-sm font-semibold" style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))' }} onClick={() => setForm({})}><Plus size={16} /> جلسه جدید</button>}
+        {can('Meetings.Create') && people?.canCreate && <button data-primary className="ms-auto flex items-center gap-1 rounded-2xl text-white px-5 py-2.5 text-sm font-semibold" style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))' }} onClick={() => newOn(day < iso(new Date()) ? iso(new Date()) : day)}><Plus size={16} /> جلسه جدید</button>}
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
       {people && !people.canCreate && people.message && <p className="text-sm text-amber-700">{people.message}</p>}
-      <MonthCalendar cursor={cursor} view={view} meetings={list} holidays={holidays} canCreate={can('Meetings.Create') && !!people?.canCreate}
-        onEvent={(m) => setForm({ meeting: m })} onDay={newOn} />
-      {list.length === 0 && <p className="text-center text-sm text-slate-400">جلسه‌ای در این بازه نیست</p>}
+      {(() => {
+        const today = iso(new Date());
+        const past = day < today;
+        const hol = holidays.filter((h) => h.date.slice(0, 10) === day);
+        const off = new Date(`${day}T12:00:00Z`).getUTCDay() === 5 || hol.length > 0;
+        const mine = list.filter((m) => m.details.date.slice(0, 10) === day).sort((x, y) => x.details.startTime.localeCompare(y.details.startTime));
+        const canNew = can('Meetings.Create') && !!people?.canCreate && !past && !off;
+        return (
+          <div className="grid gap-4 min-[1000px]:grid-cols-[26rem_1fr] items-start">
+            <MonthCalendar cursor={cursor} view={view} meetings={list} holidays={holidays} selected={day} onSelect={(d) => { setDay(d); setCursor(noon(d)); }} />
+            <div className="card p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <h2 className="font-bold">{new Intl.DateTimeFormat('fa-IR', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' }).format(noon(day))}</h2>
+                {hol.map((h) => <span key={h.reason} className="text-xs rounded-full bg-red-50 text-red-700 px-2">{h.reason}</span>)}
+                {canNew && <button className="ms-auto flex items-center gap-1 rounded-xl bg-blue-600 text-white px-4 py-1.5 text-sm" onClick={() => newOn(day)}><Plus size={15} /> جلسه در این روز</button>}
+              </div>
+              {past && <p className="text-xs text-slate-400">برای روزهای گذشته جلسه‌ی جدید ثبت نمی‌شود.</p>}
+              {off && !past && <p className="text-xs text-slate-400">جمعه و روزهای تعطیل جلسه‌ی جدید نمی‌پذیرند.</p>}
+              <ul className="divide-y divide-slate-200">
+                {mine.map((m) => (
+                  <li key={m.id}>
+                    <button className="w-full text-start py-2.5 flex items-center gap-3 hover:bg-blue-50 rounded-lg px-2" onClick={() => setForm({ meeting: m })}>
+                      <span className="text-slate-500 text-xs w-24 shrink-0" dir="ltr">{m.details.startTime} – {m.details.endTime}</span>
+                      <span className="font-medium">{m.details.title}</span>
+                      {m.details.location && <span className="text-slate-400 text-xs">· {m.details.location}</span>}
+                      {m.details.actions.length > 0 && <span className="ms-auto text-xs text-slate-500">{m.details.actions.filter((a) => a.taskId).length.toLocaleString('fa-IR')}/{m.details.actions.length.toLocaleString('fa-IR')} اقدام وظیفه شد</span>}
+                    </button>
+                  </li>
+                ))}
+                {mine.length === 0 && <li className="py-8 text-center text-sm text-slate-400">جلسه‌ای در این روز نیست.</li>}
+              </ul>
+            </div>
+          </div>
+        );
+      })()}
       {form && people && me && (
         <MeetingForm meeting={form.meeting} people={people.people} initial={emptyMeeting(me.user.id, form.date ?? iso(new Date()))} onClose={() => setForm(null)} onSaved={() => { load(); if (!form.meeting) setForm(null); }} />
       )}

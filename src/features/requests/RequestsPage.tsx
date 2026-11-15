@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { requestsApi } from '../../api/tasks';
 import { PriorityLabel, RequestStatusLabel, type RequestCategory, type TaskRequest } from '../../api/types';
+import { Segmented, Select } from '../../ui/fields';
 
 // My requests + a form to send a new one. The category decides who it is routed to; urgent (High) may go to someone else.
 export function RequestsPage() {
@@ -28,13 +29,11 @@ export function RequestsPage() {
         <input className="w-full border rounded-lg px-3 py-2" placeholder="عنوان درخواست" value={title} onChange={(e) => setTitle(e.target.value)} />
         <textarea className="w-full border rounded-lg px-3 py-2" rows={2} placeholder="توضیحات" value={description} onChange={(e) => setDescription(e.target.value)} />
         <div className="flex gap-2">
-          <select className="border rounded-lg px-2 py-1.5 flex-1" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+          <Select className="border rounded-lg px-2 py-1.5 flex-1" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
             <option value="">بدون دسته</option>
             {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-          <select className="border rounded-lg px-2 py-1.5" value={priority} onChange={(e) => setPriority(Number(e.target.value))}>
-            {Object.entries(PriorityLabel).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-          </select>
+          </Select>
+          <Segmented value={priority} onChange={setPriority} options={[{ value: 0, label: 'کم' }, { value: 1, label: 'متوسط' }, { value: 2, label: 'زیاد' }]} />
           <button disabled={!title.trim()} className="rounded-lg bg-blue-600 text-white px-4 py-1.5 disabled:opacity-50">ارسال</button>
         </div>
       </form>

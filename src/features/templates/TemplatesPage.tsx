@@ -4,6 +4,7 @@ import { templatesApi } from '../../api/tasks';
 import { PriorityLabel, type TaskTemplate } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import { askConfirm } from '../../ui/dialog';
+import { Segmented } from '../../ui/fields';
 
 const lines = (s: string) => s.split('\n').map((x) => x.trim()).filter(Boolean);
 
@@ -51,7 +52,7 @@ export function TemplatesPage() {
           </div>
           <textarea className="w-full border rounded-lg px-2 py-1" rows={2} placeholder="توضیحات" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} />
           <div className="flex gap-2 items-center">
-            <select className="border rounded-lg px-2 py-1" value={f.priority} onChange={(e) => setF({ ...f, priority: Number(e.target.value) })}>{Object.entries(PriorityLabel).map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
+            <Segmented value={f.priority} onChange={(v) => setF({ ...f, priority: v })} options={[{ value: 0, label: 'کم' }, { value: 1, label: 'متوسط' }, { value: 2, label: 'زیاد' }]} />
             <label className="flex items-center gap-1">سررسید بعد از <input type="number" min={0} className="w-16 border rounded px-1" value={f.dueInDays} onChange={(e) => setF({ ...f, dueInDays: Number(e.target.value) })} /> روز</label>
             <label className="flex items-center gap-1"><input type="checkbox" checked={f.isProject} onChange={(e) => setF({ ...f, isProject: e.target.checked })} /> پروژه</label>
           </div>

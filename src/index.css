@@ -135,10 +135,7 @@ html[data-density="compact"] { --row-pad: .4rem; --radius: 12px; }
   .pri-dot::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-inline-end: .45rem; background: var(--c); }
   .avatar { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; margin-inline-end: .5rem; color: #fff; font-size: 11px; font-weight: 700; vertical-align: middle; box-shadow: 0 3px 8px rgba(0,0,0,.15); }
   .row-act { white-space: nowrap; }
-  .row-act > button, .row-act > a { transition: .2s; max-width: 0; opacity: 0; overflow: hidden; padding: 4px 0; display: inline-flex; vertical-align: middle; }
-  tr:hover .row-act > button, .row-act:focus-within > button { max-width: 34px; opacity: 1; padding: 4px; }
-  .row-act::after { content: '⋯'; font-size: 22px; color: var(--s400); line-height: 1; display: inline-block; vertical-align: middle; padding: 0 6px; }
-  tr:hover .row-act::after, .row-act:focus-within::after { display: none; }
+  .row-act > button, .row-act > a { padding: 4px; display: inline-flex; vertical-align: middle; }
   th[data-sort] { cursor: pointer; user-select: none; }
   th[data-sort="asc"]::after { content: ' ▲'; color: var(--primary); font-size: 10px; } th[data-sort="desc"]::after { content: ' ▼'; color: var(--primary); font-size: 10px; }
   tr[data-done="true"] { opacity: .6; } tr[data-done="true"] td.ttl { text-decoration: line-through; text-decoration-color: var(--secondary); text-decoration-thickness: 2px; }
@@ -156,7 +153,6 @@ html[data-density="compact"] { --row-pad: .4rem; --radius: 12px; }
   table.cards tbody tr { margin: .6rem 0; border-radius: 16px; padding: .6rem .8rem; box-shadow: 0 4px 16px rgba(60,50,160,.1); background: var(--surface); }
   table.cards td { display: flex; justify-content: space-between; align-items: center; padding: .35rem .1rem; border: 0; }
   table.cards td[data-label]::before { content: attr(data-label); color: var(--s400); font-size: .72rem; margin-inline-end: .8rem; }
-  table.cards .row-act > button { max-width: 34px; opacity: 1; padding: 4px; } table.cards .row-act::after { display: none; }
 }
 
 /* org chart as a tree: lines, rounded nodes, a gradient root */

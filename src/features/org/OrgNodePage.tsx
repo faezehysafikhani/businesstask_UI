@@ -9,6 +9,7 @@ import {
 } from '../../api/org';
 import { DateInput } from '../../ui/dates';
 import { askConfirm, askText } from '../../ui/dialog';
+import { Select } from '../../ui/fields';
 
 // One node (unit) of the chart: its name and type, when it exists (validity dates), its manager and
 // place, and its posts - who holds each, appointing someone, ending an appointment and its history.
@@ -165,10 +166,10 @@ export function OrgNodePage() {
             {canManagePosts && (
               <div className="flex flex-wrap items-end gap-2 pt-2 border-t">
                 <label className="flex-1 min-w-48">سمت
-                  <select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={newPost.positionId} onChange={(e) => setNewPost({ ...newPost, positionId: e.target.value })}>
+                  <Select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={newPost.positionId} onChange={(e) => setNewPost({ ...newPost, positionId: e.target.value })}>
                     <option value="">انتخاب سمت…</option>
                     {positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
-                  </select>
+                  </Select>
                 </label>
                 <label className="w-32">کد پست
                   <input className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" placeholder="خودکار" value={newPost.code} onChange={(e) => setNewPost({ ...newPost, code: e.target.value })} />
@@ -184,10 +185,10 @@ export function OrgNodePage() {
         <div className="space-y-4">
           <section className="bg-white rounded-xl border p-4 space-y-2 text-sm">
             <h2 className="font-medium">مدیر گره</h2>
-            <select className="w-full border rounded-lg px-2 py-1.5" value={form.managerUserId} disabled={!canAssign} onChange={(e) => setForm({ ...form, managerUserId: e.target.value })}>
+            <Select className="w-full border rounded-lg px-2 py-1.5" value={form.managerUserId} disabled={!canAssign} onChange={(e) => setForm({ ...form, managerUserId: e.target.value })}>
               <option value="">بدون مدیر</option>
               {people.map((p) => <option key={p.userId} value={p.userId}>{p.displayName} — {p.unitName || p.companyName}</option>)}
-            </select>
+            </Select>
             {canAssign && (
               <button className="rounded-lg border px-3 py-1.5" onClick={() => act(() => orgApi.setManager(node.id, { managerUserId: form.managerUserId || null, rowVersion: node.rowVersion }), 'مدیر گره ذخیره شد')}>ذخیره مدیر</button>
             )}
@@ -196,10 +197,10 @@ export function OrgNodePage() {
 
           <section className="bg-white rounded-xl border p-4 space-y-2 text-sm">
             <h2 className="font-medium">جای گره در چارت</h2>
-            <select className="w-full border rounded-lg px-2 py-1.5" value={form.parentNodeId} disabled={!canMove} onChange={(e) => setForm({ ...form, parentNodeId: e.target.value })}>
+            <Select className="w-full border rounded-lg px-2 py-1.5" value={form.parentNodeId} disabled={!canMove} onChange={(e) => setForm({ ...form, parentNodeId: e.target.value })}>
               <option value="">سطح اول شرکت</option>
               {companyNodes.map((n) => <option key={n.id} value={n.id}>{n.name}{n.nodeTypeName ? ` (${n.nodeTypeName})` : ''}</option>)}
-            </select>
+            </Select>
             {canMove && (
               <button className="rounded-lg border px-3 py-1.5" onClick={() => act(() => orgApi.move(node.id, { parentNodeId: form.parentNodeId || null, rowVersion: node.rowVersion }), 'جای گره ذخیره شد')}>جابه‌جایی</button>
             )}
@@ -249,10 +250,10 @@ function AppointDialog({ post, people, onClose, onDone }: { post: UnitPosition; 
     <Modal title={`انتصاب روی «${post.title}»${post.code ? ` (${post.code})` : ''}`} onClose={onClose}>
       <div className="space-y-3 text-sm">
         <label className="block">فرد
-          <select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={userId} onChange={(e) => setUserId(e.target.value)}>
+          <Select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={userId} onChange={(e) => setUserId(e.target.value)}>
             <option value="">انتخاب فرد…</option>
             {people.map((p) => <option key={p.userId} value={p.userId}>{p.displayName} — {p.unitName || p.companyName}</option>)}
-          </select>
+          </Select>
         </label>
         <label className="block">از تاریخ (خالی = همین حالا)
           <DateInput className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={startDate} onChange={(e) => setStartDate(e.target.value)} />

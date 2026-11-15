@@ -121,7 +121,7 @@ export async function api<T = void>(method: string, path: string, body?: unknown
     throw err;
   }
   // Reads that use POST (preview, check, analysis) are not changes: no "saved" message for them.
-  if (change && !/(preview|check|analy[sz]e|progress|for-projects|in-review|matrix)/.test(path)) {
+  if (change && !/(preview|check|analy[sz]e|progress|for-projects|in-review|matrix|sessions\/current)/.test(path)) {
     notify('success', method === 'DELETE' ? 'حذف شد' : method === 'PUT' ? 'ذخیره شد' : 'انجام شد');
   }
   if (r.status === 204) return undefined as T;
