@@ -1,10 +1,13 @@
 import { useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import type { Captcha, MfaChallenge, PendingSignIn } from '../api/types';
 import { useAuth } from './AuthContext';
 
 export function LoginPage() {
   const { login, completeLogin, completeMfa } = useAuth();
+  const nav = useNavigate();
+  const home = () => nav('/tasks', { replace: true }); // never back to the page the session left (it may be one this user cannot open)
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [captcha, setCaptcha] = useState<Captcha | null>(null);
@@ -21,13 +24,15 @@ export function LoginPage() {
   async function submit(e: FormEvent) {
     e.preventDefault(); setBusy(true); setError('');
     try {
-      if (mfa) { await completeMfa(mfa.challengeId, code.trim()); return; }
+      if (mfa) { await completeMfa(mfa.challengeId, code.trim()); home(); return; }
       if (pending) {
         // The host stopped the sign-in at its session limit: the chosen sessions are closed first.
         await completeLogin(pending.ticket, chosen);
+        home();
         return;
       }
       const result = await login(identifier.trim(), password, captcha ? { id: captcha.captchaId, answer: answer.trim() } : undefined);
+      if (!result.mfa && !result.pending) home();
       if (result.mfa) setMfa(result.mfa);
       if (result.pending) {
         setPending(result.pending);

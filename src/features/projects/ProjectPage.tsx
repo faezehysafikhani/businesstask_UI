@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { showJalali } from '../../ui/dates';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, Pencil, Plus, UserPlus } from 'lucide-react';
 import { Modal } from '../../ui/Modal';
@@ -106,8 +107,8 @@ export function ProjectPage() {
             <dl className="grid grid-cols-2 gap-y-1 text-xs">
               <dt className="text-slate-500">مدیر</dt><dd>{project.managerUserId ? nameOf.get(project.managerUserId) ?? '—' : '—'}</dd>
               <dt className="text-slate-500">مالک</dt><dd>{project.ownerUserId ? nameOf.get(project.ownerUserId) ?? '—' : '—'}</dd>
-              <dt className="text-slate-500">از تاریخ</dt><dd dir="ltr">{project.startDate ?? '—'}</dd>
-              <dt className="text-slate-500">تا تاریخ</dt><dd dir="ltr">{project.endDate ?? '—'}</dd>
+              <dt className="text-slate-500">از تاریخ</dt><dd dir="ltr">{project.startDate ? showJalali(project.startDate) : '—'}</dd>
+              <dt className="text-slate-500">تا تاریخ</dt><dd dir="ltr">{project.endDate ? showJalali(project.endDate) : '—'}</dd>
               <dt className="text-slate-500">هزینه</dt><dd dir="ltr">{project.cost ?? '—'}</dd>
             </dl>
             {project.goal && <div><div className="text-xs text-slate-500">هدف</div><p className="text-sm">{project.goal}</p></div>}

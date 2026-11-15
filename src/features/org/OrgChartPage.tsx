@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, CalendarRange, Users } from 'lucide-react';
 import { faDate, orgApi, type OrgChartCompany, type OrgChartUnit, type OrgCompany } from '../../api/org';
+import { DateInput } from '../../ui/dates';
 
 // The organization chart: companies, their units (nodes) and each node's posts and people, as it is
 // today or on a chosen day (a node with validity dates exists only in that range).
@@ -51,7 +52,7 @@ export function OrgChartPage() {
           </select>
         </label>
         <label className="block">نمودار در تاریخ
-          <input type="date" className="mt-1 block border rounded-lg px-2 py-1.5" dir="ltr" value={asOf} onChange={(e) => setAsOf(e.target.value)} />
+          <DateInput className="mt-1 block border rounded-lg px-2 py-1.5" dir="ltr" value={asOf} onChange={(e) => setAsOf(e.target.value)} />
         </label>
         {asOf && <button className="inline-flex items-center gap-1 text-xs underline self-center" onClick={() => setAsOf('')}><CalendarRange size={13} /> امروز</button>}
         {asOf && <span className="text-xs text-slate-500 self-center">فقط گره‌هایی که در این روز وجود دارند.</span>}

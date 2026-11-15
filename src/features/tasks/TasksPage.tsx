@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Archive, ArchiveRestore, CheckCircle2, CircleDashed, ClipboardList, ListTodo, Loader, Pencil, Play, Plus, SendHorizontal } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Archive, ArchiveRestore, Trash2, CheckCircle2, CircleDashed, ClipboardList, ListTodo, Loader, Pencil, Play, Plus, SendHorizontal } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
 import { tasksApi, timeApi } from '../../api/tasks';
-import { PriorityLabel, ReviewLabel, type Paged, type TaskListItem } from '../../api/types';
+import { PriorityLabel, ReviewLabel, type Paged, type TaskDetail, type TaskListItem } from '../../api/types';
 import { useStatuses, type StatusOption } from './useStatuses';
 import { TaskForm } from './TaskForm';
 import { PlanningModal } from './PlanningModal';
@@ -40,6 +41,8 @@ export function TasksPage() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [overKey, setOverKey] = useState<string | null>(null);
   const [confetti, setConfetti] = useState(false);
+  const [full, setFull] = useState<TaskDetail | null>(null);
+  const [params, setParams] = useSearchParams();
 
   const load = useCallback(() => {
     tasksApi.list({ pageNumber: 1, pageSize: 200, search: search || undefined, archived }).then(setData).catch((e) => setError(e.message));
@@ -61,6 +64,15 @@ export function TasksPage() {
     try { await fn(); load(); } catch (e) { setError((e as Error).message); }
   }
 
+  // The panel shows the whole task (status, priority, sub-tasks); ?open=<id> opens it from a link.
+  useEffect(() => { setFull(null); if (detail) tasksApi.get(detail.id).then(setFull).catch(() => {}); }, [detail]);
+  const openId = params.get('open');
+  useEffect(() => {
+    if (!openId) return;
+    const found = data?.items.find((t) => t.id === openId);
+    if (found) { setDetail(found); setParams({}, { replace: true }); return; }
+    if (data) tasksApi.get(openId).then((t) => { setDetail({ ...t, subTaskCount: t.subTasks?.length ?? 0, completedSubTaskCount: t.subTasks?.filter((s) => s.isDone).length ?? 0 } as TaskListItem); setParams({}, { replace: true }); }).catch(() => setParams({}, { replace: true }));
+  }, [openId, data, setParams]);
   const all = data?.items ?? [];
   const uid = me?.user.id;
   const counts = useMemo(() => ({
@@ -112,7 +124,8 @@ export function TasksPage() {
         {can('Tasks.Edit') && !archived && t.status !== 3 && t.reviewStatus !== 1 && <button title="ارسال برای بازبینی" aria-label="ارسال برای بازبینی" onClick={() => { const c = prompt('توضیح برای بازبین (اختیاری)'); if (c !== null) act(() => tasksApi.submitReview(t.id, c || undefined)); }} className={cls('hover:text-purple-600')}><SendHorizontal size={16} />{big && 'بازبینی'}</button>}
         {can('Tasks.Edit') && !archived && <button title="ویرایش" aria-label="ویرایش" onClick={() => { setDetail(null); setForm({ id: t.id }); }} className={cls('hover:text-blue-600')}><Pencil size={16} />{big && 'ویرایش'}</button>}
         {can('Tasks.Edit') && (archived
-          ? <button title="بازیابی" aria-label="بازیابی" onClick={() => act(() => tasksApi.restore(t.id))} className={cls('hover:text-green-600')}><ArchiveRestore size={16} />{big && 'بازیابی'}</button>
+          ? <><button title="بازیابی" aria-label="بازیابی" onClick={() => { setDetail(null); act(() => tasksApi.restore(t.id)); }} className={cls('hover:text-green-600')}><ArchiveRestore size={16} />{big && 'بازیابی'}</button>
+            <button title="حذف" aria-label="حذف" onClick={() => confirm('این وظیفه برای همیشه حذف شود؟') && (setDetail(null), act(() => tasksApi.remove(t.id)))} className={cls('hover:text-red-600')}><Trash2 size={16} />{big && 'حذف'}</button></>
           : <button title="بایگانی" aria-label="بایگانی" onClick={() => confirm('این وظیفه بایگانی شود؟') && act(() => tasksApi.archive(t.id))} className={cls('hover:text-amber-600')}><Archive size={16} />{big && 'بایگانی'}</button>)}
       </>
     );
@@ -265,12 +278,20 @@ export function TasksPage() {
       {detail && (
         <Drawer title={detail.title} onClose={() => setDetail(null)}>
           <dl className="text-sm">
-            {([['وضعیت', statuses.options.find((o: StatusOption) => o.key === statuses.keyOf(detail.status, detail.customStatusId))?.label ?? '—'],
-              ['اولویت', PriorityLabel[detail.priority]], ['سررسید', new Date(detail.dueDate).toLocaleDateString('fa-IR')],
-              ['مسئول', detail.assignedUser?.displayName ?? '—'], ['زیروظیفه', `${detail.completedSubTaskCount.toLocaleString('fa-IR')} از ${detail.subTaskCount.toLocaleString('fa-IR')}`]] as [string, string][]).map(([k, v]) => (
+            {([['وضعیت', statuses.options.find((o: StatusOption) => o.key === statuses.keyOf((full ?? detail).status, (full ?? detail).customStatusId))?.label ?? '—'],
+              ['اولویت', PriorityLabel[(full ?? detail).priority] ?? '—'], ['سررسید', new Date(detail.dueDate).toLocaleDateString('fa-IR')],
+              ['مسئول', detail.assignedUser?.displayName ?? '—']] as [string, string][]).map(([k, v]) => (
               <div key={k} className="flex justify-between py-2.5 border-b border-slate-200"><dt className="text-slate-500">{k}</dt><dd>{v}</dd></div>
             ))}
           </dl>
+          {full?.description && <p className="text-sm text-slate-600 mt-3 whitespace-pre-wrap">{full.description}</p>}
+          <div className="mt-4 text-sm">
+            <div className="text-slate-500 mb-1">زیروظیفه‌ها ({(full?.subTasks?.filter((x) => x.isDone || x.status === 3).length ?? detail.completedSubTaskCount).toLocaleString('fa-IR')} از {(full?.subTasks?.length ?? detail.subTaskCount).toLocaleString('fa-IR')})</div>
+            <ul className="space-y-1">
+              {full?.subTasks?.map((x) => <li key={x.id} className="flex items-center gap-2"><span>{x.isDone || x.status === 3 ? '☑' : '☐'}</span><span className={x.isDone || x.status === 3 ? 'line-through text-slate-400' : ''}>{x.title}</span></li>)}
+              {full && !full.subTasks?.length && <li className="text-slate-400">زیروظیفه‌ای نیست.</li>}
+            </ul>
+          </div>
           <div className="flex flex-wrap gap-2 mt-5"><Actions t={detail} big /></div>
         </Drawer>
       )}

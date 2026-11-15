@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 /** A panel from the edge: shows a record without leaving the page. */
@@ -8,7 +9,8 @@ export function Drawer({ title, onClose, children }: { title: string; onClose: (
     window.addEventListener('keydown', k);
     return () => window.removeEventListener('keydown', k);
   }, [onClose]);
-  return (
+  // In the body, so the page's own transforms cannot cut the panel to the height of the content.
+  return createPortal(
     <>
       <div className="fixed inset-0 z-[74] backdrop" onClick={onClose} />
       <aside className="drawer" role="dialog" aria-label={title}>
@@ -16,6 +18,7 @@ export function Drawer({ title, onClose, children }: { title: string; onClose: (
         <h3 className="text-lg font-bold mt-2 mb-4 pe-8">{title}</h3>
         {children}
       </aside>
-    </>
+    </>,
+    document.body,
   );
 }

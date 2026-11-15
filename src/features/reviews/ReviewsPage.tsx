@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Check, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { TASK_REVIEW, TIMESHEET, tasksApi, timeApi, workflowApi } from '../../api/tasks';
 import { fmtMinutes, type ReviewItem, type TimesheetReviewItem, type WorkflowInstance } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
@@ -17,7 +18,14 @@ export function ReviewsPage() {
       const all = await workflowApi.pending();
       const pending = all.filter((i) => i.subjectType === TASK_REVIEW);
       const sheetsPending = all.filter((i) => i.subjectType === TIMESHEET);
-      const tasks = pending.length ? await tasksApi.inReview(pending.map((i) => i.subjectId)) : [];
+      const tasks: ReviewItem[] = pending.length ? await tasksApi.inReview(pending.map((i) => i.subjectId)) : [];
+      // A task the review list did not return (moved, archived) is read on its own, so the row still says which task it is.
+      for (const i of pending) {
+        if (!tasks.some((t) => t.id === i.subjectId)) {
+          const t = await tasksApi.get(i.subjectId).catch(() => null);
+          if (t) tasks.push({ id: t.id, title: t.title, dueDate: t.dueDate });
+        }
+      }
       const sheets = sheetsPending.length ? await timeApi.inReview(sheetsPending.map((i) => i.subjectId)) : [];
       setRows([
         ...pending.map((instance) => ({ instance, task: tasks.find((t) => t.id === instance.subjectId) })),
@@ -37,11 +45,12 @@ export function ReviewsPage() {
     <div className="space-y-4 max-w-3xl">
       <h1 className="text-xl font-bold">بازبینی‌های من</h1>
       {error && <p className="text-sm text-red-600">{error}</p>}
+      {!loaded && <div className="space-y-2">{[0, 1, 2].map((i) => <div key={i} className="skel h-20" />)}</div>}
       <ul className="space-y-2">
         {rows.map(({ instance, task, sheet }) => (
           <li key={instance.id} className="bg-white rounded-xl border p-3 space-y-2 text-sm">
             <div className="flex items-center gap-2">
-              <span className="font-medium">{sheet ? `ساعت کاری ${sheet.user?.displayName ?? ''}` : (task?.title ?? 'وظیفه')}</span>
+              <span className="font-medium">{sheet ? `ساعت کاری ${sheet.user?.displayName ?? ''}` : task ? <Link className="hover:text-blue-700 underline" to={`/tasks?open=${task.id}`}>{task.title}</Link> : 'وظیفه (دیگر در دسترس نیست)'}</span>
               {sheet && <span className="text-slate-500">هفته از {new Date(sheet.weekStart).toLocaleDateString('fa-IR')} · <b dir="ltr">{fmtMinutes(sheet.totalMinutes)}</b></span>}
               {task?.dueDate && <span className="text-slate-400">سررسید {new Date(task.dueDate).toLocaleDateString('fa-IR')}</span>}
               <span className="ms-auto text-xs text-slate-400">مرحله {instance.currentStepOrder} از {instance.totalSteps}</span>

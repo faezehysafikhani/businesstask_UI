@@ -7,6 +7,7 @@ import {
   dayOf, faDate, isoDay, isoStart, orgApi,
   type Appointment, type NodePathItem, type OrgNode, type OrgNodeType, type OrgPosition, type UnitPosition, type UserAssignment,
 } from '../../api/org';
+import { DateInput } from '../../ui/dates';
 
 // One node (unit) of the chart: its name and type, when it exists (validity dates), its manager and
 // place, and its posts - who holds each, appointing someone, ending an appointment and its history.
@@ -122,8 +123,8 @@ export function OrgNodePage() {
             <h2 className="font-medium inline-flex items-center gap-1"><CalendarClock size={15} /> تاریخ اعتبار</h2>
             <p className="text-xs text-slate-500">از چه روزی تا چه روزی این گره وجود دارد؛ خالی یعنی بدون محدودیت. این تاریخ‌ها فقط نمودار همان روز را محدود می‌کنند.</p>
             <div className="grid grid-cols-2 gap-2">
-              <label>از تاریخ<input type="date" className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={form.validFrom} disabled={!canEdit} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} /></label>
-              <label>تا تاریخ<input type="date" className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={form.validTo} disabled={!canEdit} onChange={(e) => setForm({ ...form, validTo: e.target.value })} /></label>
+              <label>از تاریخ<DateInput className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={form.validFrom} disabled={!canEdit} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} /></label>
+              <label>تا تاریخ<DateInput className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={form.validTo} disabled={!canEdit} onChange={(e) => setForm({ ...form, validTo: e.target.value })} /></label>
             </div>
             <div className="text-xs text-slate-500">
               ذخیره‌شده: از {faDate(node.validFrom)} تا {faDate(node.validTo)}
@@ -253,9 +254,9 @@ function AppointDialog({ post, people, onClose, onDone }: { post: UnitPosition; 
           </select>
         </label>
         <label className="block">از تاریخ (خالی = همین حالا)
-          <input type="date" className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          <DateInput className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
         </label>
-        {people.length === 0 && <p className="text-xs text-amber-700">فردی در این شرکت جایگاه ندارد؛ اول جایگاه افراد را ثبت کنید.</p>}
+        {people.length === 0 && <p className="text-xs text-amber-700">فردی در این شرکت جایگاه ندارد؛ اول از صفحه‌ی <Link to="/organization/people" className="underline">جایگاه افراد</Link> با «ثبت جایگاه فرد» او را به شرکت اضافه کنید.</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}
         <div className="flex justify-end gap-2">
           <button className="rounded-lg border px-4 py-1.5" onClick={onClose}>انصراف</button>

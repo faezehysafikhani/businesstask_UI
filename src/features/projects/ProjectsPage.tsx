@@ -12,6 +12,7 @@ import {
   APPROVAL_STATUS_LABEL, PROJECT_STATUS_LABEL, PROJECT_TYPE_LABEL,
   projectsApi, type Project, type ProjectInput,
 } from '../../api/projects';
+import { DateInput, showJalali } from '../../ui/dates';
 
 const STATUSES = ['Draft', 'Active', 'OnHold', 'Completed'];
 const TYPES = ['Waterfall', 'Agile'];
@@ -130,7 +131,7 @@ export function ProjectsPage() {
                   <td className="p-3 text-slate-600" data-label="وضعیت">{PROJECT_STATUS_LABEL[row.status] ?? row.status}</td>
                   <td className="p-3 text-slate-600" data-label="مدیر">{row.managerUserId ? nameOf.get(row.managerUserId) ?? '—' : '—'}</td>
                   <td className="p-3 text-xs text-slate-500" data-label="زمان">
-                    {row.startDate ?? '—'} تا {row.endDate ?? '—'}
+                    {row.startDate ? showJalali(row.startDate) : '—'} تا {row.endDate ? showJalali(row.endDate) : '—'}
                   </td>
                   <td className="p-3">
                     <div className="flex flex-wrap justify-end gap-3 text-xs whitespace-nowrap">
@@ -230,10 +231,10 @@ function ProjectForm({ project, users, onClose, onSaved }: {
             <input type="number" className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={form.cost ?? ''} onChange={(e) => set({ cost: e.target.value ? Number(e.target.value) : null })} />
           </label>
           <label className="block">از تاریخ
-            <input type="date" className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={form.startDate ?? ''} onChange={(e) => set({ startDate: e.target.value || null })} />
+            <DateInput className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={form.startDate ?? ''} onChange={(e) => set({ startDate: e.target.value || null })} />
           </label>
           <label className="block">تا تاریخ
-            <input type="date" className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={form.endDate ?? ''} onChange={(e) => set({ endDate: e.target.value || null })} />
+            <DateInput className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={form.endDate ?? ''} onChange={(e) => set({ endDate: e.target.value || null })} />
           </label>
         </div>
         <label className="block">هدف

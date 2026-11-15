@@ -5,6 +5,7 @@ import { meetingsApi } from '../../api/tasks';
 import type { Meeting, MeetingInput, MeetingPerson } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import { Modal } from '../../ui/Modal';
+import { DateInput, TimeInput } from '../../ui/dates';
 
 const TYPES: Record<string, string> = { meeting: 'جلسه', online: 'آنلاین', committee: 'کمیته' };
 export const emptyMeeting = (organizerUserId: string, date: string): MeetingInput => ({
@@ -44,9 +45,9 @@ export function MeetingForm({ meeting, people, initial, onClose, onSaved }: { me
         <input className="w-full border rounded-lg px-3 py-2" placeholder="عنوان" disabled={!editable} value={m.title} onChange={(e) => set('title', e.target.value)} />
         <div className="flex flex-wrap gap-2">
           <select className="border rounded-lg px-2 py-1" disabled={!editable} value={m.type} onChange={(e) => set('type', e.target.value)}>{Object.entries(TYPES).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
-          <input type="date" className="border rounded-lg px-2 py-1" disabled={!editable} value={m.date} onChange={(e) => set('date', e.target.value)} />
-          <input type="time" className="border rounded-lg px-2 py-1" disabled={!editable} value={m.startTime} onChange={(e) => set('startTime', e.target.value)} />
-          <input type="time" className="border rounded-lg px-2 py-1" disabled={!editable} value={m.endTime} onChange={(e) => set('endTime', e.target.value)} />
+          <DateInput className="border rounded-lg px-2 py-1" disabled={!editable} value={m.date} onChange={(e) => set('date', e.target.value)} />
+          <TimeInput className="border rounded-lg px-2 py-1" disabled={!editable} value={m.startTime} onChange={(e) => set('startTime', e.target.value)} />
+          <TimeInput className="border rounded-lg px-2 py-1" disabled={!editable} value={m.endTime} onChange={(e) => set('endTime', e.target.value)} />
           <input className="flex-1 min-w-32 border rounded-lg px-2 py-1" placeholder="مکان" disabled={!editable} value={m.location ?? ''} onChange={(e) => set('location', e.target.value)} />
         </div>
         <label className="block">برگزارکننده
@@ -71,7 +72,7 @@ export function MeetingForm({ meeting, people, initial, onClose, onSaved }: { me
             <div key={i} className="flex flex-wrap items-center gap-2 border rounded-lg p-2">
               <input className="flex-1 min-w-40 border rounded-lg px-2 py-1" disabled={!editable || !!a.taskId} value={a.title} placeholder="اقدام" onChange={(e) => set('actions', m.actions.map((x, j) => j === i ? { ...x, title: e.target.value } : x))} />
               <select className="border rounded-lg px-2 py-1" disabled={!editable || !!a.taskId} value={a.assigneeUserId ?? ''} onChange={(e) => set('actions', m.actions.map((x, j) => j === i ? { ...x, assigneeUserId: e.target.value || null } : x))}><option value="">مسئول…</option>{people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
-              <input type="date" className="border rounded-lg px-2 py-1" disabled={!editable || !!a.taskId} value={a.dueDate ?? ''} onChange={(e) => set('actions', m.actions.map((x, j) => j === i ? { ...x, dueDate: e.target.value || null } : x))} />
+              <DateInput className="border rounded-lg px-2 py-1" disabled={!editable || !!a.taskId} value={a.dueDate ?? ''} onChange={(e) => set('actions', m.actions.map((x, j) => j === i ? { ...x, dueDate: e.target.value || null } : x))} />
               {a.taskId ? <span className="text-xs text-green-700">وظیفه شد ({name(a.assigneeUserId)})</span>
                 : meeting && editable && can('Tasks.Create') && a.title.trim() ? <button type="button" title="تبدیل به وظیفه" className="flex items-center gap-1 text-xs border rounded-lg px-2 py-1 hover:bg-slate-50" onClick={() => convert(i)}><ArrowRightCircle size={14} /> وظیفه</button> : null}
               {editable && !a.taskId && <button type="button" className="p-1 hover:text-red-600" onClick={() => set('actions', m.actions.filter((_, j) => j !== i))}><Trash2 size={14} /></button>}
@@ -85,6 +86,7 @@ export function MeetingForm({ meeting, people, initial, onClose, onSaved }: { me
         {msg && <p className="text-green-700">{msg}</p>}
         {error && <p className="text-red-600">{error}</p>}
         {editable && <button disabled={!m.title.trim()} className="w-full rounded-lg bg-blue-600 text-white py-2 disabled:opacity-50">ذخیره</button>}
+        {meeting?.canDelete && <button type="button" className="w-full rounded-lg border border-red-200 text-red-600 py-2" onClick={() => confirm('این جلسه حذف شود؟') && meetingsApi.remove(meeting.id, meeting.version).then(() => { onSaved(); onClose(); }).catch((e) => setError((e as Error).message))}>حذف جلسه</button>}
       </form>
     </Modal>
   );

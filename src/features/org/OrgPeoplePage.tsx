@@ -9,6 +9,9 @@ import {
   faDate, isoStart, orgApi,
   type Appointment, type OffboardResult, type OrgCompany, type TransferResult, type UserAssignment,
 } from '../../api/org';
+import { DateInput } from '../../ui/dates';
+import { listUsers } from '../../api/tasks';
+import type { OrgNode, OrgPosition } from '../../api/org';
 
 // The people's places: each person's company, unit, position, manager and every post they hold -
 // with leaving the organization (posts freed or handed to a successor) and moving posts to someone.
@@ -21,6 +24,7 @@ export function OrgPeoplePage() {
   const [rows, setRows] = useState<UserAssignment[]>([]);
   const [query, setQuery] = useState('');
   const [dialog, setDialog] = useState<{ kind: 'offboard' | 'transfer' | 'history'; person: UserAssignment } | null>(null);
+  const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -54,7 +58,8 @@ export function OrgPeoplePage() {
           <h1 className="text-2xl font-bold">جایگاه افراد</h1>
           <p className="text-xs text-slate-500 mt-1">شرکت، واحد، سمت و مدیر هر فرد و همه‌ی پست‌هایی که دارد؛ خروج از سازمان و انتقال پست‌ها از همین‌جا.</p>
         </div>
-        <Link to="/organization" className="ms-auto inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50"><ArrowRight size={15} /> چارت سازمانی</Link>
+        {canManage && <button data-primary onClick={() => setAdding(true)} className="ms-auto rounded-2xl bg-blue-600 text-white px-5 py-2.5 text-sm font-semibold">+ ثبت جایگاه فرد</button>}
+        <Link to="/organization" className="ms-2 inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50"><ArrowRight size={15} /> چارت سازمانی</Link>
       </div>
 
       <div className="flex flex-wrap items-end gap-3 bg-white rounded-xl border p-3 text-sm">
@@ -118,6 +123,7 @@ export function OrgPeoplePage() {
         </div>
       )}
 
+      {adding && <AddPersonDialog companies={companies} placed={new Set(rows.map((r) => r.userId))} defaultCompany={companyId} onClose={() => setAdding(false)} onDone={() => { setAdding(false); load(); }} />}
       {dialog?.kind === 'offboard' && (
         <OffboardDialog person={dialog.person} people={rows} companies={companies}
           onClose={() => setDialog(null)} onDone={() => { setDialog(null); load(); }} />
@@ -242,7 +248,7 @@ function TransferDialog({ person, people, onClose, onDone }: { person: UserAssig
               </select>
             </label>
             <label className="block">از تاریخ (خالی = همین حالا)
-              <input type="date" className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={date} onChange={(e) => setDate(e.target.value)} />
+              <DateInput className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={date} onChange={(e) => setDate(e.target.value)} />
             </label>
 
             <div className="space-y-1">
@@ -295,6 +301,49 @@ function PersonHistoryDialog({ person, onClose }: { person: UserAssignment; onCl
           {rows?.length === 0 && <li className="py-4 text-center text-slate-400">انتصابی ثبت نشده است.</li>}
         </ul>
         <div className="flex justify-end"><button className="rounded-lg border px-4 py-1.5" onClick={onClose}>بستن</button></div>
+      </div>
+    </Modal>
+  );
+}
+
+// Puts a person in the organization: the company they belong to, their unit and position, and their manager.
+function AddPersonDialog({ companies, placed, defaultCompany, onClose, onDone }: { companies: OrgCompany[]; placed: Set<string>; defaultCompany: string; onClose: () => void; onDone: () => void }) {
+  const [users, setUsers] = useState<{ id: string; displayName: string }[]>([]);
+  const [nodes, setNodes] = useState<OrgNode[]>([]);
+  const [positions, setPositions] = useState<OrgPosition[]>([]);
+  const [unplaced, setUnplaced] = useState<{ id: string; displayName: string }[] | null>(null);
+  const [f, setF] = useState({ userId: '', companyId: defaultCompany || companies[0]?.id || '', unitId: '', positionId: '', managerUserId: '' });
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { listUsers().then(setUsers).catch(() => {}); orgApi.unplaced().then(setUnplaced).catch((e: Error) => setError(e.message)); orgApi.positions().then(setPositions).catch(() => {}); }, []);
+  useEffect(() => { if (f.companyId) orgApi.nodes(f.companyId).then(setNodes).catch(() => setNodes([])); }, [f.companyId]);
+  const free = unplaced ?? users.filter((u) => !placed.has(u.id));
+  const managers = users.length ? users : free;
+  async function submit() {
+    setBusy(true); setError('');
+    try {
+      await orgApi.setAssignment(f.userId, { companyId: f.companyId, unitId: f.unitId || null, positionId: f.positionId || null, managerUserId: f.managerUserId || null });
+      onDone();
+    } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
+  }
+  const sel = 'mt-1 w-full border rounded-lg px-2 py-1.5';
+  return (
+    <Modal title="ثبت جایگاه فرد" onClose={onClose}>
+      <div className="space-y-3 text-sm">
+        <label className="block">فرد<select className={sel} value={f.userId} onChange={(e) => setF({ ...f, userId: e.target.value })}>
+          <option value="">انتخاب…</option>{free.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}</select></label>
+        {free.length === 0 && <p className="text-xs text-slate-500">همه‌ی کاربران جایگاه دارند، یا فهرست کاربران در دسترس نیست.</p>}
+        <label className="block">شرکت<select className={sel} value={f.companyId} onChange={(e) => setF({ ...f, companyId: e.target.value, unitId: '' })}>
+          {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+        <label className="block">واحد (اختیاری)<select className={sel} value={f.unitId} onChange={(e) => setF({ ...f, unitId: e.target.value })}>
+          <option value="">مستقیم در شرکت</option>{nodes.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}</select></label>
+        <label className="block">سمت (اختیاری)<select className={sel} value={f.positionId} onChange={(e) => setF({ ...f, positionId: e.target.value })}>
+          <option value="">بدون سمت</option>{positions.filter((p) => p.isActive).map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select></label>
+        <label className="block">مدیر (اختیاری)<select className={sel} value={f.managerUserId} onChange={(e) => setF({ ...f, managerUserId: e.target.value })}>
+          <option value="">بدون مدیر</option>{managers.filter((u) => u.id !== f.userId).map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}</select></label>
+        {error && <p className="text-red-600">{error}</p>}
+        <div className="flex justify-end gap-2"><button className="rounded-lg border px-4 py-1.5" onClick={onClose}>انصراف</button>
+          <button className="rounded-lg bg-blue-600 text-white px-4 py-1.5 disabled:opacity-50" disabled={!f.userId || !f.companyId || busy} onClick={submit}>ثبت</button></div>
       </div>
     </Modal>
   );

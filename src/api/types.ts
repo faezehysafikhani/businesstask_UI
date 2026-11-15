@@ -80,4 +80,7 @@ export interface TaskListItem {
 export interface TaskDetail {
   id: string; title: string; description?: string | null; isProject: boolean; status: number; priority: number;
   dueDate: string; assignedUser?: UserSummary | null; rowVersion?: string | null; archivedAtUtc?: string | null; customStatusId?: string | null;
+  dueTime?: string | null; assignees?: UserSummary[]; allowAssigneeStatusUpdate?: boolean; responsibleUsers?: UserSummary[] | null;
+  charterDescription?: string | null; charterProjectManager?: string | null; charterStartDate?: string | null; charterEndDate?: string | null;
+  subTasks?: { id: string; title: string; status: number; isDone?: boolean }[]; reviewStatus?: number; reviewComment?: string | null;
 }

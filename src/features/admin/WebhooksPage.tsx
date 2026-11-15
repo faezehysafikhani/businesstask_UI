@@ -31,13 +31,14 @@ export function WebhooksPage() {
       <ul className="bg-white rounded-xl border divide-y text-sm">
         {list.map((w) => (
           <li key={w.id} className="p-3 space-y-1">
-            <div className="flex items-center gap-2"><span className={`font-medium ${w.isActive ? '' : 'line-through text-slate-400'}`}>{w.name}</span>
+            <div className="flex items-center gap-2"><span className={`font-medium ${w.isActive && w.consecutiveFailures < 30 ? '' : 'line-through text-slate-400'}`}>{w.name}</span>
               <span className="text-xs text-slate-400" dir="ltr">{w.url}</span>
-              {w.consecutiveFailures > 0 && <span className="text-xs text-red-600">{w.consecutiveFailures} شکست پیاپی</span>}
+              {w.consecutiveFailures > 0 && <span className="text-xs text-red-600">{w.consecutiveFailures.toLocaleString('fa-IR')} شکست پیاپی</span>}
+              {w.consecutiveFailures >= 30 && <span className="text-xs rounded-full bg-red-50 text-red-700 px-2">بعد از ۳۰ شکست خودکار غیرفعال شد؛ پس از رفع مشکل «فعال» را بزنید</span>}
               <button title="حذف" className="ms-auto p-1 hover:text-red-600" onClick={() => confirm('حذف شود؟') && act(() => webhooksApi.remove(w.id))}><Trash2 size={16} /></button></div>
             <div className="text-xs text-slate-500">{w.events[0] === '*' ? 'همه رویدادها' : w.events.map((e) => EVENT_LABEL[e] ?? e).join('، ')}</div>
             <div className="flex gap-3 text-xs">
-              <button className="underline" onClick={() => act(() => webhooksApi.update(w.id, { name: w.name, url: w.url, events: w.events, isActive: !w.isActive }))}>{w.isActive ? 'غیرفعال' : 'فعال'}</button>
+              <button className="underline" onClick={() => act(() => webhooksApi.update(w.id, { name: w.name, url: w.url, events: w.events, isActive: !(w.isActive && w.consecutiveFailures < 30) }))}>{w.isActive && w.consecutiveFailures < 30 ? 'غیرفعال' : 'فعال'}</button>
               <button className="underline" onClick={() => act(() => webhooksApi.ping(w.id))}>ارسال آزمایشی</button>
               <button className="underline" onClick={() => confirm('کلید قبلی از کار می‌افتد. ادامه؟') && act(async () => { const r = await webhooksApi.rotate(w.id); setSecret({ name: w.name, value: r.secret }); })}>کلید جدید</button>
               <button className="underline" onClick={() => webhooksApi.deliveries(w.id).then((rows) => setOpen(open?.id === w.id ? null : { id: w.id, rows })).catch((e) => setError(e.message))}>گزارش ارسال</button>

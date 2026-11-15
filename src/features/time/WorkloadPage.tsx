@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ClipboardList, Clock, Users } from 'lucide-react';
 import { timeApi } from '../../api/tasks';
 import { fmtMinutes, type Workload } from '../../api/types';
+import { DateInput, showJalali } from '../../ui/dates';
 
 // Per person: logged time + estimate still left against the capacity of the range (44 hours a week unless changed).
 export function WorkloadPage() {
@@ -17,11 +18,11 @@ export function WorkloadPage() {
     <div className="space-y-4 max-w-5xl">
       <h1 className="text-xl font-bold">بار کاری</h1>
       <div className="flex flex-wrap gap-2 items-center text-sm">
-        از <input type="date" className="border rounded-lg px-2 py-1" value={from} onChange={(e) => setFrom(e.target.value)} />
-        تا <input type="date" className="border rounded-lg px-2 py-1" value={to} onChange={(e) => setTo(e.target.value)} />
+        از <DateInput className="border rounded-lg px-2 py-1" value={from} onChange={(e) => setFrom(e.target.value)} />
+        تا <DateInput className="border rounded-lg px-2 py-1" value={to} onChange={(e) => setTo(e.target.value)} />
         ظرفیت هفتگی <input type="number" className="w-16 border rounded-lg px-2 py-1" value={hours} onChange={(e) => setHours(e.target.value)} /> ساعت
         <button className="rounded-lg bg-blue-600 text-white px-3 py-1" onClick={load}>نمایش</button>
-        {w && <span className="text-slate-500">{w.from} تا {w.to}</span>}
+        {w && <span className="text-slate-500">{showJalali(w.from)} تا {showJalali(w.to)}</span>}
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
       {w && (

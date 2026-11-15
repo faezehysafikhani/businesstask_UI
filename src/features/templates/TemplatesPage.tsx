@@ -8,7 +8,7 @@ const lines = (s: string) => s.split('\n').map((x) => x.trim()).filter(Boolean);
 
 // Task and project templates: make a task from one, or define a new one.
 export function TemplatesPage() {
-  const { can } = useAuth();
+  const { can, me } = useAuth();
   const [list, setList] = useState<TaskTemplate[]>([]);
   const [f, setF] = useState({ name: '', title: '', description: '', priority: 1, isProject: false, dueInDays: 7, subTasks: '', criteria: '', tags: '' });
   const [msg, setMsg] = useState('');
@@ -35,7 +35,7 @@ export function TemplatesPage() {
           <li key={t.id} className="p-3 flex items-center gap-3">
             <div><div className="font-medium">{t.name}{t.isProject && <span className="ms-2 text-xs text-purple-600">پروژه</span>}</div>
               <div className="text-xs text-slate-500">{t.body.title} · {PriorityLabel[t.body.priority]} · {t.body.subTasks.length} زیرکار · {t.body.criteria.length} معیار</div></div>
-            {can('Tasks.Create') && <button className="ms-auto rounded-lg bg-blue-600 text-white px-3 py-1" onClick={() => act(() => templatesApi.instantiate(t.id, {}), 'ساخته شد؛ در لیست وظایف است')}>ساخت از قالب</button>}
+            {can('Tasks.Create') && <button className="ms-auto rounded-lg bg-blue-600 text-white px-3 py-1" onClick={() => act(() => templatesApi.instantiate(t.id, { assignedUserId: me?.user.id }), 'وظیفه از قالب ساخته شد؛ در لیست وظایف است')}>ساخت از قالب</button>}
             {can('Tasks.ManageTemplates') && <button title="حذف" className="p-1 hover:text-red-600" onClick={() => confirm('حذف شود؟') && act(() => templatesApi.remove(t.id))}><Trash2 size={16} /></button>}
           </li>
         ))}

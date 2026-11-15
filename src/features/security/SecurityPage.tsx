@@ -11,6 +11,9 @@ export function SecurityPage() {
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [msg, setMsg] = useState('');
+  const [pw, setPw] = useState({ current: '', next: '', again: '' });
+  const [pwMsg, setPwMsg] = useState('');
+  const [pwError, setPwError] = useState('');
   const [error, setError] = useState('');
 
   async function act(fn: () => Promise<void>) { setError(''); setMsg(''); try { await fn(); } catch (e) { setError(e instanceof ApiError ? e.message : 'خطا'); } }
@@ -42,6 +45,21 @@ export function SecurityPage() {
         {error && <p className="text-red-600">{error}</p>}
         <p className="text-xs text-slate-400">اگر گوشی‌تان را گم کردید، مدیر سامانه می‌تواند این گزینه را برایتان بازنشانی کند.</p>
       </div>
+      <form className="bg-white rounded-xl border p-4 space-y-2 text-sm" onSubmit={async (e) => {
+        e.preventDefault(); setPwMsg(''); setPwError('');
+        if (pw.next !== pw.again) { setPwError('رمز جدید و تکرار آن یکی نیستند.'); return; }
+        try { await api('PUT', '/api/identity/auth/me/password', { currentPassword: pw.current, newPassword: pw.next }); setPw({ current: '', next: '', again: '' }); setPwMsg('رمز عبور تغییر کرد.'); }
+        catch (x) { setPwError(x instanceof ApiError ? x.message : 'خطا'); }
+      }}>
+        <h2 className="font-medium">تغییر رمز عبور</h2>
+        {(['current', 'next', 'again'] as const).map((k) => (
+          <input key={k} type="password" autoComplete="new-password" dir="ltr" className="block w-full border rounded-lg px-3 py-1.5" value={pw[k]} onChange={(e) => setPw({ ...pw, [k]: e.target.value })}
+            placeholder={k === 'current' ? 'رمز فعلی' : k === 'next' ? 'رمز جدید' : 'تکرار رمز جدید'} />
+        ))}
+        {pwMsg && <p className="text-green-700">{pwMsg}</p>}
+        {pwError && <p className="text-red-600">{pwError}</p>}
+        <button disabled={!pw.current || !pw.next || !pw.again} className="rounded-lg bg-blue-600 text-white px-4 py-1.5 disabled:opacity-50">تغییر رمز</button>
+      </form>
     </div>
   );
 }

@@ -11,9 +11,9 @@ export const tasksApi = {
     return api<Paged<TaskListItem>>('GET', `${B}/?${p}`);
   },
   get: (id: string) => api<TaskDetail>('GET', `${B}/${id}`),
-  create: (b: { title: string; dueDate: string; priority: number; description?: string; isProject?: boolean }) => api<TaskDetail>('POST', `${B}/`, b),
+  create: (b: { title: string; dueDate: string; priority: number; description?: string; isProject?: boolean; assignedUserId?: string }) => api<TaskDetail>('POST', `${B}/`, b),
   // rowVersion from the last read: the host answers 409 if someone else changed the task meanwhile.
-  update: (id: string, b: { title: string; dueDate: string; priority: number; description?: string | null; rowVersion?: string | null }) =>
+  update: (id: string, b: Record<string, unknown> & { title: string; dueDate: string; priority: number }) =>
     api<TaskDetail>('PUT', `${B}/${id}`, b),
   // Exactly one: a built-in status (0..3) or a custom status id.
   setStatus: (id: string, b: { status: number } | { customStatusId: string }) => api<TaskDetail>('PATCH', `${B}/${id}/status`, b),
@@ -23,6 +23,7 @@ export const tasksApi = {
   submitReview: (id: string, comment?: string) => api<TaskDetail>('POST', `${B}/${id}/submit-review`, { comment }),
   inReview: (ids: string[]) => api<ReviewItem[]>('POST', `${B}/in-review`, { ids }),
   archive: (id: string) => api('POST', `${B}/${id}/archive`),
+  remove: (id: string) => api('DELETE', `${B}/${id}`),
   restore: (id: string) => api('POST', `${B}/${id}/restore`),
 };
 
@@ -56,9 +57,11 @@ export const requestsApi = {
 };
 
 // Users for pickers (the host's user list; the caller needs permission to list users).
+type PickUser = { id: string; displayName: string; kind?: string | number; isActive?: boolean };
 export async function listUsers(): Promise<{ id: string; displayName: string }[]> {
-  const r = await api<{ id: string; displayName: string }[] | { items: { id: string; displayName: string }[] }>('GET', '/api/identity/users/?pageSize=200');
-  return Array.isArray(r) ? r : r.items;
+  const r = await api<PickUser[] | { items: PickUser[] }>('GET', '/api/identity/users/?pageSize=200');
+  // Pickers offer people: service accounts and inactive accounts are left out.
+  return (Array.isArray(r) ? r : r.items).filter((u) => u.isActive !== false && u.kind !== 'ServiceAccount' && u.kind !== 2);
 }
 
 export const planningApi = {
@@ -79,7 +82,7 @@ export const templatesApi = {
   list: () => api<import('./types').TaskTemplate[]>('GET', '/api/task-management/templates/'),
   create: (name: string, body: import('./types').TemplateBody) => api<import('./types').TaskTemplate>('POST', '/api/task-management/templates/', { name, body }),
   remove: (id: string) => api('DELETE', `/api/task-management/templates/${id}`),
-  instantiate: (id: string, b: { title?: string }) => api<TaskDetail>('POST', `/api/task-management/templates/${id}/instantiate`, b),
+  instantiate: (id: string, b: { title?: string; assignedUserId?: string }) => api<TaskDetail>('POST', `/api/task-management/templates/${id}/instantiate`, b),
 };
 
 const S = '/api/task-management/timesheets';

@@ -47,10 +47,50 @@ async function refresh(): Promise<boolean> {
   return refreshing;
 }
 
+// The host answers with enums as names ("InProgress"); the screens work with numbers. The tables
+// below turn the names back into numbers for the task-management and workflow answers only (the
+// project modules keep names, as their screens expect).
+const T = { Todo: 0, InProgress: 1, Paused: 2, Completed: 3 };
+const PRI = { Low: 0, Medium: 1, High: 2 };
+const APPROVAL = { NotSubmitted: 0, PendingApproval: 1, Approved: 2, Rejected: 3 };
+const REQUEST = { New: 0, Converted: 1, Rejected: 2 };
+const SOURCE = { Manual: 0, Timer: 1 };
+const WORKFLOW = { InProgress: 0, Approved: 1, Rejected: 2 };
+type Table = Record<string, number>;
+const RULES: [RegExp, Record<string, Table>][] = [
+  [/^\/api\/task-management\/tasks/, { status: T, priority: PRI, reviewStatus: APPROVAL }],
+  [/^\/api\/task-management\/templates/, { priority: PRI }],
+  [/^\/api\/task-management\/requests/, { status: REQUEST, priority: PRI, defaultPriority: PRI }],
+  [/^\/api\/task-management\/timesheets/, { status: APPROVAL, source: SOURCE }],
+  [/^\/api\/workflow\//, { status: WORKFLOW }],
+];
+function numberEnums(v: unknown, tables: Record<string, Table>): unknown {
+  if (Array.isArray(v)) return v.map((x) => numberEnums(x, tables));
+  if (v && typeof v === 'object') {
+    const o: Record<string, unknown> = {};
+    for (const [k, x] of Object.entries(v)) {
+      const t = tables[k];
+      o[k] = typeof x === 'string' && t && x in t ? t[x] : numberEnums(x, tables);
+    }
+    return o;
+  }
+  return v;
+}
+
+// Messages the host sends in English, shown in Persian.
+const FA: [RegExp, string][] = [
+  [/Choose who is responsible/i, 'مسئول وظیفه را انتخاب کنید.'],
+  [/End date must be (on or )?after/i, 'تاریخ پایان باید بعد از تاریخ شروع باشد.'],
+  [/End date must be/i, 'تاریخ پایان نباید قبل از تاریخ شروع باشد.'],
+  [/not found/i, 'مورد پیدا نشد.'],
+  [/forbidden|not allowed|access denied/i, 'اجازه‌ی این کار را ندارید.'],
+];
+const faMessage = (m: string) => (/[\u0600-\u06FF]/.test(m) ? m : FA.find(([re]) => re.test(m))?.[1] ?? m);
+
 async function toError(r: Response): Promise<ApiError> {
   let code = 'error', msg = `خطا (${r.status})`;
   try { const p = await r.json(); code = p.title ?? code; msg = p.detail ?? p.title ?? msg; } catch { /* no body */ }
-  return new ApiError(r.status, code, msg);
+  return new ApiError(r.status, code, faMessage(msg));
 }
 
 export async function api<T = void>(method: string, path: string, body?: unknown, retry = true): Promise<T> {
@@ -69,7 +109,7 @@ export async function api<T = void>(method: string, path: string, body?: unknown
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   if (r.status === 401 && retry && s && await refresh()) return api<T>(method, path, body, false);
-  if (r.status === 401 && s) { sessionStore.set(null); onSignedOut(); }
+  if (r.status === 401 && s) { sessionStore.set(null); notify('error', 'نشست شما به پایان رسید؛ دوباره وارد شوید.'); onSignedOut(); }
   const change = method !== 'GET' && !auth;
   if (!r.ok) {
     const err = await toError(r);
@@ -83,5 +123,7 @@ export async function api<T = void>(method: string, path: string, body?: unknown
   if (r.status === 204) return undefined as T;
   // An answer of "nothing" (for example no running timer) has an empty body.
   const text = await r.text();
-  return (text ? JSON.parse(text) : null) as T;
+  const data: unknown = text ? JSON.parse(text) : null;
+  const rule = RULES.find(([re]) => re.test(path));
+  return (rule ? numberEnums(data, rule[1]) : data) as T;
 }
