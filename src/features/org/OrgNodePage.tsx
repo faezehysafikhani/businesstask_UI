@@ -110,10 +110,10 @@ export function OrgNodePage() {
               <input className="mt-1 w-full border rounded-lg px-2 py-1.5" value={form.name} disabled={!canEdit} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </label>
             <label className="block">جزء چارت
-              <select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={form.nodeTypeId} disabled={!canEdit} onChange={(e) => setForm({ ...form, nodeTypeId: e.target.value })}>
+              <Select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={form.nodeTypeId} disabled={!canEdit} onChange={(e) => setForm({ ...form, nodeTypeId: e.target.value })}>
                 <option value="">بدون نوع (واحد ساده)</option>
                 {types.map((t) => <option key={t.id} value={t.id}>{t.name}{t.isActive ? '' : ' (غیرفعال)'}</option>)}
-              </select>
+              </Select>
             </label>
             {canEdit && (
               <button className="rounded-lg bg-blue-600 text-white px-4 py-1.5 disabled:opacity-50" disabled={!form.name.trim()}

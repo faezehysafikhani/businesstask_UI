@@ -1,3 +1,4 @@
+import { Select } from '../../ui/fields';
 import { useEffect, useState } from 'react';
 import { smsApi, type SmsChannel } from '../../api/tasks';
 
@@ -23,7 +24,7 @@ export function SmsSettingsPage() {
       <div className="bg-white rounded-xl border p-4 space-y-3 text-sm">
         <label className="flex items-center gap-2"><input type="checkbox" checked={s.enabled} onChange={(e) => setS({ ...s, enabled: e.target.checked })} /> ارسال پیامک فعال باشد</label>
         <label className="block">سرویس‌دهنده
-          <select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={s.provider} onChange={(e) => setS({ ...s, provider: e.target.value })}>{providers.map((p) => <option key={p.key} value={p.key}>{p.displayName}</option>)}</select></label>
+          <Select className="mt-1 w-full border rounded-lg px-2 py-1.5" value={s.provider} onChange={(e) => setS({ ...s, provider: e.target.value })}>{providers.map((p) => <option key={p.key} value={p.key}>{p.displayName}</option>)}</Select></label>
         <label className="block">آدرس سرویس (خالی = آدرس رسمی{provider ? `: ${provider.defaultBaseUrl}` : ''})
           <input className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={f.apiUrl} onChange={(e) => setF({ ...f, apiUrl: e.target.value })} /></label>
         <div className="grid grid-cols-2 gap-2">

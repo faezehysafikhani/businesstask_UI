@@ -1,3 +1,4 @@
+import { Select } from '../../ui/fields';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, CalendarRange, Users } from 'lucide-react';
@@ -47,9 +48,9 @@ export function OrgChartPage() {
 
       <div className="flex flex-wrap items-end gap-3 bg-white rounded-xl border p-3 text-sm">
         <label className="block">شرکت
-          <select className="mt-1 block border rounded-lg px-2 py-1.5 min-w-52" value={companyId} onChange={(e) => setCompanyId(e.target.value)}>
+          <Select className="mt-1 block border rounded-lg px-2 py-1.5 min-w-52" value={companyId} onChange={(e) => setCompanyId(e.target.value)}>
             {companies.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}
-          </select>
+          </Select>
         </label>
         <label className="block">نمودار در تاریخ
           <DateInput className="mt-1 block border rounded-lg px-2 py-1.5" dir="ltr" value={asOf} onChange={(e) => setAsOf(e.target.value)} />

@@ -65,10 +65,10 @@ export function OrgPeoplePage() {
 
       <div className="flex flex-wrap items-end gap-3 bg-white rounded-xl border p-3 text-sm">
         <label className="block">شرکت
-          <select className="mt-1 block border rounded-lg px-2 py-1.5 min-w-52" value={companyId} onChange={(e) => setCompanyId(e.target.value)}>
+          <Select className="mt-1 block border rounded-lg px-2 py-1.5 min-w-52" value={companyId} onChange={(e) => setCompanyId(e.target.value)}>
             <option value="">همه‌ی شرکت‌ها</option>
             {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          </Select>
         </label>
         <label className="block flex-1 min-w-48">جستجو
           <input data-search autoComplete="off" className="mt-1 block w-full border rounded-lg px-2 py-1.5" placeholder="نام، واحد یا سمت" value={query} onChange={(e) => setQuery(e.target.value)} />
@@ -334,8 +334,8 @@ function AddPersonDialog({ companies, placed, defaultCompany, onClose, onDone }:
         <label className="block">فرد<Select className={sel} value={f.userId} onChange={(e) => setF({ ...f, userId: e.target.value })}>
           <option value="">انتخاب…</option>{free.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}</Select></label>
         {free.length === 0 && <p className="text-xs text-slate-500">همه‌ی کاربران جایگاه دارند، یا فهرست کاربران در دسترس نیست.</p>}
-        <label className="block">شرکت<select className={sel} value={f.companyId} onChange={(e) => setF({ ...f, companyId: e.target.value, unitId: '' })}>
-          {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+        <label className="block">شرکت<Select className={sel} value={f.companyId} onChange={(e) => setF({ ...f, companyId: e.target.value, unitId: '' })}>
+          {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</Select></label>
         <label className="block">واحد (اختیاری)<Select className={sel} value={f.unitId} onChange={(e) => setF({ ...f, unitId: e.target.value })}>
           <option value="">مستقیم در شرکت</option>{nodes.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}</Select></label>
         <label className="block">سمت (اختیاری)<Select className={sel} value={f.positionId} onChange={(e) => setF({ ...f, positionId: e.target.value })}>

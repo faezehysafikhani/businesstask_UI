@@ -49,7 +49,7 @@ export function MonthCalendar({ cursor, view, meetings, holidays, selected, onSe
           const sel = iso === selected;
           return (
             <button type="button" key={iso} onClick={() => onSelect(iso)} aria-pressed={sel}
-              className={`h-12 rounded-xl text-sm flex flex-col items-center justify-center gap-0.5 ${out ? 'opacity-35' : ''} ${sel ? 'nav-active' : 'bg-slate-50 hover:bg-blue-50'} ${!sel && iso === today ? 'ring-2 ring-blue-500' : ''}`}>
+              className={`h-16 rounded-xl text-base flex flex-col items-center justify-center gap-0.5 ${out ? 'opacity-35' : ''} ${sel ? 'nav-active' : 'bg-slate-50 hover:bg-blue-50'} ${!sel && iso === today ? 'ring-2 ring-blue-500' : ''}`}>
               <span className={`font-semibold ${off && !sel ? 'text-red-500' : ''}`}>{jalali(d).d.toLocaleString('fa-IR')}</span>
               {count > 0 ? <span className={`text-[10px] leading-none rounded-full px-1.5 py-0.5 ${sel ? 'bg-white/25' : 'bg-blue-50 text-blue-700'}`}>{count.toLocaleString('fa-IR')}</span> : <span className="h-3" />}
             </button>

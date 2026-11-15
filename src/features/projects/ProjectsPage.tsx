@@ -79,25 +79,25 @@ export function ProjectsPage() {
 
       <div className="flex flex-wrap items-end gap-3 bg-white rounded-xl border p-3 text-sm">
         <label className="block">نمایش
-          <select className="mt-1 block border rounded-lg px-2 py-1.5" value={view} onChange={(e) => setView(e.target.value as 'all' | 'mine')}>
+          <Select className="mt-1 block border rounded-lg px-2 py-1.5" value={view} onChange={(e) => setView(e.target.value as 'all' | 'mine')}>
             <option value="all">همه پروژه‌ها</option>
             <option value="mine">پورتفویو من (آنچه می‌بینم)</option>
-          </select>
+          </Select>
         </label>
         <label className="block">جستجو
           <input className="mt-1 block border rounded-lg px-2 py-1.5 min-w-48" placeholder="نام یا کد پروژه" value={search} onChange={(e) => setSearch(e.target.value)} />
         </label>
         <label className="block">وضعیت
-          <select className="mt-1 block border rounded-lg px-2 py-1.5" value={status} onChange={(e) => setStatus(e.target.value)}>
+          <Select className="mt-1 block border rounded-lg px-2 py-1.5" value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="">همه</option>
             {STATUSES.map((s) => <option key={s} value={s}>{PROJECT_STATUS_LABEL[s]}</option>)}
-          </select>
+          </Select>
         </label>
         <label className="block">نوع
-          <select className="mt-1 block border rounded-lg px-2 py-1.5" value={type} onChange={(e) => setType(e.target.value)}>
+          <Select className="mt-1 block border rounded-lg px-2 py-1.5" value={type} onChange={(e) => setType(e.target.value)}>
             <option value="">همه</option>
             {TYPES.map((t) => <option key={t} value={t}>{PROJECT_TYPE_LABEL[t]}</option>)}
-          </select>
+          </Select>
         </label>
         <span className="text-xs text-slate-500 self-center">{total} پروژه</span>
       </div>

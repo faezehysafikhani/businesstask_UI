@@ -72,7 +72,7 @@ export function Select({ value, onChange, className = '', disabled, children }: 
       <button type="button" disabled={disabled} onClick={() => setOpen(!open)} className={`${className} w-full flex items-center justify-between gap-2 text-start bg-white disabled:opacity-60`}>
         <span className={`truncate ${current && current.value !== '' ? '' : 'text-slate-400'}`}>{current?.label || 'انتخاب…'}</span><ChevronDown size={14} className="shrink-0 text-slate-400" />
       </button>
-      {open && <List options={options} search={options.length > 7} selected={(v) => v === String(value ?? '')} onPick={(v) => { onChange({ target: { value: v } }); setOpen(false); }} />}
+      {open && <List options={options} search={options.length > 5} selected={(v) => v === String(value ?? '')} onPick={(v) => { onChange({ target: { value: v } }); setOpen(false); }} />}
     </div>
   );
 }

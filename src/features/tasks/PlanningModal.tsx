@@ -1,3 +1,4 @@
+import { Select } from '../../ui/fields';
 import { useCallback, useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { planningApi, tasksApi, timeApi } from '../../api/tasks';
@@ -68,10 +69,10 @@ export function PlanningModal({ task, onClose, onChanged }: { task: TaskListItem
             {p && p.blockedBy.length === 0 && <li className="text-slate-400">وابستگی ندارد</li>}
           </ul>
           {edit && (
-            <select className="border rounded-lg px-2 py-1 w-full" value="" onChange={(e) => e.target.value && run(() => planningApi.addDependency(task.id, e.target.value))}>
+            <Select className="border rounded-lg px-2 py-1 w-full" value="" onChange={(e) => e.target.value && run(() => planningApi.addDependency(task.id, e.target.value))}>
               <option value="">افزودن وابستگی…</option>
               {others.filter((o) => !p?.blockedBy.some((b) => b.id === o.id)).map((o) => <option key={o.id} value={o.id}>{o.title}</option>)}
-            </select>
+            </Select>
           )}
           {p && p.blocking.length > 0 && <p className="text-xs text-slate-500">منتظر این وظیفه‌اند: {p.blocking.map((b) => b.title).join('، ')}</p>}
         </section>

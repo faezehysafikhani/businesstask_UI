@@ -62,7 +62,7 @@ export function MeetingsPage() {
         const mine = list.filter((m) => m.details.date.slice(0, 10) === day).sort((x, y) => x.details.startTime.localeCompare(y.details.startTime));
         const canNew = can('Meetings.Create') && !!people?.canCreate && !past && !off;
         return (
-          <div className="grid gap-4 min-[1000px]:grid-cols-[26rem_1fr] items-start">
+          <div className="grid gap-4 min-[1000px]:grid-cols-[34rem_1fr] items-start">
             <MonthCalendar cursor={cursor} view={view} meetings={list} holidays={holidays} selected={day} onSelect={(d) => { setDay(d); setCursor(noon(d)); }} />
             <div className="card p-4 space-y-3">
               <div className="flex items-center gap-2">

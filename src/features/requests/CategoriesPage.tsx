@@ -1,3 +1,4 @@
+import { Select } from '../../ui/fields';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { listUsers, requestsApi } from '../../api/tasks';
 import { PriorityLabel, type RequestCategory } from '../../api/types';
@@ -22,9 +23,9 @@ export function CategoriesPage() {
     try { await requestsApi.saveCategory(null, { name: name.trim(), defaultPriority: 1, isActive: true }); setName(''); load(); } catch (x) { setError((x as Error).message); }
   }
   const UserSelect = ({ value, onChange }: { value?: string | null; onChange: (v: string | null) => void }) => (
-    <select className="border rounded px-1 py-0.5 text-xs" value={value ?? ''} onChange={(e) => onChange(e.target.value || null)}>
+    <Select className="border rounded px-1 py-0.5 text-xs" value={value ?? ''} onChange={(e) => onChange(e.target.value || null)}>
       <option value="">—</option>{users.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}
-    </select>
+    </Select>
   );
 
   return (
@@ -41,9 +42,9 @@ export function CategoriesPage() {
             <span className={`font-medium ${c.isActive ? '' : 'line-through text-slate-400'}`}>{c.name}</span>
             <label className="text-xs flex items-center gap-1">ارجاع به <UserSelect value={c.routeToUserId} onChange={(v) => save(c, { routeToUserId: v })} /></label>
             <label className="text-xs flex items-center gap-1">فوری به <UserSelect value={c.urgentRouteToUserId} onChange={(v) => save(c, { urgentRouteToUserId: v })} /></label>
-            <select className="border rounded px-1 py-0.5 text-xs" value={c.defaultPriority} onChange={(e) => save(c, { defaultPriority: Number(e.target.value) })}>
+            <Select className="border rounded px-1 py-0.5 text-xs" value={String(c.defaultPriority)} onChange={(e) => save(c, { defaultPriority: Number(e.target.value) })}>
               {Object.entries(PriorityLabel).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-            </select>
+            </Select>
             <button className="ms-auto text-xs underline" onClick={() => save(c, { isActive: !c.isActive })}>{c.isActive ? 'غیرفعال' : 'فعال'}</button>
           </li>
         ))}

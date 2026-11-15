@@ -42,9 +42,9 @@ export function ReviewFlowPage({ subject = TASK_REVIEW }: { subject?: string }) 
                 <option value="">تأییدکننده…</option>{users.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}
               </Select>
             ) : (
-              <select className="border rounded-lg px-2 py-1" value={s.approverKey} onChange={(e) => setSteps(steps.map((x, j) => j === i ? { ...x, approverKey: e.target.value } : x))}>
+              <Select className="border rounded-lg px-2 py-1" value={s.approverKey} onChange={(e) => setSteps(steps.map((x, j) => j === i ? { ...x, approverKey: e.target.value } : x))}>
                 {Object.entries(KEYS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
-              </select>
+              </Select>
             )}
             <button title="حذف" onClick={() => setSteps(steps.filter((_, j) => j !== i))} className="p-1 hover:text-red-600"><Trash2 size={16} /></button>
           </li>
