@@ -60,7 +60,7 @@ export function MeetingForm({ meeting, people, initial, onClose, onSaved }: { me
             <input className={`w-full ${field}`} placeholder="عنوان جلسه" disabled={lock} value={m.title} onChange={(e) => set('title', e.target.value)} />
             <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
               <div><div className="text-slate-500 mb-1">نوع</div><Segmented value={m.type} disabled={lock} onChange={(v) => set('type', v)} options={Object.entries(TYPES).map(([value, label]) => ({ value, label }))} /></div>
-              <div><div className="text-slate-500 mb-1">تاریخ</div><DateInput className={field} disabled={lock} value={m.date} onChange={(e) => set('date', e.target.value)} /></div>
+              <div><div className="text-slate-500 mb-1">تاریخ</div><DateInput className={field} disabled={lock} min={meeting ? undefined : new Date().toLocaleDateString('sv')} value={m.date} onChange={(e) => set('date', e.target.value)} /></div>
               <div><div className="text-slate-500 mb-1">ساعت شروع</div><TimeInput className={field} disabled={lock} value={m.startTime} onChange={(e) => set('startTime', e.target.value)} /></div>
               <div><div className="text-slate-500 mb-1">ساعت پایان</div><TimeInput className={field} disabled={lock} value={m.endTime} onChange={(e) => set('endTime', e.target.value)} /></div>
             </div>

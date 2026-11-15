@@ -50,7 +50,7 @@ export function MeetingsPage() {
         <div className="flex rounded-2xl bg-white p-1 text-sm shadow-[var(--shadow)]">
           {(['month', 'week'] as const).map((v) => <button key={v} onClick={() => setView(v)} className={`px-4 py-1.5 rounded-xl ${view === v ? 'nav-active' : 'text-slate-600'}`}>{v === 'month' ? 'ماه' : 'هفته'}</button>)}
         </div>
-        {can('Meetings.Create') && people?.canCreate && <button data-primary className="ms-auto flex items-center gap-1 rounded-2xl text-white px-5 py-2.5 text-sm font-semibold" style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))' }} onClick={() => newOn(day < iso(new Date()) ? iso(new Date()) : day)}><Plus size={16} /> جلسه جدید</button>}
+        {can('Meetings.Create') && people?.canCreate && day >= iso(new Date()) && <button data-primary className="ms-auto flex items-center gap-1 rounded-2xl text-white px-5 py-2.5 text-sm font-semibold" style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))' }} onClick={() => newOn(day)}><Plus size={16} /> جلسه جدید</button>}
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
       {people && !people.canCreate && people.message && <p className="text-sm text-amber-700">{people.message}</p>}
