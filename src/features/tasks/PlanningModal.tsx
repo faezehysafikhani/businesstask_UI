@@ -36,8 +36,8 @@ export function PlanningModal({ task, onClose, onChanged }: { task: TaskListItem
 
   const edit = can('Tasks.Edit');
   return (
-    <Modal title={`برنامه‌ریزی: ${task.title}`} onClose={onClose}>
-      <div className="space-y-4 text-sm max-h-[70vh] overflow-y-auto">
+    <Modal title={`برنامه‌ریزی: ${task.title}`} size="xl" onClose={onClose}>
+      <div className="space-y-4 text-sm">
         {p && !p.canComplete && <p className="rounded-lg bg-amber-50 text-amber-800 px-3 py-2">این وظیفه تا برطرف شدن موارد زیر انجام‌شده نمی‌شود.</p>}
 
         <section className="space-y-1">

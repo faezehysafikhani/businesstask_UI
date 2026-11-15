@@ -197,12 +197,12 @@ function ProjectForm({ project, users, onClose, onSaved }: {
   const set = (patch: Partial<ProjectInput>) => setForm((f) => ({ ...f, ...patch }));
 
   return (
-    <Modal title={project ? `ویرایش پروژه «${project.name}»` : 'پروژه جدید'} onClose={onClose}>
-      <div className="space-y-3 text-sm max-h-[70vh] overflow-auto">
+    <Modal title={project ? `ویرایش پروژه «${project.name}»` : 'پروژه جدید'} size="xl" onClose={onClose}>
+      <div className="space-y-3 text-sm">
         <label className="block">نام پروژه
           <input className="mt-1 w-full border rounded-lg px-2 py-1.5" value={form.name} onChange={(e) => set({ name: e.target.value })} />
         </label>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-3">
           <label className="block">کد
             <input className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" placeholder={project ? '' : 'خودکار'} value={form.code ?? ''} onChange={(e) => set({ code: e.target.value })} />
           </label>
@@ -237,23 +237,25 @@ function ProjectForm({ project, users, onClose, onSaved }: {
             <DateInput className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" value={form.endDate ?? ''} onChange={(e) => set({ endDate: e.target.value || null })} />
           </label>
         </div>
+        <div className="grid grid-cols-3 gap-3">
         <label className="block">هدف
           <textarea className="mt-1 w-full border rounded-lg px-2 py-1.5" rows={2} value={form.goal ?? ''} onChange={(e) => set({ goal: e.target.value })} />
         </label>
         <label className="block">الزامات
           <textarea className="mt-1 w-full border rounded-lg px-2 py-1.5" rows={2} value={form.requirements ?? ''} onChange={(e) => set({ requirements: e.target.value })} />
         </label>
-        <div className="grid grid-cols-2 gap-2">
+        
           <label className="block">محدودیت‌ها
             <textarea className="mt-1 w-full border rounded-lg px-2 py-1.5" rows={2} value={form.constraints ?? ''} onChange={(e) => set({ constraints: e.target.value })} />
           </label>
           <label className="block">فرضیات
             <textarea className="mt-1 w-full border rounded-lg px-2 py-1.5" rows={2} value={form.assumptions ?? ''} onChange={(e) => set({ assumptions: e.target.value })} />
           </label>
-        </div>
+        
         <label className="block">توضیح
           <textarea className="mt-1 w-full border rounded-lg px-2 py-1.5" rows={2} value={form.description ?? ''} onChange={(e) => set({ description: e.target.value })} />
         </label>
+        </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <div className="flex justify-end gap-2 pt-1">
           <button className="rounded-lg border px-4 py-1.5" onClick={onClose}>انصراف</button>
