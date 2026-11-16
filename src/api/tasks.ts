@@ -176,3 +176,30 @@ export const ldapApi = {
   preview: (attributes?: Record<string, string>) => api<LdapSyncReport>('POST', '/api/platform/ldap/sync/preview', { attributes: attributes ?? null, deactivateMissing: true }),
   sync: (attributes?: Record<string, string>) => api<LdapSyncReport>('POST', '/api/platform/ldap/sync', { attributes: attributes ?? null, deactivateMissing: true }),
 };
+
+// Work types and custom fields (the organization's own labels and extra fields on tasks).
+export interface WorkType { id: string; name: string; color?: string | null; sortOrder: number; isActive: boolean }
+export type FieldKind = 'Text' | 'Number' | 'Date' | 'Choice' | 'Boolean';
+export interface CustomField { id: string; name: string; kind: FieldKind; options: string[]; isRequired: boolean; sortOrder: number; isActive: boolean }
+export interface TaskExtras { workTypeId?: string | null; workTypeName?: string | null; fields: { fieldId: string; name: string; kind: FieldKind; options: string[]; isRequired: boolean; value?: string | null }[] }
+
+const TM = '/api/task-management';
+export const workTypesApi = {
+  list: () => api<WorkType[]>('GET', `${TM}/work-types`),
+  save: (id: string | null, b: { name: string; color?: string | null; sortOrder?: number; isActive?: boolean }) =>
+    id ? api<WorkType>('PUT', `${TM}/work-types/${id}`, b) : api<WorkType>('POST', `${TM}/work-types`, b),
+  remove: (id: string) => api('DELETE', `${TM}/work-types/${id}`),
+};
+export const fieldsApi = {
+  list: () => api<CustomField[]>('GET', `${TM}/custom-fields`),
+  save: (id: string | null, b: { name: string; kind: FieldKind; options?: string[]; isRequired?: boolean; sortOrder?: number; isActive?: boolean }) =>
+    id ? api<CustomField>('PUT', `${TM}/custom-fields/${id}`, b) : api<CustomField>('POST', `${TM}/custom-fields`, b),
+  remove: (id: string) => api('DELETE', `${TM}/custom-fields/${id}`),
+};
+export const extrasApi = {
+  get: (taskId: string) => api<TaskExtras>('GET', `${TM}/tasks/${taskId}/extras`),
+  set: (taskId: string, workTypeId: string | null, values: Record<string, string | null>) => api<TaskExtras>('PUT', `${TM}/tasks/${taskId}/extras`, { workTypeId, values }),
+  handoff: (taskId: string, b: { toUserId?: string | null; toGroupId?: string | null; note: string }) => api('POST', `${TM}/tasks/${taskId}/handoff`, b),
+};
+export const listGroups = () => api<{ items?: { id: string; name: string }[] } | { id: string; name: string }[]>('GET', '/api/identity/groups/')
+  .then((r) => (Array.isArray(r) ? r : r.items ?? []));

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api, ApiError } from '../../api/client';
 import type { MfaChallenge } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
@@ -7,6 +7,8 @@ import { useAuth } from '../../auth/AuthContext';
 export function SecurityPage() {
   const { me, reloadMe } = useAuth();
   const enabled = !!me?.user.mfaEnabled;
+  const [policy, setPolicy] = useState('');
+  useEffect(() => { api<{ message: string }>('GET', '/api/platform/password-policy').then((p) => setPolicy(p.message)).catch(() => {}); }, []);
   const [challenge, setChallenge] = useState<MfaChallenge | null>(null);
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
@@ -52,6 +54,7 @@ export function SecurityPage() {
         catch (x) { setPwError(x instanceof ApiError ? x.message : 'خطا'); }
       }}>
         <h2 className="font-medium">تغییر رمز عبور</h2>
+        {policy && <p className="text-xs text-slate-500">{policy}</p>}
         {(['current', 'next', 'again'] as const).map((k) => (
           <input key={k} type="password" autoComplete="new-password" dir="ltr" className="block w-full border rounded-lg px-3 py-1.5" value={pw[k]} onChange={(e) => setPw({ ...pw, [k]: e.target.value })}
             placeholder={k === 'current' ? 'رمز فعلی' : k === 'next' ? 'رمز جدید' : 'تکرار رمز جدید'} />

@@ -4,22 +4,29 @@ import { api, ApiError } from '../../api/client';
 import type { ApiKeyInfo, Paged, ServiceAccount, User } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import { askConfirm, askText } from '../../ui/dialog';
+import { DateInput } from '../../ui/dates';
+import { Modal } from '../../ui/Modal';
+import { Segmented } from '../../ui/fields';
 
 const KIND: Record<string, string> = { Normal: 'عادی', Guest: 'مهمان', ServiceAccount: 'حساب سرویس' };
 
 // Users (guests and the SMS code reset) and service accounts with their API keys (a key is shown once).
 export function UsersPage() {
-  const { can } = useAuth();
+  const { can, me } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [accounts, setAccounts] = useState<ServiceAccount[]>([]);
   const [name, setName] = useState('');
   const [secret, setSecret] = useState<{ label: string; value: string } | null>(null);
   const [error, setError] = useState('');
+  const [expiry, setExpiry] = useState<User | null>(null);
+  const [expiryDate, setExpiryDate] = useState('');
+  const [pol, setPol] = useState({ min: '10', classes: 3 });
   const load = useCallback(() => {
     api<Paged<User>>('GET', '/api/identity/users?pageSize=200').then((p) => setUsers(p.items)).catch((e) => setError(e.message));
     api<ServiceAccount[]>('GET', '/api/identity/service-accounts').then(setAccounts).catch(() => setAccounts([]));
   }, []);
   useEffect(load, [load]);
+  useEffect(() => { api<{ minLength: number; requiredClasses: number }>('GET', '/api/platform/password-policy').then((p) => setPol({ min: String(p.minLength), classes: p.requiredClasses })).catch(() => {}); }, []);
 
   async function act(fn: () => Promise<void>) { setError(''); try { await fn(); load(); } catch (e) { setError(e instanceof ApiError ? e.message : 'خطا'); } }
   const update = can('users.update');
@@ -41,6 +48,7 @@ export function UsersPage() {
               {u.kind === 'Guest' && <span className="text-xs rounded-full bg-purple-50 text-purple-700 px-2">مهمان</span>}
               {u.mfaEnabled && <span className="text-xs rounded-full bg-green-50 text-green-700 px-2">رمز دوم</span>}
               {update && <span className="ms-auto flex gap-3 text-xs">
+                {u.kind !== 'ServiceAccount' && <button className="underline" onClick={() => { setExpiry(u); setExpiryDate(''); }}>پایان اعتبار</button>}
                 <button className="underline" onClick={() => act(() => api('PUT', `/api/identity/users/${u.id}/kind`, { kind: u.kind === 'Guest' ? 'Normal' : 'Guest' }))}>{u.kind === 'Guest' ? 'عادی شود' : 'مهمان شود'}</button>
                 {u.mfaEnabled && <button className="underline" onClick={async () => (await askConfirm('رمز دوم این کاربر خاموش شود؟')) && act(() => api('POST', `/api/identity/users/${u.id}/mfa/reset`))}>بازنشانی رمز دوم</button>}
               </span>}
@@ -50,6 +58,36 @@ export function UsersPage() {
         </ul>
         <p className="text-xs text-slate-400">مهمان‌ها در سقف کاربران پلن حساب نمی‌شوند؛ دسترسی‌شان فقط همان است که مدیر می‌دهد و وظایفی که به آن‌ها داده شده.</p>
       </section>
+
+      {can('settings.update') && (
+        <section className="space-y-2">
+          <h2 className="font-medium">سیاست رمز عبور سازمان</h2>
+          <div className="bg-white rounded-xl border p-3 space-y-2 text-sm">
+            <label className="flex items-center gap-2">حداقل طول رمز (۸ تا ۶۴)
+              <input type="number" min={8} max={64} className="w-20 border rounded-lg px-2 py-1" value={pol.min} onChange={(e) => setPol({ ...pol, min: e.target.value })} /></label>
+            <div className="flex items-center gap-2">حداقل انواع کاراکتر
+              <Segmented value={pol.classes} onChange={(classes) => setPol({ ...pol, classes })} options={[2, 3, 4].map((n) => ({ value: n, label: n.toLocaleString('fa-IR') }))} /></div>
+            <p className="text-xs text-slate-400">انواع کاراکتر: حرف کوچک، حرف بزرگ، رقم، نماد. فقط برای رمزهایی که از این پس تعیین می‌شوند.</p>
+            <button className="rounded-lg bg-blue-600 text-white px-4 py-1.5" onClick={() => act(async () => {
+              await api('PUT', '/api/platform/settings', { tenantId: me?.user.tenantId, key: 'Security.PasswordMinLength', value: pol.min, scope: 'System' });
+              await api('PUT', '/api/platform/settings', { tenantId: me?.user.tenantId, key: 'Security.PasswordRequiredClasses', value: String(pol.classes), scope: 'System' });
+            })}>ذخیره</button>
+          </div>
+        </section>
+      )}
+
+      {expiry && (
+        <Modal title={`پایان اعتبار «${expiry.displayName}»`} onClose={() => setExpiry(null)}>
+          <div className="space-y-3 text-sm">
+            <p className="text-slate-500">بعد از این تاریخ، ورود و نشست‌های فعلی این حساب بسته می‌شود. برای برداشتن پایان، «بدون پایان» را بزنید.</p>
+            <DateInput className="border rounded-lg px-2 py-1.5" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} />
+            <div className="flex justify-end gap-2">
+              <button className="rounded-lg border px-4 py-1.5" onClick={() => act(async () => { await api('PUT', `/api/identity/users/${expiry.id}/access-expiry`, { expiresAtUtc: null }); setExpiry(null); })}>بدون پایان</button>
+              <button disabled={!expiryDate} className="rounded-lg bg-blue-600 text-white px-4 py-1.5 disabled:opacity-50" onClick={() => act(async () => { await api('PUT', `/api/identity/users/${expiry.id}/access-expiry`, { expiresAtUtc: new Date(`${expiryDate}T23:59:59`).toISOString() }); setExpiry(null); })}>ثبت</button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       <section className="space-y-2">
         <h2 className="font-medium">حساب‌های سرویس (برای سیستم‌های دیگر)</h2>

@@ -22,6 +22,7 @@ import { ImportPage } from './features/integrations/ImportPage';
 import { SmsSettingsPage } from './features/integrations/SmsSettingsPage';
 import { LdapPage } from './features/integrations/LdapPage';
 import { StatusesPage } from './features/tasks/StatusesPage';
+import { FieldsPage } from './features/tasks/FieldsPage';
 import { OrgChartPage } from './features/org/OrgChartPage';
 import { OrgNodePage } from './features/org/OrgNodePage';
 import { OrgPeoplePage } from './features/org/OrgPeoplePage';
@@ -40,6 +41,7 @@ export function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/tasks" element={can('Tasks.View') ? <TasksPage /> : <p>دسترسی ندارید.</p>} />
+        <Route path="/settings/fields" element={can('Tasks.ManageStatuses') ? <FieldsPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="/settings/statuses" element={can('Tasks.ManageStatuses') ? <StatusesPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="/reviews" element={can('Workflow.View') ? <ReviewsPage /> : <p>دسترسی ندارید.</p>} />
         <Route path="/settings/review-flow" element={can('Workflow.Configure') ? <ReviewFlowPage /> : <p>دسترسی ندارید.</p>} />

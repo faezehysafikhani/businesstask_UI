@@ -9,6 +9,7 @@ import { TaskForm } from './TaskForm';
 import { PlanningModal } from './PlanningModal';
 import { Avatar, PRIORITY_COLOR, SortTh, useSort } from '../../ui/table';
 import { Drawer } from '../../ui/Drawer';
+import { TaskExtrasPanel } from './TaskExtrasPanel';
 import { Confetti } from '../../ui/effects';
 import { Empty } from '../../ui/Empty';
 import { askConfirm, askText } from '../../ui/dialog';
@@ -271,6 +272,7 @@ export function TasksPage() {
               {full && !full.subTasks?.length && <li className="text-slate-400">زیروظیفه‌ای نیست.</li>}
             </ul>
           </div>
+          {!archived && <TaskExtrasPanel taskId={detail.id} canEdit={can('Tasks.Edit')} onChanged={load} />}
           <div className="flex flex-wrap gap-2 mt-5"><Actions t={detail} big /></div>
         </Drawer>
       )}

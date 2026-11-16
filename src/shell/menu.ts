@@ -28,6 +28,7 @@ export const MENU: MenuItem[] = [
   { to: '/settings/review-flow', label: 'مسیر بازبینی', icon: Route, permission: 'Workflow.Configure', group: 'settings', hint: 'چه کسی وظایف را تأیید می‌کند' },
   { to: '/settings/timesheet-flow', label: 'مسیر تأیید ساعت', icon: Route, permission: 'Workflow.Configure', group: 'settings', hint: 'تأیید هفتگی ساعت کاری' },
   { to: '/settings/automation', label: 'قاعده‌های خودکار', icon: Zap, permission: 'Automation.Manage', group: 'settings', hint: 'اتوماسیون و SLA' },
+  { to: '/settings/fields', label: 'نوع و فیلد سفارشی', icon: ListChecks, permission: 'Tasks.ManageStatuses', group: 'settings', hint: 'نوع فعالیت و فیلدهای سفارشی وظایف' },
   { to: '/settings/statuses', label: 'وضعیت‌ها', icon: ListChecks, permission: 'Tasks.ManageStatuses', group: 'settings', hint: 'وضعیت‌های سفارشی و سقف WIP' },
   { to: '/settings/membership', label: 'پلن و مصرف', icon: Gauge, permission: 'Membership.View', group: 'settings', hint: 'سقف کاربر و فضا' },
   { to: '/settings/webhooks', label: 'وب‌هوک‌ها', icon: Webhook, permission: 'Webhooks.Manage', group: 'settings', hint: 'اطلاع‌رسانی به سامانه‌های دیگر' },

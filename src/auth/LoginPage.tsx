@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import type { Captcha, MfaChallenge, PendingSignIn } from '../api/types';
@@ -18,6 +18,13 @@ export function LoginPage() {
   const [chosen, setChosen] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [sso, setSso] = useState<{ key: string; displayName: string }[]>([]);
+  useEffect(() => {
+    api<{ key: string; displayName: string }[]>('GET', '/api/identity/auth/sso/providers').then(setSso).catch(() => setSso([]));
+    // The identity provider's refusal comes back in the address.
+    const reason = new URLSearchParams(window.location.search).get('sso_error');
+    if (reason) { setError(reason); window.history.replaceState(null, '', window.location.pathname); }
+  }, []);
 
   const loadCaptcha = () => api<Captcha>('POST', '/api/identity/auth/captcha').then(setCaptcha).catch(() => setCaptcha(null));
 
@@ -102,6 +109,17 @@ export function LoginPage() {
         <button disabled={busy || (mfa ? !code.trim() : pending ? chosen.length < pending.mustClose : !identifier || !password || (!!captcha && !answer.trim()))} className="w-full rounded-2xl bg-blue-600 text-white py-3 font-bold disabled:opacity-50 shadow-[0_10px_24px_color-mix(in_srgb,var(--primary)_40%,transparent)]" style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}>
           {busy ? '...' : mfa ? 'تأیید کد' : pending ? 'بستن نشست‌ها و ورود' : 'ورود'}
         </button>
+        {sso.length > 0 && !mfa && !pending && (
+          <div className="space-y-2 pt-1">
+            <div className="text-center text-xs text-slate-400">یا</div>
+            {sso.map((p) => (
+              <a key={p.key} className="block w-full text-center rounded-2xl border px-4 py-2.5 text-sm font-medium hover:bg-slate-50"
+                href={`${(import.meta.env.VITE_API_URL as string | undefined) ?? ''}/api/identity/auth/sso/${encodeURIComponent(p.key)}/start?returnUrl=${encodeURIComponent(`${window.location.origin}/`)}`}>
+                ورود با {p.displayName}
+              </a>
+            ))}
+          </div>
+        )}
       </form>
       <div className="max-[899px]:hidden relative overflow-hidden text-white p-11 flex flex-col justify-center gap-5" style={{ background: 'linear-gradient(140deg, var(--primary), var(--secondary) 55%, var(--accent))' }}>
         <span className="absolute -top-20 -left-20 size-72 rounded-full bg-white/10" /><span className="absolute -bottom-14 -right-12 size-52 rounded-full bg-white/10" />
