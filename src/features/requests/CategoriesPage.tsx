@@ -40,7 +40,7 @@ export function CategoriesPage() {
       {error && <p className="text-sm text-red-600">{error}</p>}
       <ul className="bg-white rounded-xl border divide-y text-sm">
         {cats.slice((Math.min(page, Math.max(1, Math.ceil(cats.length / 10))) - 1) * 10, Math.min(page, Math.max(1, Math.ceil(cats.length / 10))) * 10).map((c) => (
-          <li key={c.id} className="p-3 flex flex-wrap items-center gap-3">
+          <li key={c.id} className="p-3 grid gap-x-4 gap-y-2 items-center sm:grid-cols-2 lg:grid-cols-[minmax(9rem,1fr)_auto_auto_auto_auto]">
             <span className={`font-medium ${c.isActive ? '' : 'line-through text-slate-400'}`}>{c.name}</span>
             <label className="text-xs flex items-center gap-1">ارجاع به <UserSelect value={c.routeToUserId} onChange={(v) => save(c, { routeToUserId: v })} /></label>
             <label className="text-xs flex items-center gap-1">فوری به <UserSelect value={c.urgentRouteToUserId} onChange={(v) => save(c, { urgentRouteToUserId: v })} /></label>

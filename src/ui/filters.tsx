@@ -62,20 +62,29 @@ export function FilterRow<T>({ f, layout }: { f: ColumnFilters<T>; layout: (stri
 }
 
 /** Result counter and clear button above a table. */
-export function FilterBar({ f, shown, total }: { f: { active: number; clear: () => void }; shown: number; total: number }) {
-  if (!f.active) return null;
+export function FilterBar<T = unknown>({ f, shown, total, labels }: { f: { active: number; clear: () => void } & Partial<ColumnFilters<T>>; shown: number; total: number; labels?: Record<string, string> }) {
+  const full = f.cols && f.vals && f.set ? (f as ColumnFilters<T>) : null;
+  if (!f.active && !full) return null;
   return (
-    <div className="flex items-center gap-3 text-xs text-slate-500">
+    <>
+    {full && labels && (
+      <details className="md:hidden w-full rounded-xl bg-white p-2 text-sm">
+        <summary className="cursor-pointer">فیلترها{f.active ? ` (${f.active.toLocaleString('fa-IR')})` : ''}</summary>
+        <div className="flex flex-col gap-2 pt-2"><FilterFields f={full} labels={labels} /></div>
+      </details>
+    )}
+    {f.active > 0 && <div className="flex items-center gap-3 text-xs text-slate-500">
       <span>{shown.toLocaleString('fa-IR')} نتیجه از {total.toLocaleString('fa-IR')}</span>
       <button type="button" className="text-blue-600" onClick={f.clear}>پاک کردن فیلترها</button>
-    </div>
+    </div>}
+    </>
   );
 }
 
-/** Filter bar for card lists: a search box (the first text column), selects and a date range, with counter and clear. */
-export function CardFilterBar<T>({ f, total, labels }: { f: ColumnFilters<T>; total: number; labels?: Record<string, string> }) {
+/** The filter inputs of a ColumnFilters set (search box, selects, date range), used for card lists and on phones. */
+function FilterFields<T>({ f, labels }: { f: ColumnFilters<T>; labels?: Record<string, string> }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <>
       {f.cols.map((c) => {
         const v = f.vals[c.key]; const lb = labels?.[c.key] ?? c.key;
         if (c.kind === 'text') return <input key={c.key} type="search" autoComplete="off" aria-label={lb} placeholder={lb === c.key ? 'جستجو…' : `جستجو: ${lb}`} className={`${IN} !h-9 flex-1 min-w-48 max-w-xs`} value={(v as string) ?? ''} onChange={(e) => f.set(c.key, e.target.value)} />;
@@ -86,6 +95,15 @@ export function CardFilterBar<T>({ f, total, labels }: { f: ColumnFilters<T>; to
         );
         return <div key={c.key} className="w-44"><DateRangeInput className={`${IN} !h-9`} value={Array.isArray(v) ? (v as [string, string]) : null} onChange={(r) => f.set(c.key, r as Val)} /></div>;
       })}
+    </>
+  );
+}
+
+/** Filter bar for card lists: search box, selects and date range, with counter and clear. */
+export function CardFilterBar<T>({ f, total, labels }: { f: ColumnFilters<T>; total: number; labels?: Record<string, string> }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <FilterFields f={f} labels={labels} />
       <FilterBar f={f} shown={f.filtered.length} total={total} />
     </div>
   );

@@ -90,7 +90,7 @@ export function TimesheetPage() {
         <button disabled={!f.taskId} className="rounded-lg bg-blue-600 text-white px-3 py-1 disabled:opacity-50">ثبت</button>
       </form>
 
-      <FilterBar f={cf} shown={cf.filtered.length} total={week?.entries.length ?? 0} />
+      <FilterBar f={cf} labels={{ day: 'روز', task: 'وظیفه', note: 'توضیح', status: 'وضعیت' }} shown={cf.filtered.length} total={week?.entries.length ?? 0} />
       <div className="rounded-[20px] bg-white shadow-[0_10px_40px_rgba(60,50,160,.10)]"><table className="cards w-full text-sm">
         <thead><tr><SortTh k="day" sort={sort} onSort={toggle}>روز</SortTh><SortTh k="task" sort={sort} onSort={toggle}>وظیفه</SortTh><SortTh k="time" sort={sort} onSort={toggle}>زمان</SortTh><th className="text-start px-3 py-2 font-medium">توضیح</th><SortTh k="status" sort={sort} onSort={toggle}>وضعیت</SortTh><th /></tr><FilterRow f={cf} layout={['day', 'task', null, 'note', 'status', null]} /></thead>
         <tbody>

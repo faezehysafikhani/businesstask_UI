@@ -184,3 +184,70 @@ button.bg-blue-600:not(:disabled):hover { filter: brightness(1.08); }
 .tf-in{font:inherit;font-size:11.5px;height:28px;border-color:#d9dfea;outline:none}
 .tf-in:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent)}
 @media(max-width:760px){.tf-row{display:none}}
+
+/* ===== Redesign theme (light + dark): everything reads the tokens above ===== */
+:root {
+  --ctl-border: #d5dbe8; --ctl-off: #f1f4f9; --soft-red-bg: #fef2f2; --soft-red-bd: #fecaca; --soft-red-fg: #b91c1c; --ok: #0f9f6e;
+  --tab-bg: #eef1f7;
+}
+html.dark { --ctl-border: #3a3f78; --ctl-off: #232750; --soft-red-bg: #3b1a24; --soft-red-bd: #6b2a3a; --soft-red-fg: #fca5a5; --ok: #34d399; --tab-bg: #232750; }
+
+@layer base {
+  main { max-width: 1320px; margin-inline: auto; }
+  svg.lucide { stroke-width: 1.7; }
+  input, select, textarea { border-color: var(--ctl-border); }
+  input:disabled, select:disabled, textarea:disabled { background: var(--ctl-off); color: var(--mute); }
+  textarea { min-height: 5rem; }
+  input[type="file"]::file-selector-button { border: 0; border-radius: 8px; padding: .3rem .7rem; margin-inline-end: .6rem; background: var(--tint); color: var(--primary); cursor: pointer; }
+  input[type="color"] { width: 2.25rem; height: 2.25rem; padding: 2px; border: 1px solid var(--ctl-border); border-radius: 8px; }
+  button:disabled { cursor: not-allowed; }
+  thead th { font-size: .75rem; color: var(--mute); font-weight: 500; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.ttl { overflow-wrap: anywhere; }
+}
+@layer components {
+  /* soft destructive buttons instead of solid red */
+  button.bg-red-600, button.bg-red-500 { background-image: none; background-color: var(--soft-red-bg); color: var(--soft-red-fg); border: 1px solid var(--soft-red-bd); box-shadow: none; }
+  button.bg-green-600 { background-color: var(--ok); }
+  button.bg-blue-600:disabled, button.bg-green-600:disabled { background-image: none; background-color: var(--ctl-off); color: var(--mute); box-shadow: none; }
+  /* underlined row actions become small outlined chips */
+  li button.underline, td button.underline, td a.underline { text-decoration: none; border: 1px solid var(--line); border-radius: 8px; padding: .15rem .55rem; background: var(--surface); }
+  li button.underline:hover, td button.underline:hover, td a.underline:hover { background: var(--tint); }
+  li button.underline.text-red-600, td button.underline.text-red-600 { color: var(--soft-red-fg); border-color: var(--soft-red-bd); background: var(--soft-red-bg); }
+  /* tabs / segmented switches */
+  .rounded-2xl.bg-white.p-1, [role="radiogroup"] { background: var(--tab-bg); box-shadow: none; white-space: nowrap; }
+  [role="radiogroup"] button[aria-checked="false"]:hover { background: var(--surface); }
+  .chip { white-space: nowrap; }
+  .avatar { border: 1px solid color-mix(in srgb, #fff 40%, transparent); }
+  .modal-box, .backdrop > div { max-width: min(48rem, 94vw); border-radius: 14px; }
+  .backdrop { z-index: 80; }
+  .kcol { background: var(--tab-bg); border-top: 3px solid var(--c, var(--primary)); }
+  .drawer { background: var(--surface); }
+  .card.absolute.inset-x-0 { inset-inline-start: auto; inset-inline-end: 0; width: max-content; min-width: 100%; max-width: min(340px, 92vw); }
+  .card.absolute.inset-x-0 li button { white-space: nowrap; }
+  select[data-st] { border-radius: 999px; padding-inline: .75rem; }
+  .tf-in { background: var(--surface); color: var(--ink); border-color: var(--ctl-border); }
+  .tf-row th { background: var(--surface); }
+}
+/* org tree: every node a full-width row, accent bar changes with depth */
+.orgtree details > summary { display: flex; width: 100%; border: 1px solid var(--line); border-inline-start: 4px solid var(--primary); }
+.orgtree details details > summary { border-inline-start-color: #38bdf8; }
+.orgtree details details details > summary { border-inline-start-color: #14b8a6; }
+.orgtree details details details details > summary { border-inline-start-color: var(--s400); }
+/* dark: dim surfaces that were hard-coded light */
+html.dark .shadow-\[0_10px_40px_rgba\(60\,50\,160\,\.10\)\] { box-shadow: 0 10px 40px rgba(0, 0, 0, .35); }
+html.dark select[data-st="other"] { background: var(--s100); }
+html.dark .bg-red-50, html.dark .bg-amber-50, html.dark .bg-green-50, html.dark .bg-purple-50 { background-color: color-mix(in srgb, currentColor 12%, var(--surface)); }
+html.dark input[type="file"]::file-selector-button { background: var(--tint); }
+
+/* ===== Mobile ===== */
+@media (max-width: 760px) {
+  main { padding-inline: .75rem; }
+  .flex.flex-wrap > .tf-in, .tf-in { max-width: 100%; }
+  .backdrop > div { width: 100%; max-height: 92vh; overflow-y: auto; }
+  .bulkbar { flex-wrap: wrap; width: calc(100% - 1.5rem); justify-content: center; }
+  .kcol { width: 85vw; }
+  .orgtree details { padding-inline-start: 1rem; }
+  table.cards td.row-act, table.cards td:last-child { justify-content: flex-end; flex-wrap: wrap; gap: .4rem; }
+  .grid.grid-cols-7 { font-size: .7rem; }
+}

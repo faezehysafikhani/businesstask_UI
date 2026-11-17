@@ -76,7 +76,7 @@ export function OrgPeoplePage() {
       {error && <p className="text-sm text-red-600">{error}</p>}
       {loading && <p className="text-sm text-slate-500">...</p>}
 
-      {!loading && <FilterBar f={cf} shown={shown.length} total={rows.length} />}
+      {!loading && <FilterBar f={cf} labels={{ who: 'فرد', company: 'شرکت / واحد', post: 'سمت', manager: 'مدیر' }} shown={shown.length} total={rows.length} />}
       {!loading && (
         <div className="rounded-[20px] bg-white shadow-[0_10px_40px_rgba(60,50,160,.10)]">
           <table className="cards w-full text-sm">

@@ -100,7 +100,7 @@ export function ProjectsPage() {
       {loading && <p className="text-sm text-slate-500">...</p>}
 
       {!loading && <Gantt rows={rows} />}
-      {!loading && <FilterBar f={cf} shown={cf.filtered.length} total={rows.length} />}
+      {!loading && <FilterBar f={cf} labels={{ name: 'پروژه', type: 'نوع', status: 'وضعیت', manager: 'مدیر', time: 'زمان' }} shown={cf.filtered.length} total={rows.length} />}
       {!loading && (
         <div className="rounded-[20px] bg-white shadow-[0_10px_40px_rgba(60,50,160,.10)]">
           <table className="cards w-full text-sm">

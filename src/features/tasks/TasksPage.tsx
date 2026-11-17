@@ -189,7 +189,7 @@ export function TasksPage() {
           <button className="ghost" aria-label="لغو انتخاب" onClick={() => setSelected(new Set())}>✕</button>
         </div>
       )}
-      {!board && <FilterBar f={cf} shown={cf.filtered.length} total={filtered.length} />}
+      {!board && <FilterBar f={cf} labels={{ title: 'عنوان', status: 'وضعیت', priority: 'اولویت', due: 'سررسید', who: 'مسئول' }} shown={cf.filtered.length} total={filtered.length} />}
       {error && <p className="text-sm text-red-600">{error}</p>}
       {!data && !error && <div className="space-y-3">{[0, 1, 2, 3].map((i) => <div key={i} className="skel h-12" />)}</div>}
       {data && (board ? (
