@@ -55,18 +55,18 @@ export function TemplatesPage() {
         <form onSubmit={create} className="bg-white rounded-xl border p-3 space-y-2 text-sm">
           <h2 className="font-medium">قالب جدید</h2>
           <div className="flex gap-2">
-            <input className="flex-1 border rounded-lg px-2 py-1" placeholder="نام قالب" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
-            <input className="flex-1 border rounded-lg px-2 py-1" placeholder="عنوان وظیفه" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
+            <input className="flex-1 border rounded-lg px-2 py-1" aria-label="نام قالب" placeholder="نام قالب" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+            <input className="flex-1 border rounded-lg px-2 py-1" aria-label="عنوان وظیفه" placeholder="عنوان وظیفه" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
           </div>
-          <textarea className="w-full border rounded-lg px-2 py-1" rows={2} placeholder="توضیحات" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} />
+          <textarea className="w-full border rounded-lg px-2 py-1" rows={2} aria-label="توضیحات" placeholder="توضیحات" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} />
           <div className="flex gap-2 items-center">
             <Segmented value={f.priority} onChange={(v) => setF({ ...f, priority: v })} options={[{ value: 0, label: 'کم' }, { value: 1, label: 'متوسط' }, { value: 2, label: 'زیاد' }]} />
             <label className="flex items-center gap-1">سررسید بعد از <input type="number" min={0} className="w-16 border rounded px-1" value={f.dueInDays} onChange={(e) => setF({ ...f, dueInDays: Number(e.target.value) })} /> روز</label>
             <label className="flex items-center gap-1"><input type="checkbox" checked={f.isProject} onChange={(e) => setF({ ...f, isProject: e.target.checked })} /> پروژه</label>
           </div>
-          <textarea className="w-full border rounded-lg px-2 py-1" rows={3} placeholder="زیرکارها (هر خط یکی)" value={f.subTasks} onChange={(e) => setF({ ...f, subTasks: e.target.value })} />
-          <textarea className="w-full border rounded-lg px-2 py-1" rows={2} placeholder="معیارهای پذیرش (هر خط یکی)" value={f.criteria} onChange={(e) => setF({ ...f, criteria: e.target.value })} />
-          <input className="w-full border rounded-lg px-2 py-1" placeholder="برچسب‌ها (با ویرگول)" value={f.tags} onChange={(e) => setF({ ...f, tags: e.target.value })} />
+          <textarea className="w-full border rounded-lg px-2 py-1" rows={3} aria-label="زیرکارها (هر خط یکی)" placeholder="زیرکارها (هر خط یکی)" value={f.subTasks} onChange={(e) => setF({ ...f, subTasks: e.target.value })} />
+          <textarea className="w-full border rounded-lg px-2 py-1" rows={2} aria-label="معیارهای پذیرش (هر خط یکی)" placeholder="معیارهای پذیرش (هر خط یکی)" value={f.criteria} onChange={(e) => setF({ ...f, criteria: e.target.value })} />
+          <input className="w-full border rounded-lg px-2 py-1" aria-label="برچسب‌ها (با ویرگول)" placeholder="برچسب‌ها (با ویرگول)" value={f.tags} onChange={(e) => setF({ ...f, tags: e.target.value })} />
           <button disabled={!f.name.trim()} className="rounded-lg bg-blue-600 text-white px-4 py-1.5 disabled:opacity-50">ذخیره قالب</button>
         </form>
       )}

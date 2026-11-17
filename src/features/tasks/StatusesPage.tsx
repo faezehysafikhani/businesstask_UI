@@ -32,9 +32,9 @@ export function StatusesPage() {
       <h1 className="text-xl font-bold">وضعیت‌های وظایف</h1>
       <p className="text-sm text-slate-500">هر وضعیت سفارشی در گزارش‌ها به‌عنوان یکی از چهار وضعیت پایه حساب می‌شود.</p>
       <form onSubmit={add} className="flex gap-2 items-center">
-        <input className="border rounded-lg px-3 py-1.5 text-sm flex-1" placeholder="نام وضعیت (مثلاً در بازبینی)" value={name} onChange={(e) => setName(e.target.value)} />
+        <input className="border rounded-lg px-3 py-1.5 text-sm flex-1" aria-label="نام وضعیت (مثلاً در بازبینی)" placeholder="نام وضعیت (مثلاً در بازبینی)" value={name} onChange={(e) => setName(e.target.value)} />
         <Segmented value={category} onChange={setCategory} options={Object.entries(StatusLabel).map(([v, l]) => ({ value: Number(v), label: l }))} />
-        <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-8 w-8" />
+        <input type="color" aria-label="رنگ" value={color} onChange={(e) => setColor(e.target.value)} className="h-8 w-8" />
         <button disabled={!name.trim()} className="rounded-lg bg-blue-600 text-white px-3 py-1.5 text-sm disabled:opacity-50">افزودن</button>
       </form>
       <div className="flex items-center gap-2 text-sm bg-white rounded-xl border p-3">

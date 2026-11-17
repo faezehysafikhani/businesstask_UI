@@ -54,7 +54,7 @@ export function PlanningModal({ task, onClose, onChanged }: { task: TaskListItem
         <section className="space-y-1">
           <h3 className="font-medium">مانع</h3>
           <div className="flex gap-2">
-            <input className="flex-1 border rounded-lg px-2 py-1" disabled={!edit} placeholder="مثلاً منتظر پاسخ تأمین‌کننده" value={blocker} onChange={(e) => setBlocker(e.target.value)} />
+            <input className="flex-1 border rounded-lg px-2 py-1" disabled={!edit} aria-label="مثلاً منتظر پاسخ تأمین‌کننده" placeholder="مثلاً منتظر پاسخ تأمین‌کننده" value={blocker} onChange={(e) => setBlocker(e.target.value)} />
             {edit && <button className="border rounded-lg px-2" onClick={() => run(() => planningApi.setBlocker(task.id, blocker.trim() || null))}>ثبت</button>}
           </div>
         </section>
@@ -91,7 +91,7 @@ export function PlanningModal({ task, onClose, onChanged }: { task: TaskListItem
           </ul>
           {edit && (
             <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); if (criterion.trim()) { run(() => planningApi.addCriterion(task.id, criterion.trim())); setCriterion(''); } }}>
-              <input className="flex-1 border rounded-lg px-2 py-1" placeholder="معیار جدید" value={criterion} onChange={(e) => setCriterion(e.target.value)} />
+              <input className="flex-1 border rounded-lg px-2 py-1" aria-label="معیار جدید" placeholder="معیار جدید" value={criterion} onChange={(e) => setCriterion(e.target.value)} />
               <button className="border rounded-lg px-2">افزودن</button>
             </form>
           )}

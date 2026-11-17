@@ -65,7 +65,7 @@ export function LoginPage() {
         {mfa ? (
           <>
             <p className="text-sm text-slate-600">کد ورود به شماره <b dir="ltr">{mfa.maskedPhone}</b> پیامک شد. تا {Math.round(mfa.expiresInSeconds / 60)} دقیقه معتبر است.</p>
-            <input className="w-full border rounded-lg px-3 py-2 text-center tracking-widest" inputMode="numeric" autoFocus placeholder="کد پیامکی" value={code} onChange={(e) => setCode(e.target.value)} dir="ltr" />
+            <input className="w-full border rounded-lg px-3 py-2 text-center tracking-widest" inputMode="numeric" autoFocus aria-label="کد پیامکی" placeholder="کد پیامکی" value={code} onChange={(e) => setCode(e.target.value)} dir="ltr" />
             <button type="button" className="text-xs underline" onClick={() => { setMfa(null); setCode(''); setError(''); }}>بازگشت</button>
           </>
         ) : pending ? (
@@ -99,7 +99,7 @@ export function LoginPage() {
             {captcha && (
               <div className="space-y-2">
                 <img src={captcha.imageDataUrl} alt="captcha" className="rounded border w-full" />
-                <input className="w-full border rounded-lg px-3 py-2" placeholder="عبارت تصویر را وارد کنید" value={answer} onChange={(e) => setAnswer(e.target.value)} dir="ltr" />
+                <input className="w-full border rounded-lg px-3 py-2" aria-label="عبارت تصویر را وارد کنید" placeholder="عبارت تصویر را وارد کنید" value={answer} onChange={(e) => setAnswer(e.target.value)} dir="ltr" />
                 <button type="button" className="text-xs underline" onClick={loadCaptcha}>تصویر جدید</button>
               </div>
             )}

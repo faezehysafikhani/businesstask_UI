@@ -35,8 +35,8 @@ export function RequestsPage() {
     <div className="space-y-4 max-w-3xl">
       <h1 className="text-xl font-bold">درخواست‌های من</h1>
       <form onSubmit={submit} className="bg-white rounded-xl border p-3 space-y-2 text-sm">
-        <input className="w-full border rounded-lg px-3 py-2" placeholder="عنوان درخواست" value={title} onChange={(e) => setTitle(e.target.value)} />
-        <textarea className="w-full border rounded-lg px-3 py-2" rows={2} placeholder="توضیحات" value={description} onChange={(e) => setDescription(e.target.value)} />
+        <input className="w-full border rounded-lg px-3 py-2" aria-label="عنوان درخواست" placeholder="عنوان درخواست" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <textarea className="w-full border rounded-lg px-3 py-2" rows={2} aria-label="توضیحات" placeholder="توضیحات" value={description} onChange={(e) => setDescription(e.target.value)} />
         <div className="flex gap-2">
           <Select className="border rounded-lg px-2 py-1.5 flex-1" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
             <option value="">بدون دسته</option>

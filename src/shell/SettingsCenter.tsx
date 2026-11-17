@@ -17,7 +17,7 @@ export function SettingsCenter({ onClose }: { onClose: () => void }) {
           <h2 className="font-bold text-lg">مرکز تنظیمات</h2>
           <div className="flex-1 flex items-center gap-2 border border-slate-200 rounded-xl px-3">
             <Search size={15} className="text-slate-400" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus autoComplete="off" placeholder="جستجو در تنظیمات" className="flex-1 py-2 bg-transparent outline-none text-sm" />
+            <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus autoComplete="off" aria-label="جستجو در تنظیمات" placeholder="جستجو در تنظیمات" className="flex-1 py-2 bg-transparent outline-none text-sm" />
           </div>
           <button onClick={onClose} aria-label="بستن" className="text-slate-400 hover:text-slate-700"><X size={18} /></button>
         </div>

@@ -31,3 +31,17 @@ export function Avatar({ name }: { name: string }) {
 
 /** Priority colours: the host has three levels (low, medium, high). */
 export const PRIORITY_COLOR: Record<number, string> = { 0: '#10b981', 1: '#eab308', 2: '#f97316' };
+
+/** Previous/next pager for lists; `page` is clamped to the available pages. */
+export function Pager({ page, size, total, onPage }: { page: number; size: number; total: number; onPage: (p: number) => void }) {
+  const pages = Math.max(1, Math.ceil(total / size));
+  if (pages <= 1) return null;
+  const cur = Math.min(page, pages);
+  return (
+    <div className="flex gap-2 items-center text-sm py-2 justify-center">
+      <button type="button" disabled={cur <= 1} onClick={() => onPage(cur - 1)} className="rounded-xl bg-white shadow-[var(--shadow)] px-3 py-1.5 disabled:opacity-40">قبلی</button>
+      <span>{cur.toLocaleString('fa-IR')} / {pages.toLocaleString('fa-IR')}</span>
+      <button type="button" disabled={cur >= pages} onClick={() => onPage(cur + 1)} className="rounded-xl bg-white shadow-[var(--shadow)] px-3 py-1.5 disabled:opacity-40">بعدی</button>
+    </div>
+  );
+}

@@ -81,7 +81,7 @@ function HandoffDialog({ taskId, onClose, onDone }: { taskId: string; onClose: (
           <div><div className="text-slate-500 mb-1">تحویل به فرد</div><Select className="w-full border rounded-lg px-2 py-1.5" value={toUser} onChange={(e) => setToUser(e.target.value)}><option value="">بدون تغییر</option>{users.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}</Select></div>
           <div><div className="text-slate-500 mb-1">تحویل به تیم</div><Select className="w-full border rounded-lg px-2 py-1.5" value={toGroup} onChange={(e) => setToGroup(e.target.value)}><option value="">بدون تغییر</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}</Select></div>
         </div>
-        <label className="block">توضیح تحویل<textarea className="mt-1 w-full border rounded-lg px-2 py-1.5" rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="چه کاری انجام شده و گیرنده چه باید بکند؟" /></label>
+        <label className="block">توضیح تحویل<textarea className="mt-1 w-full border rounded-lg px-2 py-1.5" rows={3} value={note} onChange={(e) => setNote(e.target.value)} aria-label="چه کاری انجام شده و گیرنده چه باید بکند؟" placeholder="چه کاری انجام شده و گیرنده چه باید بکند؟" /></label>
         <div className="flex justify-end gap-2">
           <button className="rounded-lg border px-4 py-1.5" onClick={onClose}>انصراف</button>
           <button disabled={busy || !note.trim() || (!toUser && !toGroup)} className="rounded-lg bg-blue-600 text-white px-4 py-1.5 disabled:opacity-50" onClick={send}>تحویل</button>

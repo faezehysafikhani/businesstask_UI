@@ -57,12 +57,12 @@ export function MeetingForm({ meeting, people, initial, onClose, onSaved }: { me
 
         {tab === 'info' && (
           <div className="space-y-4">
-            <input className={`w-full ${field}`} placeholder="عنوان جلسه" disabled={lock} value={m.title} onChange={(e) => set('title', e.target.value)} />
+            <input className={`w-full ${field}`} aria-label="عنوان جلسه" placeholder="عنوان جلسه" disabled={lock} value={m.title} onChange={(e) => set('title', e.target.value)} />
             <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
               <div><div className="text-slate-500 mb-1">نوع</div><Segmented value={m.type} disabled={lock} onChange={(v) => set('type', v)} options={Object.entries(TYPES).map(([value, label]) => ({ value, label }))} /></div>
-              <div><div className="text-slate-500 mb-1">تاریخ</div><DateInput className={field} disabled={lock} min={meeting ? undefined : new Date().toLocaleDateString('sv')} value={m.date} onChange={(e) => set('date', e.target.value)} /></div>
-              <div><div className="text-slate-500 mb-1">ساعت شروع</div><TimeInput className={field} disabled={lock} value={m.startTime} onChange={(e) => set('startTime', e.target.value)} /></div>
-              <div><div className="text-slate-500 mb-1">ساعت پایان</div><TimeInput className={field} disabled={lock} value={m.endTime} onChange={(e) => set('endTime', e.target.value)} /></div>
+              <div><div className="text-slate-500 mb-1">تاریخ</div><DateInput label="تاریخ جلسه" className={field} disabled={lock} min={meeting ? undefined : new Date().toLocaleDateString('sv')} value={m.date} onChange={(e) => set('date', e.target.value)} /></div>
+              <div><div className="text-slate-500 mb-1">ساعت شروع</div><TimeInput label="شروع" className={field} disabled={lock} value={m.startTime} onChange={(e) => set('startTime', e.target.value)} /></div>
+              <div><div className="text-slate-500 mb-1">ساعت پایان</div><TimeInput label="پایان" className={field} disabled={lock} value={m.endTime} onChange={(e) => set('endTime', e.target.value)} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <label className="block">مکان<input className={`mt-1 w-full ${field}`} disabled={lock} value={m.location ?? ''} onChange={(e) => set('location', e.target.value)} /></label>
@@ -77,8 +77,8 @@ export function MeetingForm({ meeting, people, initial, onClose, onSaved }: { me
           <div className="space-y-2">
             {m.agenda.map((a, i) => (
               <div key={i} className="flex items-center gap-2">
-                <input className={`flex-1 ${field}`} disabled={lock} value={a.title} placeholder="بند دستور جلسه" onChange={(e) => set('agenda', m.agenda.map((x, j) => j === i ? { ...x, title: e.target.value } : x))} />
-                <input type="number" min={1} className={`w-24 ${field}`} disabled={lock} value={a.durationMinutes} onChange={(e) => set('agenda', m.agenda.map((x, j) => j === i ? { ...x, durationMinutes: Number(e.target.value) } : x))} /> دقیقه
+                <input className={`flex-1 ${field}`} disabled={lock} value={a.title} aria-label="بند دستور جلسه" placeholder="بند دستور جلسه" onChange={(e) => set('agenda', m.agenda.map((x, j) => j === i ? { ...x, title: e.target.value } : x))} />
+                <input type="number" min={1} aria-label="مدت بند (دقیقه)" className={`w-24 ${field}`} disabled={lock} value={a.durationMinutes} onChange={(e) => set('agenda', m.agenda.map((x, j) => j === i ? { ...x, durationMinutes: Number(e.target.value) } : x))} /> دقیقه
                 {editable && <button type="button" className="p-1 hover:text-red-600" aria-label="حذف" onClick={() => set('agenda', m.agenda.filter((_, j) => j !== i))}><Trash2 size={15} /></button>}
               </div>))}
             {m.agenda.length === 0 && <p className="text-slate-400 py-6 text-center">هنوز بندی برای دستور جلسه نیست.</p>}
@@ -90,9 +90,9 @@ export function MeetingForm({ meeting, people, initial, onClose, onSaved }: { me
           <div className="space-y-2">
             {m.actions.map((a, i) => (
               <div key={i} className="flex flex-wrap items-center gap-2 border rounded-xl p-2">
-                <input className={`flex-1 min-w-48 ${field}`} disabled={lock || !!a.taskId} value={a.title} placeholder="اقدام" onChange={(e) => set('actions', m.actions.map((x, j) => j === i ? { ...x, title: e.target.value } : x))} />
-                <Select className={`w-48 ${field}`} disabled={lock || !!a.taskId} value={a.assigneeUserId ?? ''} onChange={(e) => set('actions', m.actions.map((x, j) => j === i ? { ...x, assigneeUserId: e.target.value || null } : x))}><option value="">مسئول…</option>{people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</Select>
-                <DateInput className={`w-36 ${field}`} disabled={lock || !!a.taskId} value={a.dueDate ?? ''} onChange={(e) => set('actions', m.actions.map((x, j) => j === i ? { ...x, dueDate: e.target.value || null } : x))} />
+                <input className={`flex-1 min-w-48 ${field}`} disabled={lock || !!a.taskId} value={a.title} aria-label="اقدام" placeholder="اقدام" onChange={(e) => set('actions', m.actions.map((x, j) => j === i ? { ...x, title: e.target.value } : x))} />
+                <Select label="مسئول اقدام" className={`w-48 ${field}`} disabled={lock || !!a.taskId} value={a.assigneeUserId ?? ''} onChange={(e) => set('actions', m.actions.map((x, j) => j === i ? { ...x, assigneeUserId: e.target.value || null } : x))}><option value="">مسئول…</option>{people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</Select>
+                <DateInput label="موعد اقدام" className={`w-36 ${field}`} disabled={lock || !!a.taskId} value={a.dueDate ?? ''} onChange={(e) => set('actions', m.actions.map((x, j) => j === i ? { ...x, dueDate: e.target.value || null } : x))} />
                 {a.taskId ? <span className="text-xs text-green-700">وظیفه شد ({name(a.assigneeUserId)})</span>
                   : meeting && editable && can('Tasks.Create') && a.title.trim() ? <button type="button" title="تبدیل به وظیفه" className="flex items-center gap-1 text-xs border rounded-lg px-2 py-1 hover:bg-slate-50" onClick={() => convert(i)}><ArrowRightCircle size={14} /> وظیفه</button> : null}
                 {editable && !a.taskId && <button type="button" className="p-1 hover:text-red-600" aria-label="حذف" onClick={() => set('actions', m.actions.filter((_, j) => j !== i))}><Trash2 size={15} /></button>}

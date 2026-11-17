@@ -167,7 +167,7 @@ export function TasksPage() {
       </div>
       {can('Tasks.Create') && !archived && (
         <form onSubmit={(e) => { e.preventDefault(); const t = quick.trim(); if (t) act(async () => { await tasksApi.quick(t); setQuick(''); }); }}>
-          <input autoComplete="off" className="w-full rounded-2xl px-4 py-2.5 text-sm bg-white shadow-[var(--shadow)]" placeholder="ثبت سریع: عنوان را بنویس و Enter بزن" value={quick} onChange={(e) => setQuick(e.target.value)} />
+          <input autoComplete="off" className="w-full rounded-2xl px-4 py-2.5 text-sm bg-white shadow-[var(--shadow)]" aria-label="ثبت سریع: عنوان را بنویس و Enter بزن" placeholder="ثبت سریع: عنوان را بنویس و Enter بزن" value={quick} onChange={(e) => setQuick(e.target.value)} />
         </form>
       )}
       {selected.size > 0 && can('Tasks.Edit') && (

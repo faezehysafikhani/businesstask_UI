@@ -79,14 +79,14 @@ export function TimesheetPage() {
         ))}
       </div>
 
-      <form onSubmit={add} className="bg-white rounded-xl border p-3 flex flex-wrap gap-2 items-center text-sm">
-        <Select className="border rounded-lg px-2 py-1 flex-1 min-w-40" value={f.taskId} onChange={(e) => setF({ ...f, taskId: e.target.value })}>
+      <form onSubmit={add} className="bg-white rounded-xl border p-3 flex flex-wrap gap-2 items-center text-sm [&_input]:h-9 [&_select]:h-9 [&_button]:h-9">
+        <Select label="وظیفه" className="border rounded-lg px-2 py-1 flex-1 min-w-40" value={f.taskId} onChange={(e) => setF({ ...f, taskId: e.target.value })}>
           <option value="">وظیفه…</option>{tasks.map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}
         </Select>
-        <DateInput className="border rounded-lg px-2 py-1" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} />
-        <input type="number" min={0} className="w-16 border rounded-lg px-2 py-1" value={f.hours} onChange={(e) => setF({ ...f, hours: e.target.value })} /> ساعت
-        <input type="number" min={0} max={59} className="w-16 border rounded-lg px-2 py-1" value={f.minutes} onChange={(e) => setF({ ...f, minutes: e.target.value })} /> دقیقه
-        <input className="border rounded-lg px-2 py-1 flex-1 min-w-32" placeholder="توضیح" value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} />
+        <DateInput label="تاریخ" className="border rounded-lg px-2 py-1" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} />
+        <input type="number" min={0} aria-label="ساعت" className="w-16 border rounded-lg px-2 py-1 text-center" value={f.hours} onChange={(e) => setF({ ...f, hours: e.target.value })} /> ساعت
+        <input type="number" min={0} max={59} aria-label="دقیقه" className="w-16 border rounded-lg px-2 py-1 text-center" value={f.minutes} onChange={(e) => setF({ ...f, minutes: e.target.value })} /> دقیقه
+        <input aria-label="توضیح" className="border rounded-lg px-2 py-1 flex-1 min-w-32" placeholder="توضیح" value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} />
         <button disabled={!f.taskId} className="rounded-lg bg-blue-600 text-white px-3 py-1 disabled:opacity-50">ثبت</button>
       </form>
 

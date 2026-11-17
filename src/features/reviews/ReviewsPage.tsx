@@ -63,7 +63,7 @@ export function ReviewsPage() {
             </div>
             {task?.submittedBy && <div className="text-slate-500">ارسال‌کننده: {task.submittedBy.displayName}{task.comment ? ` — «${task.comment}»` : ''}</div>}
             <div className="flex gap-2 items-center">
-              <input className="flex-1 border rounded-lg px-3 py-1.5" placeholder="توضیح (اختیاری)" value={notes[instance.id] ?? ''} onChange={(e) => setNotes({ ...notes, [instance.id]: e.target.value })} />
+              <input className="flex-1 border rounded-lg px-3 py-1.5" aria-label="توضیح (اختیاری)" placeholder="توضیح (اختیاری)" value={notes[instance.id] ?? ''} onChange={(e) => setNotes({ ...notes, [instance.id]: e.target.value })} />
               {can('Workflow.Approve') && <button onClick={() => decide(instance.id, true)} className="flex items-center gap-1 rounded-lg bg-green-600 text-white px-3 py-1.5"><Check size={14} /> تأیید</button>}
               {can('Workflow.Reject') && <button onClick={() => decide(instance.id, false)} className="flex items-center gap-1 rounded-lg bg-red-600 text-white px-3 py-1.5"><X size={14} /> بازگشت برای بازکاری</button>}
             </div>

@@ -45,7 +45,7 @@ function List({ options, selected, onPick, search }: { options: Opt[]; selected:
   const shown = options.filter((o) => !q.trim() || o.label.includes(q.trim()));
   return (
     <div className="card absolute z-[95] top-full mt-1 inset-x-0 p-1.5 text-sm">
-      {search && <input autoFocus autoComplete="off" value={q} onChange={(e) => setQ(e.target.value)} placeholder="جستجو…" className="w-full border rounded-lg px-2 py-1 mb-1 bg-transparent" />}
+      {search && <input autoFocus autoComplete="off" value={q} onChange={(e) => setQ(e.target.value)} aria-label="جستجو…" placeholder="جستجو…" className="w-full border rounded-lg px-2 py-1 mb-1 bg-transparent" />}
       <ul className="max-h-56 overflow-y-auto">
         {shown.map((o) => (
           <li key={o.value}>
@@ -61,7 +61,7 @@ function List({ options, selected, onPick, search }: { options: Opt[]; selected:
 }
 
 /** A dropdown for lists that can grow (people, units, tasks): searchable, same props as a plain <select>. */
-export function Select({ value, onChange, className = '', disabled, children }: { value: string; onChange: (e: { target: { value: string } }) => void; className?: string; disabled?: boolean; children: ReactNode }) {
+export function Select({ value, onChange, className = '', disabled, children, label }: { label?: string; value: string; onChange: (e: { target: { value: string } }) => void; className?: string; disabled?: boolean; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const ref = useOutside(open, () => setOpen(false));
   const options = optionsOf(children);
@@ -69,7 +69,7 @@ export function Select({ value, onChange, className = '', disabled, children }: 
   const width = className.match(/\b(flex-1|w-full|w-\d+|min-w-\d+)\b/g)?.join(' ') ?? '';
   return (
     <div ref={ref} className={`relative inline-block ${width}`}>
-      <button type="button" disabled={disabled} onClick={() => setOpen(!open)} className={`${className} w-full flex items-center justify-between gap-2 text-start bg-white disabled:opacity-60`}>
+      <button type="button" aria-label={label} aria-haspopup="listbox" aria-expanded={open} disabled={disabled} onClick={() => setOpen(!open)} className={`${className} w-full flex items-center justify-between gap-2 text-start bg-white disabled:opacity-60`}>
         <span className={`truncate ${current && current.value !== '' ? '' : 'text-slate-400'}`}>{current?.label || 'انتخاب…'}</span><ChevronDown size={14} className="shrink-0 text-slate-400" />
       </button>
       {open && <List options={options} search={options.length > 5} selected={(v) => v === String(value ?? '')} onPick={(v) => { onChange({ target: { value: v } }); setOpen(false); }} />}
@@ -96,5 +96,18 @@ export function MultiSelect({ value, onChange, options, disabled, placeholder = 
       </div>
       {open && <List options={options} search selected={(v) => value.includes(v)} onPick={toggle} />}
     </div>
+  );
+}
+
+/** An on/off switch that shows the CURRENT state ("فعال" / "غیرفعال"); clicking flips it. */
+export function ActiveSwitch({ on, onChange, disabled, label = 'وضعیت' }: { on: boolean; onChange: (next: boolean) => void; disabled?: boolean; label?: string }) {
+  return (
+    <button type="button" role="switch" aria-checked={on} aria-label={label} disabled={disabled} onClick={() => onChange(!on)}
+      className="inline-flex items-center gap-2 text-xs disabled:opacity-50">
+      <span className={`relative inline-block h-5 w-9 rounded-full transition ${on ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+        <i className={`absolute top-0.5 size-4 rounded-full bg-white shadow transition-all ${on ? 'end-0.5' : 'end-[1.1rem]'}`} />
+      </span>
+      <span className={on ? 'text-emerald-700' : 'text-slate-500'}>{on ? 'فعال' : 'غیرفعال'}</span>
+    </button>
   );
 }

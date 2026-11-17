@@ -32,14 +32,14 @@ export function SecurityPage() {
         {!enabled && challenge && (
           <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); act(async () => { await api('POST', '/api/identity/auth/me/mfa/confirm-enable', { challengeId: challenge.challengeId, code: code.trim() }); setChallenge(null); setCode(''); setMsg('ورود دومرحله‌ای روشن شد'); await reloadMe(); }); }}>
             <p>کد به <b dir="ltr">{challenge.maskedPhone}</b> پیامک شد.</p>
-            <input className="border rounded-lg px-3 py-1.5 tracking-widest" dir="ltr" inputMode="numeric" placeholder="کد" value={code} onChange={(e) => setCode(e.target.value)} />
+            <input className="border rounded-lg px-3 py-1.5 tracking-widest" dir="ltr" inputMode="numeric" aria-label="کد" placeholder="کد" value={code} onChange={(e) => setCode(e.target.value)} />
             <button disabled={!code.trim()} className="ms-2 rounded-lg bg-green-600 text-white px-4 py-1.5 disabled:opacity-50">تأیید</button>
           </form>
         )}
         {enabled && (
           <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); act(async () => { await api('POST', '/api/identity/auth/me/mfa/disable', { password }); setPassword(''); setMsg('ورود دومرحله‌ای خاموش شد'); await reloadMe(); }); }}>
             <p className="text-slate-500">برای خاموش کردن، رمز عبور را وارد کنید.</p>
-            <input type="password" className="border rounded-lg px-3 py-1.5" dir="ltr" placeholder="رمز عبور" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <input type="password" className="border rounded-lg px-3 py-1.5" dir="ltr" aria-label="رمز عبور" placeholder="رمز عبور" value={password} onChange={(e) => setPassword(e.target.value)} />
             <button disabled={!password} className="ms-2 rounded-lg border px-4 py-1.5 disabled:opacity-50">خاموش کردن</button>
           </form>
         )}

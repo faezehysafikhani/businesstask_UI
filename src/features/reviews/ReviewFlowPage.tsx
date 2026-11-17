@@ -36,7 +36,7 @@ export function ReviewFlowPage({ subject = TASK_REVIEW }: { subject?: string }) 
         {steps.map((s, i) => (
           <li key={i} className="flex gap-2 items-center bg-white rounded-xl border p-2 text-sm">
             <span className="text-slate-400 w-5">{i + 1}</span>
-            <input className="flex-1 border rounded-lg px-2 py-1" value={s.name} onChange={(e) => setSteps(steps.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} placeholder="نام مرحله" />
+            <input className="flex-1 border rounded-lg px-2 py-1" value={s.name} onChange={(e) => setSteps(steps.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} aria-label="نام مرحله" placeholder="نام مرحله" />
             {isSheet ? (
               <Select className="border rounded-lg px-2 py-1" value={s.approverUserId ?? ''} onChange={(e) => setSteps(steps.map((x, j) => j === i ? { ...x, approverUserId: e.target.value || null } : x))}>
                 <option value="">تأییدکننده…</option>{users.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}

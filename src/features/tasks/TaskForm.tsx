@@ -51,15 +51,15 @@ export function TaskForm({ taskId, onClose, onSaved }: { taskId?: string; onClos
   return (
     <Modal title={taskId ? 'ویرایش وظیفه' : 'وظیفه جدید'} onClose={onClose}>
       <form onSubmit={submit} className="space-y-3">
-        <input className="w-full border rounded-lg px-3 py-2" placeholder="عنوان" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
-        <textarea className="w-full border rounded-lg px-3 py-2" placeholder="توضیحات" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
+        <input className="w-full border rounded-lg px-3 py-2" aria-label="عنوان" placeholder="عنوان" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
+        <textarea className="w-full border rounded-lg px-3 py-2" aria-label="توضیحات" placeholder="توضیحات" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
         <label className="block text-sm">مسئول
-          <Select className="mt-1 w-full border rounded-lg px-3 py-2" value={assignee} onChange={(e) => setAssignee(e.target.value)}>
+          <Select label="مسئول" className="mt-1 w-full border rounded-lg px-3 py-2" value={assignee} onChange={(e) => setAssignee(e.target.value)}>
             {users.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}
           </Select>
         </label>
         <div className="flex gap-2">
-          <DateInput className="flex-1 border rounded-lg px-3 py-2" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+          <DateInput label="سررسید" className="flex-1 border rounded-lg px-3 py-2" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
           <Segmented value={priority} onChange={setPriority} options={[{ value: 0, label: 'کم' }, { value: 1, label: 'متوسط' }, { value: 2, label: 'زیاد' }]} />
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}

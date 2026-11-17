@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { ActiveSwitch } from '../../ui/fields';
 import { CardFilterBar, useColumnFilters } from '../../ui/filters';
 import { ACTIVE_OPTS } from '../../constants/enums';
 import { Trash2 } from 'lucide-react';
@@ -46,7 +47,7 @@ export function WebhooksPage() {
               <button title="حذف" className="ms-auto p-1 hover:text-red-600" onClick={async () => (await askConfirm('حذف شود؟')) && act(() => webhooksApi.remove(w.id))}><Trash2 size={16} /></button></div>
             <div className="text-xs text-slate-500">{w.events[0] === '*' ? 'همه رویدادها' : w.events.map((e) => EVENT_LABEL[e] ?? e).join('، ')}</div>
             <div className="flex gap-3 text-xs">
-              <button className="underline" onClick={() => act(() => webhooksApi.update(w.id, { name: w.name, url: w.url, events: w.events, isActive: !(w.isActive && w.consecutiveFailures < 30) }))}>{w.isActive && w.consecutiveFailures < 30 ? 'غیرفعال' : 'فعال'}</button>
+              <ActiveSwitch on={w.isActive && w.consecutiveFailures < 30} onChange={(v) => act(() => webhooksApi.update(w.id, { name: w.name, url: w.url, events: w.events, isActive: v }))} />
               <button className="underline" onClick={() => act(() => webhooksApi.ping(w.id))}>ارسال آزمایشی</button>
               <button className="underline" onClick={async () => (await askConfirm('کلید قبلی از کار می‌افتد. ادامه؟')) && act(async () => { const r = await webhooksApi.rotate(w.id); setSecret({ name: w.name, value: r.secret }); })}>کلید جدید</button>
               <button className="underline" onClick={() => webhooksApi.deliveries(w.id).then((rows) => setOpen(open?.id === w.id ? null : { id: w.id, rows })).catch((e) => setError(e.message))}>گزارش ارسال</button>
@@ -65,8 +66,8 @@ export function WebhooksPage() {
       </ul>
       <form onSubmit={create} className="bg-white rounded-xl border p-3 space-y-2 text-sm">
         <h2 className="font-medium">وب‌هوک جدید</h2>
-        <div className="flex gap-2"><input className="w-40 border rounded-lg px-2 py-1" placeholder="نام" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
-          <input className="flex-1 border rounded-lg px-2 py-1" dir="ltr" placeholder="https://…" value={f.url} onChange={(e) => setF({ ...f, url: e.target.value })} /></div>
+        <div className="flex gap-2"><input className="w-40 border rounded-lg px-2 py-1" aria-label="نام" placeholder="نام" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+          <input className="flex-1 border rounded-lg px-2 py-1" dir="ltr" aria-label="https://…" placeholder="https://…" value={f.url} onChange={(e) => setF({ ...f, url: e.target.value })} /></div>
         <div className="flex flex-wrap gap-2 items-center"><span className="text-slate-500">رویدادها (هیچ‌کدام = همه):</span>
           {events.map((ev) => <label key={ev} className="flex items-center gap-1 border rounded-full px-2 py-0.5"><input type="checkbox" checked={f.events.includes(ev)} onChange={(e) => setF({ ...f, events: e.target.checked ? [...f.events, ev] : f.events.filter((x) => x !== ev) })} />{EVENT_LABEL[ev] ?? ev}</label>)}</div>
         <button disabled={!f.name.trim() || !f.url.trim()} className="rounded-lg bg-blue-600 text-white px-4 py-1.5 disabled:opacity-50">افزودن</button>

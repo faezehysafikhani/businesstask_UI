@@ -1,4 +1,5 @@
 import { Select } from '../../ui/fields';
+import { norm } from '../../ui/format';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, CalendarRange, Users } from 'lucide-react';
@@ -13,6 +14,7 @@ export function OrgChartPage() {
   const [asOf, setAsOf] = useState('');
   const [chart, setChart] = useState<OrgChartCompany | null>(null);
   const [loading, setLoading] = useState(false);
+  const [q, setQ] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -75,7 +77,11 @@ export function OrgChartPage() {
           </div>
 
           {chart.units.length === 0 && <p className="text-sm text-slate-500">برای این شرکت هنوز گره‌ای در چارت ساخته نشده است.</p>}
-          {chart.units.length > 0 && <ul className="roots space-y-0.5">{chart.units.map((unit) => <UnitRow key={unit.unitId} unit={unit} />)}</ul>}
+          {chart.units.length > 0 && (
+            <input type="search" autoComplete="off" aria-label="جستجو در ساختار سازمانی" placeholder="جستجو در ساختار سازمانی (نام واحد، پست یا عضو)…" value={q} onChange={(e) => setQ(e.target.value)} className="tf-in !h-9 w-full max-w-sm border rounded-lg px-3 text-sm" />
+          )}
+          {chart.units.length > 0 && <ul className="roots space-y-0.5">{chart.units.filter((u) => !q.trim() || hasMatch(u, norm(q))).map((unit) => <UnitRow key={unit.unitId} unit={unit} q={norm(q)} />)}</ul>}
+          {q.trim() && !chart.units.some((u) => hasMatch(u, norm(q))) && <p className="text-sm text-slate-500">نتیجه‌ای پیدا نشد.</p>}
 
           {chart.members.length > 0 && (
             <div className="pt-2 border-t text-xs text-slate-500">
@@ -98,7 +104,11 @@ export function OrgChartPage() {
   );
 }
 
-function UnitRow({ unit }: { unit: OrgChartUnit }) {
+const ownMatch = (u: OrgChartUnit, q: string) =>
+  norm([u.name, u.manager?.displayName, ...(u.positions ?? []).flatMap((p) => [p.title, ...p.holders.map((h) => h.displayName)])].join(' ')).includes(q);
+const hasMatch = (u: OrgChartUnit, q: string): boolean => ownMatch(u, q) || u.children.some((c) => hasMatch(c, q));
+
+function UnitRow({ unit, q }: { unit: OrgChartUnit; q: string }) {
   const posts = unit.positions ?? [];
   return (
     <li>
@@ -123,7 +133,7 @@ function UnitRow({ unit }: { unit: OrgChartUnit }) {
           </ul>
         )}
 
-        {unit.children.length > 0 && <ul className="space-y-0.5">{unit.children.map((child) => <UnitRow key={child.unitId} unit={child} />)}</ul>}
+        {unit.children.length > 0 && <ul className="space-y-0.5">{unit.children.filter((c) => !q || ownMatch(unit, q) || hasMatch(c, q)).map((child) => <UnitRow key={child.unitId} unit={child} q={ownMatch(unit, q) ? '' : q} />)}</ul>}
       </details>
     </li>
   );

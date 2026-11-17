@@ -5,7 +5,7 @@ import { Trash2 } from 'lucide-react';
 import { automationApi, listGroups, listUsers, workTypesApi, type WorkType } from '../../api/tasks';
 import { ActionLabel, PriorityLabel, StatusLabel, TriggerLabel, type AutomationAction, type AutomationLog, type AutomationRule } from '../../api/types';
 import { askConfirm } from '../../ui/dialog';
-import { Select } from '../../ui/fields';
+import { Select, ActiveSwitch } from '../../ui/fields';
 
 const PRIORITIES = ['Low', 'Medium', 'High'];
 const STATUSES = ['Todo', 'InProgress', 'Paused', 'Completed'];
@@ -77,7 +77,7 @@ export function AutomationPage() {
           <li key={r.id} className="p-3 space-y-1">
             <div className="flex items-center gap-2"><span className={`font-medium ${r.isActive ? '' : 'line-through text-slate-400'}`}>{r.name}</span>
               <span className="text-xs text-slate-500">وقتی: {TriggerLabel[r.trigger]}</span>
-              <button className="ms-auto text-xs underline" onClick={() => act(() => automationApi.save(r.id, { name: r.name, trigger: r.trigger, conditions: r.conditions, actions: r.actions, sortOrder: r.sortOrder, isActive: !r.isActive }))}>{r.isActive ? 'غیرفعال' : 'فعال'}</button>
+              <span className="ms-auto"><ActiveSwitch on={r.isActive} onChange={(v) => act(() => automationApi.save(r.id, { name: r.name, trigger: r.trigger, conditions: r.conditions, actions: r.actions, sortOrder: r.sortOrder, isActive: v }))} /></span>
               <button title="حذف" className="p-1 hover:text-red-600" onClick={async () => (await askConfirm('حذف شود؟')) && act(() => automationApi.remove(r.id))}><Trash2 size={16} /></button></div>
             <div className="text-xs text-slate-500">
               {[r.conditions.priority && `اولویت ${prioLabel(r.conditions.priority)}`, r.conditions.status && `وضعیت ${statusLabel(r.conditions.status)}`, r.conditions.workTypeId && `نوع ${workTypes.find((w) => w.id === r.conditions.workTypeId)?.name ?? '؟'}`, r.conditions.titleContains && `عنوان شامل «${r.conditions.titleContains}»`].filter(Boolean).join(' · ') || 'بدون شرط'}
@@ -91,14 +91,14 @@ export function AutomationPage() {
       <form onSubmit={create} className="bg-white rounded-xl border p-3 space-y-2 text-sm">
         <h2 className="font-medium">قاعده جدید</h2>
         <div className="flex gap-2">
-          <input className="flex-1 border rounded-lg px-2 py-1" placeholder="نام قاعده" value={name} onChange={(e) => setName(e.target.value)} />
+          <input className="flex-1 border rounded-lg px-2 py-1" aria-label="نام قاعده" placeholder="نام قاعده" value={name} onChange={(e) => setName(e.target.value)} />
           <Select className="border rounded-lg px-2 py-1" value={trigger} onChange={(e) => setTrigger(e.target.value)}>{Object.entries(TriggerLabel).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</Select>
         </div>
         <div className="flex flex-wrap gap-2 items-center"><span className="text-slate-500">شرط‌ها:</span>
           <Select className="border rounded-lg px-2 py-1" value={cond.priority} onChange={(e) => setCond({ ...cond, priority: e.target.value })}><option value="">هر اولویت</option>{PRIORITIES.map((p) => <option key={p} value={p}>{prioLabel(p)}</option>)}</Select>
           <Select className="border rounded-lg px-2 py-1" value={cond.status} onChange={(e) => setCond({ ...cond, status: e.target.value })}><option value="">هر وضعیت</option>{STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}</Select>
           {workTypes.length > 0 && <Select className="border rounded-lg px-2 py-1" value={cond.workTypeId} onChange={(e) => setCond({ ...cond, workTypeId: e.target.value })}><option value="">هر نوع فعالیت</option>{workTypes.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}</Select>}
-          <input className="border rounded-lg px-2 py-1" placeholder="عنوان شامل…" value={cond.titleContains} onChange={(e) => setCond({ ...cond, titleContains: e.target.value })} />
+          <input className="border rounded-lg px-2 py-1" aria-label="عنوان شامل…" placeholder="عنوان شامل…" value={cond.titleContains} onChange={(e) => setCond({ ...cond, titleContains: e.target.value })} />
         </div>
         <div className="space-y-1"><span className="text-slate-500">اقدام‌ها:</span>
           {actions.map((a, i) => <div key={i} className="flex items-center gap-2"><span>• {describe(a, userMap, groupMap)}</span><button type="button" className="text-red-600 text-xs" onClick={() => setActions(actions.filter((_, j) => j !== i))}>حذف</button></div>)}
@@ -109,8 +109,8 @@ export function AutomationPage() {
             {(draft.type === 'AssignUser' || draft.type === 'Notify') && <Select className="border rounded-lg px-2 py-1" value={draft.userId ?? ''} onChange={(e) => setDraft({ ...draft, userId: e.target.value || null })}><option value="">{draft.type === 'Notify' ? 'سازنده وظیفه' : 'کاربر…'}</option>{users.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}</Select>}
             {draft.type === 'AssignGroup' && <Select className="border rounded-lg px-2 py-1" value={draft.groupId ?? ''} onChange={(e) => setDraft({ ...draft, groupId: e.target.value || null })}><option value="">تیم…</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}</Select>}
             {draft.type === 'EscalateUp' && <label className="flex items-center gap-1">چند سطح بالاتر<input type="number" min={1} max={10} className="w-16 border rounded-lg px-2 py-1" value={draft.levels ?? 1} onChange={(e) => setDraft({ ...draft, levels: Number(e.target.value) })} /></label>}
-            {draft.type === 'AddTag' && <input className="border rounded-lg px-2 py-1" placeholder="برچسب" value={draft.tag ?? ''} onChange={(e) => setDraft({ ...draft, tag: e.target.value })} />}
-            {draft.type === 'StartSla' && <><input type="number" min={1} className="w-20 border rounded-lg px-2 py-1" placeholder="ساعت" value={draft.hours ?? ''} onChange={(e) => setDraft({ ...draft, hours: Number(e.target.value) })} /><label className="flex items-center gap-1"><input type="checkbox" checked={!!draft.businessDaysOnly} onChange={(e) => setDraft({ ...draft, businessDaysOnly: e.target.checked })} /> فقط روز کاری</label></>}
+            {draft.type === 'AddTag' && <input className="border rounded-lg px-2 py-1" aria-label="برچسب" placeholder="برچسب" value={draft.tag ?? ''} onChange={(e) => setDraft({ ...draft, tag: e.target.value })} />}
+            {draft.type === 'StartSla' && <><input type="number" min={1} className="w-20 border rounded-lg px-2 py-1" aria-label="ساعت" placeholder="ساعت" value={draft.hours ?? ''} onChange={(e) => setDraft({ ...draft, hours: Number(e.target.value) })} /><label className="flex items-center gap-1"><input type="checkbox" checked={!!draft.businessDaysOnly} onChange={(e) => setDraft({ ...draft, businessDaysOnly: e.target.checked })} /> فقط روز کاری</label></>}
             <button type="button" disabled={!draftOk(draft)} className="border rounded-lg px-2 py-1 disabled:opacity-50" onClick={() => { setActions([...actions, draft]); setDraft({ type: 'AddTag' }); }}>افزودن اقدام</button>
           </div>
         </div>

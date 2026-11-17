@@ -46,8 +46,8 @@ export function FieldsPage() {
         <h2 className="font-medium">نوع فعالیت</h2>
         <p className="text-sm text-slate-500">برچسبی که روی هر وظیفه می‌نشیند (مثلاً باگ، درخواست تغییر). قاعده‌های خودکار می‌توانند بر اساس آن وظیفه را به یک تیم بدهند.</p>
         <form onSubmit={addType} className="flex gap-2 items-center text-sm">
-          <input className="border rounded-lg px-3 py-1.5 flex-1" placeholder="نام نوع فعالیت" value={typeName} onChange={(e) => setTypeName(e.target.value)} />
-          <input type="color" value={typeColor} onChange={(e) => setTypeColor(e.target.value)} className="h-8 w-8" />
+          <input className="border rounded-lg px-3 py-1.5 flex-1" aria-label="نام نوع فعالیت" placeholder="نام نوع فعالیت" value={typeName} onChange={(e) => setTypeName(e.target.value)} />
+          <input type="color" aria-label="رنگ" value={typeColor} onChange={(e) => setTypeColor(e.target.value)} className="h-8 w-8" />
           <button disabled={!typeName.trim()} className="rounded-lg bg-blue-600 text-white px-3 py-1.5 disabled:opacity-50">افزودن</button>
         </form>
         <ul className="bg-white rounded-xl border divide-y text-sm">
@@ -67,10 +67,10 @@ export function FieldsPage() {
         <h2 className="font-medium">فیلدهای سفارشی</h2>
         <form onSubmit={addField} className="bg-white rounded-xl border p-3 space-y-2 text-sm">
           <div className="flex gap-2 items-center">
-            <input className="border rounded-lg px-3 py-1.5 flex-1" placeholder="نام فیلد (مثلاً شماره قرارداد)" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+            <input className="border rounded-lg px-3 py-1.5 flex-1" aria-label="نام فیلد (مثلاً شماره قرارداد)" placeholder="نام فیلد (مثلاً شماره قرارداد)" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
             <Segmented value={f.kind} onChange={(kind) => setF({ ...f, kind })} options={KINDS} />
           </div>
-          {f.kind === 'Choice' && <input className="border rounded-lg px-3 py-1.5 w-full" placeholder="گزینه‌ها را با ویرگول جدا کنید (دست‌کم دو گزینه)" value={f.options} onChange={(e) => setF({ ...f, options: e.target.value })} />}
+          {f.kind === 'Choice' && <input className="border rounded-lg px-3 py-1.5 w-full" aria-label="گزینه‌ها را با ویرگول جدا کنید (دست‌کم دو گزینه)" placeholder="گزینه‌ها را با ویرگول جدا کنید (دست‌کم دو گزینه)" value={f.options} onChange={(e) => setF({ ...f, options: e.target.value })} />}
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-1.5"><input type="checkbox" checked={f.isRequired} onChange={(e) => setF({ ...f, isRequired: e.target.checked })} />اجباری</label>
             <button disabled={!f.name.trim()} className="ms-auto rounded-lg bg-blue-600 text-white px-4 py-1.5 disabled:opacity-50">افزودن فیلد</button>

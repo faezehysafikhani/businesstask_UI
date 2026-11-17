@@ -172,7 +172,7 @@ export function OrgNodePage() {
                   </Select>
                 </label>
                 <label className="w-32">کد پست
-                  <input className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" placeholder="خودکار" value={newPost.code} onChange={(e) => setNewPost({ ...newPost, code: e.target.value })} />
+                  <input className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" aria-label="خودکار" placeholder="خودکار" value={newPost.code} onChange={(e) => setNewPost({ ...newPost, code: e.target.value })} />
                 </label>
                 <button className="rounded-lg border px-4 py-1.5 disabled:opacity-50" disabled={!newPost.positionId}
                   onClick={() => act(async () => { await orgApi.addPost(node.id, { positionId: newPost.positionId, code: newPost.code || null }); setNewPost({ positionId: '', code: '' }); }, 'پست ساخته شد')}>افزودن پست</button>

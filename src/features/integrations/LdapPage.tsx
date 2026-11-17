@@ -29,7 +29,7 @@ export function LdapPage() {
         <div className="grid grid-cols-2 gap-2">
           {field('سرور', 'host')}{field('پورت', 'port', 'number')}{field('دامنه', 'domain')}{field('Base DN', 'baseDn')}
           {field('حساب اتصال (Bind)', 'bindUsername')}
-          <label className="block">رمز حساب اتصال {s.bindPasswordConfigured && <span className="text-green-600 text-xs">ثبت شده</span>}<input type="password" className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" placeholder="خالی = بدون تغییر" value={s.bindPassword ?? ''} onChange={(e) => set('bindPassword', e.target.value)} /></label>
+          <label className="block">رمز حساب اتصال {s.bindPasswordConfigured && <span className="text-green-600 text-xs">ثبت شده</span>}<input type="password" className="mt-1 w-full border rounded-lg px-2 py-1.5" dir="ltr" aria-label="خالی = بدون تغییر" placeholder="خالی = بدون تغییر" value={s.bindPassword ?? ''} onChange={(e) => set('bindPassword', e.target.value)} /></label>
           {field('مسیر جستجوی کاربران', 'userSearchBase')}{field('فیلتر کاربران', 'userFilter')}
         </div>
         <div className="flex gap-4"><label className="flex items-center gap-1"><input type="checkbox" checked={s.useSsl} onChange={(e) => set('useSsl', e.target.checked)} /> SSL</label>

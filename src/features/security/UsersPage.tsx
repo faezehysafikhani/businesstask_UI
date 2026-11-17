@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { Pager } from '../../ui/table';
 import { CardFilterBar, useColumnFilters } from '../../ui/filters';
 import { ACTIVE_OPTS } from '../../constants/enums';
 import { Copy } from 'lucide-react';
@@ -13,6 +14,7 @@ import { Segmented } from '../../ui/fields';
 const KIND: Record<string, string> = { Normal: 'عادی', Guest: 'مهمان', ServiceAccount: 'حساب سرویس' };
 
 // Users (guests and the SMS code reset) and service accounts with their API keys (a key is shown once).
+const USERS_PAGE = 15;
 export function UsersPage() {
   const { can, me } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
@@ -28,6 +30,7 @@ export function UsersPage() {
     { key: 'act', kind: 'select', get: (u) => String(u.isActive !== false), options: ACTIVE_OPTS },
     { key: 'kind', kind: 'select', get: (u) => u.kind ?? 'Normal', options: [{ value: 'Normal', label: 'عادی' }, { value: 'Guest', label: 'مهمان' }] },
   ]);
+  const [page, setPage] = useState(1);
   const [pol, setPol] = useState({ min: '10', classes: 3 });
   const load = useCallback(() => {
     api<Paged<User>>('GET', '/api/identity/users?pageSize=200').then((p) => setUsers(p.items)).catch((e) => setError(e.message));
@@ -50,7 +53,7 @@ export function UsersPage() {
         <h2 className="font-medium">کاربران</h2>
         <CardFilterBar f={cf} total={people.length} labels={{ q: 'نام یا نام کاربری', act: 'وضعیت', kind: 'نوع' }} />
         <ul className="bg-white rounded-xl border divide-y text-sm">
-          {cf.filtered.map((u) => (
+          {cf.filtered.slice((Math.min(page, Math.max(1, Math.ceil(cf.filtered.length / USERS_PAGE))) - 1) * USERS_PAGE, Math.min(page, Math.max(1, Math.ceil(cf.filtered.length / USERS_PAGE))) * USERS_PAGE).map((u) => (
             <li key={u.id} className="p-3 flex items-center gap-3">
               <span className={u.isActive === false ? 'line-through text-slate-400' : 'font-medium'}>{u.displayName}</span>
               <span className="text-xs text-slate-400" dir="ltr">{u.username}</span>
@@ -63,8 +66,9 @@ export function UsersPage() {
               </span>}
             </li>
           ))}
-          {users.length === 0 && <li className="p-6 text-center text-slate-400">کاربری نیست</li>}
+          {cf.filtered.length === 0 && <li className="p-6 text-center text-slate-400">کاربری نیست</li>}
         </ul>
+        <Pager page={page} size={USERS_PAGE} total={cf.filtered.length} onPage={setPage} />
         <p className="text-xs text-slate-400">مهمان‌ها در سقف کاربران پلن حساب نمی‌شوند؛ دسترسی‌شان فقط همان است که مدیر می‌دهد و وظایفی که به آن‌ها داده شده.</p>
       </section>
 
@@ -117,7 +121,7 @@ export function UsersPage() {
         </ul>
         {can('users.create') && (
           <form className="flex gap-2 text-sm" onSubmit={(e: FormEvent) => { e.preventDefault(); act(async () => { const r = await api<{ account: ServiceAccount; secret: string }>('POST', '/api/identity/service-accounts', { name: name.trim() }); setSecret({ label: r.account.name, value: r.secret }); setName(''); }); }}>
-            <input className="flex-1 border rounded-lg px-3 py-1.5" placeholder="نام حساب سرویس (مثلاً ربات گزارش)" value={name} onChange={(e) => setName(e.target.value)} />
+            <input className="flex-1 border rounded-lg px-3 py-1.5" aria-label="نام حساب سرویس (مثلاً ربات گزارش)" placeholder="نام حساب سرویس (مثلاً ربات گزارش)" value={name} onChange={(e) => setName(e.target.value)} />
             <button disabled={!name.trim()} className="rounded-lg bg-blue-600 text-white px-4 py-1.5 disabled:opacity-50">ساخت</button>
           </form>
         )}

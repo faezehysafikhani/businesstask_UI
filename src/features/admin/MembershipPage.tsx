@@ -46,9 +46,9 @@ export function MembershipPage() {
           <form className="bg-white rounded-xl border p-4 space-y-2 text-sm" onSubmit={(e) => { e.preventDefault(); act(() => membershipApi.set({ planName: f.planName.trim(), maxUsers: num(f.maxUsers), maxStorageMb: num(f.maxStorageMb), validFrom: f.validFrom || null, validUntil: f.validUntil || null, notes: f.notes || null }), 'پلن ذخیره شد'); }}>
             <h2 className="font-medium">تعیین پلن</h2>
             <div className="grid grid-cols-2 gap-2">
-              <input className="border rounded-lg px-2 py-1" placeholder="نام پلن" value={f.planName} onChange={(e) => setF({ ...f, planName: e.target.value })} />
-              <input className="border rounded-lg px-2 py-1" type="number" placeholder="سقف کاربر (خالی = نامحدود)" value={f.maxUsers} onChange={(e) => setF({ ...f, maxUsers: e.target.value })} />
-              <input className="border rounded-lg px-2 py-1" type="number" placeholder="سقف فضا به مگابایت" value={f.maxStorageMb} onChange={(e) => setF({ ...f, maxStorageMb: e.target.value })} />
+              <input className="border rounded-lg px-2 py-1" aria-label="نام پلن" placeholder="نام پلن" value={f.planName} onChange={(e) => setF({ ...f, planName: e.target.value })} />
+              <input className="border rounded-lg px-2 py-1" type="number" aria-label="سقف کاربر (خالی = نامحدود)" placeholder="سقف کاربر (خالی = نامحدود)" value={f.maxUsers} onChange={(e) => setF({ ...f, maxUsers: e.target.value })} />
+              <input className="border rounded-lg px-2 py-1" type="number" aria-label="سقف فضا به مگابایت" placeholder="سقف فضا به مگابایت" value={f.maxStorageMb} onChange={(e) => setF({ ...f, maxStorageMb: e.target.value })} />
               <span />
               <label>شروع <DateInput className="border rounded-lg px-2 py-1 w-full" value={f.validFrom} onChange={(e) => setF({ ...f, validFrom: e.target.value })} /></label>
               <label>پایان <DateInput className="border rounded-lg px-2 py-1 w-full" value={f.validUntil} onChange={(e) => setF({ ...f, validUntil: e.target.value })} /></label>
@@ -60,8 +60,8 @@ export function MembershipPage() {
         {manage && (
           <form className="bg-white rounded-xl border p-4 space-y-2 text-sm" onSubmit={(e) => { e.preventDefault(); act(() => membershipApi.setRetention({ automationLogDays: num(ret.automationLogDays), webhookDeliveryDays: num(ret.webhookDeliveryDays) }), 'نگهداری ذخیره شد'); }}>
             <h2 className="font-medium">نگهداری گزارش‌ها (روز؛ خالی = برای همیشه)</h2>
-            <div className="flex gap-2"><input className="border rounded-lg px-2 py-1 flex-1" type="number" min={7} placeholder="گزارش اجرای قاعده‌ها" value={ret.automationLogDays} onChange={(e) => setRet({ ...ret, automationLogDays: e.target.value })} />
-              <input className="border rounded-lg px-2 py-1 flex-1" type="number" min={7} placeholder="گزارش ارسال وب‌هوک" value={ret.webhookDeliveryDays} onChange={(e) => setRet({ ...ret, webhookDeliveryDays: e.target.value })} />
+            <div className="flex gap-2"><input className="border rounded-lg px-2 py-1 flex-1" type="number" min={7} aria-label="گزارش اجرای قاعده‌ها" placeholder="گزارش اجرای قاعده‌ها" value={ret.automationLogDays} onChange={(e) => setRet({ ...ret, automationLogDays: e.target.value })} />
+              <input className="border rounded-lg px-2 py-1 flex-1" type="number" min={7} aria-label="گزارش ارسال وب‌هوک" placeholder="گزارش ارسال وب‌هوک" value={ret.webhookDeliveryDays} onChange={(e) => setRet({ ...ret, webhookDeliveryDays: e.target.value })} />
               <button className="rounded-lg bg-blue-600 text-white px-4 py-1.5">ذخیره</button></div>
           </form>
         )}

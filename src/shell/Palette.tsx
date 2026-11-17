@@ -26,7 +26,7 @@ export function Palette({ onClose }: { onClose: () => void }) {
       <div className="card w-full max-w-lg overflow-hidden" onClick={(e) => e.stopPropagation()} onKeyDown={onKey}>
         <div className="flex items-center gap-2 px-4 border-b border-slate-200">
           <Search size={16} className="text-slate-400" />
-          <input ref={ref} value={q} onChange={(e) => setQ(e.target.value)} placeholder="برو به صفحه…" autoComplete="off" className="flex-1 py-3 bg-transparent outline-none" />
+          <input ref={ref} value={q} onChange={(e) => setQ(e.target.value)} aria-label="برو به صفحه…" placeholder="برو به صفحه…" autoComplete="off" className="flex-1 py-3 bg-transparent outline-none" />
           <kbd className="text-[10px] text-slate-400 border rounded px-1">Esc</kbd>
           <button type="button" aria-label="بستن" onClick={onClose} className="text-slate-400 hover:text-slate-700 px-1">✕</button>
         </div>

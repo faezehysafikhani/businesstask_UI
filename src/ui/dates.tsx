@@ -36,10 +36,10 @@ function parse(text: string): string | null {
 }
 
 type Ev = { target: { value: string } };
-interface DateProps { value: string; onChange: (e: Ev) => void; className?: string; disabled?: boolean; required?: boolean; dir?: string; min?: string; max?: string }
+interface DateProps { label?: string; value: string; onChange: (e: Ev) => void; className?: string; disabled?: boolean; required?: boolean; dir?: string; min?: string; max?: string }
 
 /** A date field in the Persian calendar: type 1405/08/24 or pick from the calendar. */
-export function DateInput({ value, onChange, className, disabled, dir: _dir }: DateProps) {
+export function DateInput({ value, onChange, className, disabled, label, dir: _dir }: DateProps) {
   const [text, setText] = useState(showJalali(value));
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -53,7 +53,7 @@ export function DateInput({ value, onChange, className, disabled, dir: _dir }: D
   const commit = (t: string) => { const iso = t.trim() ? parse(t) : ''; if (iso === null) setText(showJalali(value)); else if (iso !== value.slice(0, 10)) onChange({ target: { value: iso } }); };
   return (
     <div className={`relative ${className?.match(/\b(flex-1|w-full|w-\d+)\b/)?.[0] ?? ''}`} ref={box}>
-      <input disabled={disabled} className={`${className ?? ''} w-full`} dir="ltr" inputMode="numeric" autoComplete="off" placeholder="انتخاب تاریخ" value={text}
+      <input disabled={disabled} aria-label={label ?? 'تاریخ'} className={`${className ?? ''} w-full`} dir="ltr" inputMode="numeric" autoComplete="off" placeholder="انتخاب تاریخ" value={text}
         onChange={(e) => setText(e.target.value)} onBlur={(e) => commit(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && commit(text)} onFocus={() => setOpen(true)} />
       {open && !disabled && <Calendar value={value} onPick={(iso) => { onChange({ target: { value: iso } }); setOpen(false); }} />}
     </div>
@@ -88,9 +88,9 @@ function Calendar({ value, onPick }: { value: string; onPick: (iso: string) => v
   );
 }
 
-interface TimeProps { value: string; onChange: (e: Ev) => void; className?: string; disabled?: boolean }
+interface TimeProps { label?: string; value: string; onChange: (e: Ev) => void; className?: string; disabled?: boolean }
 /** A 24-hour time field (hour and minute lists). */
-export function TimeInput({ value, onChange, className, disabled }: TimeProps) {
+export function TimeInput({ value, onChange, className, disabled, label = 'زمان' }: TimeProps) {
   const [h, m] = (value || '09:00').split(':');
   const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
   const minutes = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'));
@@ -99,8 +99,8 @@ export function TimeInput({ value, onChange, className, disabled }: TimeProps) {
   const set = (hh: string, mm: string) => onChange({ target: { value: `${hh}:${mm}` } });
   return (
     <span className="inline-flex items-center gap-1" dir="ltr">
-      <select disabled={disabled} className={className} value={h} onChange={(e) => set(e.target.value, m)}>{hours.map((x) => <option key={x}>{x}</option>)}</select>:
-      <select disabled={disabled} className={className} value={m} onChange={(e) => set(h, e.target.value)}>{minutes.map((x) => <option key={x}>{x}</option>)}</select>
+      <select disabled={disabled} aria-label={`${label} (ساعت)`} className={className} value={h} onChange={(e) => set(e.target.value, m)}>{hours.map((x) => <option key={x}>{x}</option>)}</select>:
+      <select disabled={disabled} aria-label={`${label} (دقیقه)`} className={className} value={m} onChange={(e) => set(h, e.target.value)}>{minutes.map((x) => <option key={x}>{x}</option>)}</select>
     </span>
   );
 }
