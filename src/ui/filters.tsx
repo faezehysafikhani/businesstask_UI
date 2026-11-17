@@ -71,3 +71,22 @@ export function FilterBar({ f, shown, total }: { f: { active: number; clear: () 
     </div>
   );
 }
+
+/** Filter bar for card lists: a search box (the first text column), selects and a date range, with counter and clear. */
+export function CardFilterBar<T>({ f, total, labels }: { f: ColumnFilters<T>; total: number; labels?: Record<string, string> }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {f.cols.map((c) => {
+        const v = f.vals[c.key]; const lb = labels?.[c.key] ?? c.key;
+        if (c.kind === 'text') return <input key={c.key} type="search" autoComplete="off" aria-label={lb} placeholder={lb === c.key ? 'جستجو…' : `جستجو: ${lb}`} className={`${IN} !h-9 flex-1 min-w-48 max-w-xs`} value={(v as string) ?? ''} onChange={(e) => f.set(c.key, e.target.value)} />;
+        if (c.kind === 'select') return (
+          <select key={c.key} aria-label={lb} className={`${IN} !h-9 !w-auto`} value={(v as string) ?? ''} onChange={(e) => f.set(c.key, e.target.value)}>
+            <option value="">همه {lb}</option>{c.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        );
+        return <div key={c.key} className="w-44"><DateRangeInput className={`${IN} !h-9`} value={Array.isArray(v) ? (v as [string, string]) : null} onChange={(r) => f.set(c.key, r as Val)} /></div>;
+      })}
+      <FilterBar f={f} shown={f.filtered.length} total={total} />
+    </div>
+  );
+}

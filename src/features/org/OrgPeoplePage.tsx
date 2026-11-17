@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { FilterBar, FilterRow, useColumnFilters } from '../../ui/filters';
 import { SortTh, useSort } from '../../ui/table';
 import { Empty } from '../../ui/Empty';
 import { Link } from 'react-router-dom';
@@ -23,7 +24,6 @@ export function OrgPeoplePage() {
   const [companies, setCompanies] = useState<OrgCompany[]>([]);
   const [companyId, setCompanyId] = useState('');
   const [rows, setRows] = useState<UserAssignment[]>([]);
-  const [query, setQuery] = useState('');
   const [dialog, setDialog] = useState<{ kind: 'offboard' | 'transfer' | 'history'; person: UserAssignment } | null>(null);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
@@ -42,12 +42,13 @@ export function OrgPeoplePage() {
   }, [companyId]);
   useEffect(load, [load]);
 
-  const shown = useMemo(() => {
-    const text = query.trim().toLowerCase();
-    if (!text) return rows;
-    return rows.filter((r) => [r.displayName, r.companyName, r.unitName, r.positionTitle, ...(r.positions ?? []).map((p) => `${p.title} ${p.unitName}`)]
-      .some((value) => value?.toLowerCase().includes(text)));
-  }, [rows, query]);
+  const cf = useColumnFilters('org-people', rows, [
+    { key: 'who', kind: 'text', get: (r) => r.displayName },
+    { key: 'company', kind: 'text', get: (r) => `${r.companyName} ${r.unitName ?? ''}` },
+    { key: 'post', kind: 'text', get: (r) => [r.positionTitle, ...(r.positions ?? []).map((p) => `${p.title} ${p.unitName}`)].join(' ') },
+    { key: 'manager', kind: 'text', get: (r) => r.manager?.displayName ?? '' },
+  ]);
+  const shown = cf.filtered;
   const { sorted: sortedRows, sort, toggle } = useSort(shown, {
     who: (r) => r.displayName, company: (r) => `${r.companyName} ${r.unitName ?? ''}`, post: (r) => r.positionTitle ?? '', manager: (r) => r.manager?.displayName ?? '',
   });
@@ -70,15 +71,12 @@ export function OrgPeoplePage() {
             {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </Select>
         </label>
-        <label className="block flex-1 min-w-48">جستجو
-          <input data-search autoComplete="off" className="mt-1 block w-full border rounded-lg px-2 py-1.5" placeholder="نام، واحد یا سمت" value={query} onChange={(e) => setQuery(e.target.value)} />
-        </label>
-        <span className="text-xs text-slate-500 self-center">{shown.length} نفر</span>
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
       {loading && <p className="text-sm text-slate-500">...</p>}
 
+      {!loading && <FilterBar f={cf} shown={shown.length} total={rows.length} />}
       {!loading && (
         <div className="rounded-[20px] bg-white shadow-[0_10px_40px_rgba(60,50,160,.10)]">
           <table className="cards w-full text-sm">
@@ -90,6 +88,7 @@ export function OrgPeoplePage() {
                 <SortTh k="manager" sort={sort} onSort={toggle}>مدیر</SortTh>
                 <th className="p-3" />
               </tr>
+              <FilterRow f={cf} layout={['who', 'company', 'post', 'manager', null]} />
             </thead>
             <tbody>
               {sortedRows.map((row) => (

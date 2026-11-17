@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { CardFilterBar, useColumnFilters } from '../../ui/filters';
+import { ACTIVE_OPTS } from '../../constants/enums';
 import { Trash2 } from 'lucide-react';
 import { webhooksApi } from '../../api/tasks';
 import type { Webhook, WebhookDelivery } from '../../api/types';
@@ -14,6 +16,10 @@ export function WebhooksPage() {
   const [secret, setSecret] = useState<{ name: string; value: string } | null>(null);
   const [open, setOpen] = useState<{ id: string; rows: WebhookDelivery[] } | null>(null);
   const [error, setError] = useState('');
+  const cf = useColumnFilters('webhooks', list, [
+    { key: 'q', kind: 'text', get: (w) => `${w.name} ${w.url}` },
+    { key: 'act', kind: 'select', get: (w) => String(w.isActive && w.consecutiveFailures < 30), options: ACTIVE_OPTS },
+  ]);
   const load = useCallback(() => { webhooksApi.list().then(setList).catch((e) => setError(e.message)); }, []);
   useEffect(() => { load(); webhooksApi.events().then(setEvents).catch(() => {}); }, [load]);
 
@@ -29,8 +35,9 @@ export function WebhooksPage() {
       <p className="text-sm text-slate-500">هر رویداد با امضای HMAC-SHA256 (هدر <code dir="ltr">X-TM-Signature</code>) به نشانی شما POST می‌شود. فقط آدرس‌های https عمومی مجازند.</p>
       {secret && <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm">کلید امضای «{secret.name}» (فقط همین یک‌بار نمایش داده می‌شود): <code dir="ltr" className="select-all break-all">{secret.value}</code> <button className="underline ms-2" onClick={() => setSecret(null)}>بستن</button></div>}
       {error && <p className="text-sm text-red-600">{error}</p>}
+      <CardFilterBar f={cf} total={list.length} labels={{ q: 'نام یا آدرس', act: 'وضعیت' }} />
       <ul className="bg-white rounded-xl border divide-y text-sm">
-        {list.map((w) => (
+        {cf.filtered.map((w) => (
           <li key={w.id} className="p-3 space-y-1">
             <div className="flex items-center gap-2"><span className={`font-medium ${w.isActive && w.consecutiveFailures < 30 ? '' : 'line-through text-slate-400'}`}>{w.name}</span>
               <span className="text-xs text-slate-400" dir="ltr">{w.url}</span>

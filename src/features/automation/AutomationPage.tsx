@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { CardFilterBar, useColumnFilters } from '../../ui/filters';
+import { ACTIVE_OPTS } from '../../constants/enums';
 import { Trash2 } from 'lucide-react';
 import { automationApi, listGroups, listUsers, workTypesApi, type WorkType } from '../../api/tasks';
 import { ActionLabel, PriorityLabel, StatusLabel, TriggerLabel, type AutomationAction, type AutomationLog, type AutomationRule } from '../../api/types';
@@ -37,6 +39,11 @@ export function AutomationPage() {
   const [actions, setActions] = useState<AutomationAction[]>([]);
   const [draft, setDraft] = useState<AutomationAction>({ type: 'AddTag' });
   const [error, setError] = useState('');
+  const cf = useColumnFilters('automation', rules, [
+    { key: 'q', kind: 'text', get: (r) => r.name },
+    { key: 'trig', kind: 'select', get: (r) => r.trigger, options: Object.entries(TriggerLabel).map(([value, label]) => ({ value, label })) },
+    { key: 'act', kind: 'select', get: (r) => String(r.isActive), options: ACTIVE_OPTS },
+  ]);
   const userMap = Object.fromEntries(users.map((u) => [u.id, u.displayName]));
   const groupMap = Object.fromEntries(groups.map((g) => [g.id, g.name]));
 
@@ -64,8 +71,9 @@ export function AutomationPage() {
     <div className="space-y-4 max-w-4xl">
       <h1 className="text-xl font-bold">قاعده‌های خودکار و SLA</h1>
       {error && <p className="text-sm text-red-600">{error}</p>}
+      <CardFilterBar f={cf} total={rules.length} labels={{ q: 'نام قاعده', trig: 'رویداد', act: 'وضعیت' }} />
       <ul className="bg-white rounded-xl border divide-y text-sm">
-        {rules.map((r) => (
+        {cf.filtered.map((r) => (
           <li key={r.id} className="p-3 space-y-1">
             <div className="flex items-center gap-2"><span className={`font-medium ${r.isActive ? '' : 'line-through text-slate-400'}`}>{r.name}</span>
               <span className="text-xs text-slate-500">وقتی: {TriggerLabel[r.trigger]}</span>
@@ -77,7 +85,7 @@ export function AutomationPage() {
             </div>
           </li>
         ))}
-        {rules.length === 0 && <li className="p-6 text-center text-slate-400">قاعده‌ای تعریف نشده است</li>}
+        {cf.filtered.length === 0 && <li className="p-6 text-center text-slate-400">قاعده‌ای تعریف نشده است</li>}
       </ul>
 
       <form onSubmit={create} className="bg-white rounded-xl border p-3 space-y-2 text-sm">

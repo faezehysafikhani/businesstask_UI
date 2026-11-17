@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { CardFilterBar, useColumnFilters } from '../../ui/filters';
 import { Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TASK_REVIEW, TIMESHEET, tasksApi, timeApi, workflowApi } from '../../api/tasks';
@@ -12,6 +13,10 @@ export function ReviewsPage() {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [error, setError] = useState('');
   const [loaded, setLoaded] = useState(false);
+  const cf = useColumnFilters('reviews', rows, [
+    { key: 'q', kind: 'text', get: (r) => `${r.task?.title ?? ''} ${r.task?.submittedBy?.displayName ?? ''} ${r.sheet?.user?.displayName ?? ''}` },
+    { key: 'd', kind: 'date', get: (r) => r.task?.dueDate ?? r.sheet?.weekStart ?? r.task?.submittedAtUtc },
+  ]);
 
   const load = useCallback(async () => {
     try {
@@ -46,8 +51,9 @@ export function ReviewsPage() {
       <h1 className="text-xl font-bold">بازبینی‌های من</h1>
       {error && <p className="text-sm text-red-600">{error}</p>}
       {!loaded && <div className="space-y-2">{[0, 1, 2].map((i) => <div key={i} className="skel h-20" />)}</div>}
+      <CardFilterBar f={cf} total={rows.length} labels={{ q: 'عنوان یا فرد', d: 'تاریخ' }} />
       <ul className="space-y-2">
-        {rows.map(({ instance, task, sheet }) => (
+        {cf.filtered.map(({ instance, task, sheet }) => (
           <li key={instance.id} className="bg-white rounded-xl border p-3 space-y-2 text-sm">
             <div className="flex items-center gap-2">
               <span className="font-medium">{sheet ? `ساعت کاری ${sheet.user?.displayName ?? ''}` : task ? <Link className="hover:text-blue-700 underline" to={`/tasks?open=${task.id}`}>{task.title}</Link> : 'وظیفه (دیگر در دسترس نیست)'}</span>
@@ -63,7 +69,7 @@ export function ReviewsPage() {
             </div>
           </li>
         ))}
-        {loaded && rows.length === 0 && <li className="bg-white rounded-xl border px-3 py-8 text-center text-slate-400">بازبینی در انتظار شما نیست</li>}
+        {loaded && cf.filtered.length === 0 && <li className="bg-white rounded-xl border px-3 py-8 text-center text-slate-400">بازبینی در انتظار شما نیست</li>}
       </ul>
     </div>
   );

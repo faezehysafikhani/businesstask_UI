@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { CardFilterBar, useColumnFilters } from '../../ui/filters';
+import { PRIORITY_OPTS } from '../../constants/enums';
 import { Trash2 } from 'lucide-react';
 import { templatesApi } from '../../api/tasks';
 import { PriorityLabel, type TaskTemplate } from '../../api/types';
@@ -14,6 +16,11 @@ export function TemplatesPage() {
   const [list, setList] = useState<TaskTemplate[]>([]);
   const [f, setF] = useState({ name: '', title: '', description: '', priority: 1, isProject: false, dueInDays: 7, subTasks: '', criteria: '', tags: '' });
   const [msg, setMsg] = useState('');
+  const cf = useColumnFilters('templates', list, [
+    { key: 'q', kind: 'text', get: (t) => `${t.name} ${t.body.title}` },
+    { key: 'pri', kind: 'select', get: (t) => String(t.body.priority), options: PRIORITY_OPTS },
+    { key: 'kind', kind: 'select', get: (t) => (t.isProject ? 'p' : 't'), options: [{ value: 'p', label: 'پروژه' }, { value: 't', label: 'وظیفه' }] },
+  ]);
   const [error, setError] = useState('');
   const load = useCallback(() => { templatesApi.list().then(setList).catch((e) => setError(e.message)); }, []);
   useEffect(load, [load]);
@@ -32,8 +39,9 @@ export function TemplatesPage() {
       <h1 className="text-xl font-bold">قالب‌های وظیفه و پروژه</h1>
       {msg && <p className="text-sm text-green-700">{msg}</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
+      <CardFilterBar f={cf} total={list.length} labels={{ q: 'نام یا عنوان', pri: 'اولویت', kind: 'نوع' }} />
       <ul className="bg-white rounded-xl border divide-y text-sm">
-        {list.map((t) => (
+        {cf.filtered.map((t) => (
           <li key={t.id} className="p-3 flex items-center gap-3">
             <div><div className="font-medium">{t.name}{t.isProject && <span className="ms-2 text-xs text-purple-600">پروژه</span>}</div>
               <div className="text-xs text-slate-500">{t.body.title} · {PriorityLabel[t.body.priority]} · {t.body.subTasks.length} زیرکار · {t.body.criteria.length} معیار</div></div>
@@ -41,7 +49,7 @@ export function TemplatesPage() {
             {can('Tasks.ManageTemplates') && <button title="حذف" className="p-1 hover:text-red-600" onClick={async () => (await askConfirm('حذف شود؟')) && act(() => templatesApi.remove(t.id))}><Trash2 size={16} /></button>}
           </li>
         ))}
-        {list.length === 0 && <li className="p-6 text-center text-slate-400">قالبی نیست</li>}
+        {cf.filtered.length === 0 && <li className="p-6 text-center text-slate-400">قالبی نیست</li>}
       </ul>
       {can('Tasks.ManageTemplates') && (
         <form onSubmit={create} className="bg-white rounded-xl border p-3 space-y-2 text-sm">

@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { CardFilterBar, useColumnFilters } from '../../ui/filters';
+import { ACTIVE_OPTS } from '../../constants/enums';
 import { Copy } from 'lucide-react';
 import { api, ApiError } from '../../api/client';
 import type { ApiKeyInfo, Paged, ServiceAccount, User } from '../../api/types';
@@ -20,6 +22,12 @@ export function UsersPage() {
   const [error, setError] = useState('');
   const [expiry, setExpiry] = useState<User | null>(null);
   const [expiryDate, setExpiryDate] = useState('');
+  const people = users.filter((u) => u.kind !== 'ServiceAccount');
+  const cf = useColumnFilters('users', people, [
+    { key: 'q', kind: 'text', get: (u) => `${u.displayName} ${u.username ?? ''} ${u.email ?? ''}` },
+    { key: 'act', kind: 'select', get: (u) => String(u.isActive !== false), options: ACTIVE_OPTS },
+    { key: 'kind', kind: 'select', get: (u) => u.kind ?? 'Normal', options: [{ value: 'Normal', label: 'عادی' }, { value: 'Guest', label: 'مهمان' }] },
+  ]);
   const [pol, setPol] = useState({ min: '10', classes: 3 });
   const load = useCallback(() => {
     api<Paged<User>>('GET', '/api/identity/users?pageSize=200').then((p) => setUsers(p.items)).catch((e) => setError(e.message));
@@ -40,8 +48,9 @@ export function UsersPage() {
 
       <section className="space-y-2">
         <h2 className="font-medium">کاربران</h2>
+        <CardFilterBar f={cf} total={people.length} labels={{ q: 'نام یا نام کاربری', act: 'وضعیت', kind: 'نوع' }} />
         <ul className="bg-white rounded-xl border divide-y text-sm">
-          {users.filter((u) => u.kind !== 'ServiceAccount').map((u) => (
+          {cf.filtered.map((u) => (
             <li key={u.id} className="p-3 flex items-center gap-3">
               <span className={u.isActive === false ? 'line-through text-slate-400' : 'font-medium'}>{u.displayName}</span>
               <span className="text-xs text-slate-400" dir="ltr">{u.username}</span>

@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
+import { CardFilterBar, useColumnFilters } from '../../ui/filters';
+import { PRIORITY_OPTS, REQUEST_STATUS_OPTS } from '../../constants/enums';
 import { requestsApi } from '../../api/tasks';
 import { PriorityLabel, RequestStatusLabel, type TaskRequest } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
@@ -15,7 +17,13 @@ export function InboxPage() {
   useEffect(() => { load(); }, [load]);
 
   async function act(fn: () => Promise<unknown>) { setError(''); try { await fn(); load(); } catch (e) { setError((e as Error).message); } }
-  const shown = list.filter((r) => (!onlyNew || r.status === 0) && (!mineOnly || r.routedTo?.id === me?.user.id));
+  const cf = useColumnFilters('inbox', list, [
+    { key: 'q', kind: 'text', get: (r) => `${r.title} ${r.description ?? ''} ${r.requester?.displayName ?? ''}` },
+    { key: 'st', kind: 'select', get: (r) => String(r.status), options: REQUEST_STATUS_OPTS },
+    { key: 'pri', kind: 'select', get: (r) => String(r.priority), options: PRIORITY_OPTS },
+    { key: 'd', kind: 'date', get: (r) => r.createdAtUtc },
+  ]);
+  const shown = cf.filtered.filter((r) => (!onlyNew || r.status === 0) && (!mineOnly || r.routedTo?.id === me?.user.id));
 
   return (
     <div className="space-y-4 max-w-4xl">
@@ -25,6 +33,7 @@ export function InboxPage() {
         <label className="text-sm flex items-center gap-1"><input type="checkbox" checked={mineOnly} onChange={(e) => setMineOnly(e.target.checked)} /> ارجاع‌شده به من</label>
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
+      <CardFilterBar f={cf} total={list.length} labels={{ q: 'عنوان یا درخواست‌کننده', st: 'وضعیت', pri: 'اولویت', d: 'تاریخ' }} />
       <ul className="space-y-2">
         {shown.map((r) => (
           <li key={r.id} className="bg-white rounded-xl border p-3 text-sm space-y-2">
