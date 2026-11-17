@@ -7,6 +7,7 @@ const FA_MONTHS = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر',
 const FA_WEEK = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
 
 interface J { y: number; m: number; d: number }
+export const isoToday = () => isoOf(new Date());
 const noon = (iso: string) => new Date(`${iso}T12:00:00Z`);
 const isoOf = (d: Date) => d.toISOString().slice(0, 10);
 const toJalali = (d: Date): J => { const p = Object.fromEntries(PERSIAN.formatToParts(d).map((x) => [x.type, x.value])); return { y: +p.year, m: +p.month, d: +p.day }; };
@@ -52,7 +53,7 @@ export function DateInput({ value, onChange, className, disabled, dir: _dir }: D
   const commit = (t: string) => { const iso = t.trim() ? parse(t) : ''; if (iso === null) setText(showJalali(value)); else if (iso !== value.slice(0, 10)) onChange({ target: { value: iso } }); };
   return (
     <div className={`relative ${className?.match(/\b(flex-1|w-full|w-\d+)\b/)?.[0] ?? ''}`} ref={box}>
-      <input disabled={disabled} className={`${className ?? ''} w-full`} dir="ltr" inputMode="numeric" autoComplete="off" placeholder="۱۴۰۵/۰۱/۰۱" value={text}
+      <input disabled={disabled} className={`${className ?? ''} w-full`} dir="ltr" inputMode="numeric" autoComplete="off" placeholder="انتخاب تاریخ" value={text}
         onChange={(e) => setText(e.target.value)} onBlur={(e) => commit(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && commit(text)} onFocus={() => setOpen(true)} />
       {open && !disabled && <Calendar value={value} onPick={(iso) => { onChange({ target: { value: iso } }); setOpen(false); }} />}
     </div>
@@ -101,5 +102,31 @@ export function TimeInput({ value, onChange, className, disabled }: TimeProps) {
       <select disabled={disabled} className={className} value={h} onChange={(e) => set(e.target.value, m)}>{hours.map((x) => <option key={x}>{x}</option>)}</select>:
       <select disabled={disabled} className={className} value={m} onChange={(e) => set(h, e.target.value)}>{minutes.map((x) => <option key={x}>{x}</option>)}</select>
     </span>
+  );
+}
+
+/** A date-range filter field: first click picks the start, second the end; shows "from to". Value is [fromIso, toIso] or null. */
+export type DateRange = [string, string] | null;
+export function DateRangeInput({ value, onChange, className }: { value: DateRange; onChange: (r: DateRange) => void; className?: string }) {
+  const [open, setOpen] = useState(false);
+  const [start, setStart] = useState<string | null>(null);
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => { if (!box.current?.contains(e.target as Node)) { setOpen(false); setStart(null); } };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+  const label = value ? (value[0] === value[1] ? showJalali(value[0]) : `${showJalali(value[0])} تا ${showJalali(value[1])}`) : '';
+  const pick = (iso: string) => {
+    if (!start) { setStart(iso); onChange([iso, iso]); return; }
+    onChange(iso < start ? [iso, start] : [start, iso]); setStart(null); setOpen(false);
+  };
+  return (
+    <div className="relative" ref={box}>
+      <input readOnly aria-label="بازه تاریخ" className={className} placeholder="انتخاب تاریخ" value={label} onClick={() => setOpen(true)} style={{ cursor: 'pointer' }} />
+      {open && <Calendar value={value?.[0] ?? ''} onPick={pick} />}
+      {value && <button type="button" aria-label="پاک کردن تاریخ" className="absolute end-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs" onClick={() => { onChange(null); setStart(null); }}>✕</button>}
+    </div>
   );
 }

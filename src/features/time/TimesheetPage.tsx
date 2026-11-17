@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { SortTh, useSort } from '../../ui/table';
+import { FilterBar, FilterRow, useColumnFilters } from '../../ui/filters';
+import { APPROVAL_OPTS } from '../../constants/enums';
+import { formatJalaliDate } from '../../ui/format';
 import { Empty } from '../../ui/Empty';
 import { tasksApi, timeApi } from '../../api/tasks';
 import { ApprovalLabel, fmtMinutes, type TaskListItem, type TimesheetWeek } from '../../api/types';
@@ -28,7 +31,13 @@ export function TimesheetPage() {
     const minutes = Number(f.hours || 0) * 60 + Number(f.minutes || 0);
     act(() => timeApi.log({ taskId: f.taskId, date: f.date, minutes, note: f.note || undefined }).then(() => setF({ ...f, note: '' })));
   }
-  const { sorted: entries, sort, toggle } = useSort(week?.entries, {
+  const cf = useColumnFilters('timesheet', week?.entries ?? [], [
+    { key: 'day', kind: 'date', get: (e) => e.date },
+    { key: 'task', kind: 'text', get: (e) => e.taskTitle ?? '' },
+    { key: 'note', kind: 'text', get: (e) => e.note ?? '' },
+    { key: 'status', kind: 'select', get: (e) => String(e.status), options: APPROVAL_OPTS },
+  ]);
+  const { sorted: entries, sort, toggle } = useSort(cf.filtered, {
     day: (e) => e.date, task: (e) => e.taskTitle ?? '', time: (e) => e.minutes, status: (e) => e.status,
   });
   const days = week ? Array.from({ length: 7 }, (_, i) => addDays(week.weekStart, i)) : [];
@@ -81,12 +90,13 @@ export function TimesheetPage() {
         <button disabled={!f.taskId} className="rounded-lg bg-blue-600 text-white px-3 py-1 disabled:opacity-50">ثبت</button>
       </form>
 
+      <FilterBar f={cf} shown={cf.filtered.length} total={week?.entries.length ?? 0} />
       <div className="rounded-[20px] bg-white shadow-[0_10px_40px_rgba(60,50,160,.10)]"><table className="cards w-full text-sm">
-        <thead><tr><SortTh k="day" sort={sort} onSort={toggle}>روز</SortTh><SortTh k="task" sort={sort} onSort={toggle}>وظیفه</SortTh><SortTh k="time" sort={sort} onSort={toggle}>زمان</SortTh><th className="text-start px-3 py-2 font-medium">توضیح</th><SortTh k="status" sort={sort} onSort={toggle}>وضعیت</SortTh><th /></tr></thead>
+        <thead><tr><SortTh k="day" sort={sort} onSort={toggle}>روز</SortTh><SortTh k="task" sort={sort} onSort={toggle}>وظیفه</SortTh><SortTh k="time" sort={sort} onSort={toggle}>زمان</SortTh><th className="text-start px-3 py-2 font-medium">توضیح</th><SortTh k="status" sort={sort} onSort={toggle}>وضعیت</SortTh><th /></tr><FilterRow f={cf} layout={['day', 'task', null, 'note', 'status', null]} /></thead>
         <tbody>
           {entries.map((e) => (
             <tr key={e.id}>
-              <td className="px-3 py-2" data-label="روز">{new Date(e.date).toLocaleDateString('fa-IR')}</td><td className="px-3 py-2" data-label="وظیفه">{e.taskTitle ?? '—'}</td>
+              <td className="px-3 py-2" data-label="روز">{formatJalaliDate(e.date)}</td><td className="px-3 py-2" data-label="وظیفه">{e.taskTitle ?? '—'}</td>
               <td className="px-3 py-2" data-label="زمان" dir="ltr">{fmtMinutes(e.minutes)}{e.source === 1 && ' ⏱'}</td><td className="px-3 py-2" data-label="توضیح">{e.note}</td>
               <td className="px-3 py-2" data-label="وضعیت">{ApprovalLabel[e.status]}</td>
               <td className="px-3 py-2 text-end whitespace-nowrap">{(e.status === 0 || e.status === 3) && <button className="p-1 hover:text-blue-600" title="ویرایش" onClick={async () => { const v = await askText('زمان (دقیقه)', String(e.minutes)); if (v === null) return; const n = Number(v); if (!Number.isFinite(n) || n <= 0) return; const note = await askText('توضیح', e.note ?? ''); act(() => timeApi.update(e.id, { date: e.date, minutes: n, note: note ?? undefined })); }}><Pencil size={16} /></button>}{(e.status === 0 || e.status === 3) && <button className="p-1 hover:text-red-600" title="حذف" onClick={async () => (await askConfirm('حذف شود؟')) && act(() => timeApi.remove(e.id))}><Trash2 size={16} /></button>}</td>
@@ -94,7 +104,7 @@ export function TimesheetPage() {
           ))}
         </tbody>
       </table>
-      {week && week.entries.length === 0 && <Empty icon="⏱️" text="زمانی ثبت نشده است" />}</div>
+      {week && entries.length === 0 && <Empty icon="⏱️" text="زمانی ثبت نشده است" />}</div>
       {week?.canSubmit && <button className="rounded-lg bg-green-600 text-white px-4 py-2 text-sm" onClick={async () => (await askConfirm('هفته برای تأیید ارسال شود؟ بعد از ارسال قابل ویرایش نیست.')) && act(() => timeApi.submit(week.weekStart))}>ارسال هفته برای تأیید</button>}
     </div>
   );

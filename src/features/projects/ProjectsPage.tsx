@@ -4,6 +4,8 @@ import { FolderKanban, Pencil, Plus } from 'lucide-react';
 import { Modal } from '../../ui/Modal';
 import { Gantt } from './Gantt';
 import { SortTh, useSort } from '../../ui/table';
+import { FilterBar, FilterRow, useColumnFilters } from '../../ui/filters';
+import { PROJECT_STATUS_OPTS, PROJECT_TYPE_OPTS } from '../../constants/enums';
 import { Empty } from '../../ui/Empty';
 import { useAuth } from '../../auth/AuthContext';
 import { listUsers } from '../../api/tasks';
@@ -46,7 +48,14 @@ export function ProjectsPage() {
   useEffect(() => { listUsers().then(setUsers).catch(() => setUsers([])); }, []);
 
   const nameOf = useMemo(() => new Map(users.map((u) => [u.id, u.displayName])), [users]);
-  const { sorted, sort, toggle } = useSort(rows, {
+  const cf = useColumnFilters('projects', rows, [
+    { key: 'name', kind: 'text', get: (r) => `${r.name} ${r.code ?? ''}` },
+    { key: 'type', kind: 'select', get: (r) => r.type, options: PROJECT_TYPE_OPTS },
+    { key: 'status', kind: 'select', get: (r) => r.status, options: PROJECT_STATUS_OPTS },
+    { key: 'manager', kind: 'text', get: (r) => (r.managerUserId ? nameOf.get(r.managerUserId) : '') ?? '' },
+    { key: 'time', kind: 'date', get: (r) => r.startDate, end: (r) => r.endDate ?? r.startDate },
+  ]);
+  const { sorted, sort, toggle } = useSort(cf.filtered, {
     name: (r) => r.name, type: (r) => PROJECT_TYPE_LABEL[r.type] ?? r.type, status: (r) => PROJECT_STATUS_LABEL[r.status] ?? r.status,
     manager: (r) => (r.managerUserId ? nameOf.get(r.managerUserId) : '') ?? '', time: (r) => r.startDate ?? '',
   });
@@ -84,21 +93,6 @@ export function ProjectsPage() {
             <option value="mine">پورتفویو من (آنچه می‌بینم)</option>
           </Select>
         </label>
-        <label className="block">جستجو
-          <input className="mt-1 block border rounded-lg px-2 py-1.5 min-w-48" placeholder="نام یا کد پروژه" value={search} onChange={(e) => setSearch(e.target.value)} />
-        </label>
-        <label className="block">وضعیت
-          <Select className="mt-1 block border rounded-lg px-2 py-1.5" value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="">همه</option>
-            {STATUSES.map((s) => <option key={s} value={s}>{PROJECT_STATUS_LABEL[s]}</option>)}
-          </Select>
-        </label>
-        <label className="block">نوع
-          <Select className="mt-1 block border rounded-lg px-2 py-1.5" value={type} onChange={(e) => setType(e.target.value)}>
-            <option value="">همه</option>
-            {TYPES.map((t) => <option key={t} value={t}>{PROJECT_TYPE_LABEL[t]}</option>)}
-          </Select>
-        </label>
         <span className="text-xs text-slate-500 self-center">{total} پروژه</span>
       </div>
 
@@ -106,6 +100,7 @@ export function ProjectsPage() {
       {loading && <p className="text-sm text-slate-500">...</p>}
 
       {!loading && <Gantt rows={rows} />}
+      {!loading && <FilterBar f={cf} shown={cf.filtered.length} total={rows.length} />}
       {!loading && (
         <div className="rounded-[20px] bg-white shadow-[0_10px_40px_rgba(60,50,160,.10)]">
           <table className="cards w-full text-sm">
@@ -118,6 +113,7 @@ export function ProjectsPage() {
                 <SortTh k="time" sort={sort} onSort={toggle}>زمان</SortTh>
                 <th className="p-3" />
               </tr>
+              <FilterRow f={cf} layout={['name', 'type', 'status', 'manager', 'time', null]} />
             </thead>
             <tbody>
               {sorted.map((row) => (
@@ -146,7 +142,7 @@ export function ProjectsPage() {
               ))}
             </tbody>
           </table>
-          {rows.length === 0 && <Empty icon="📁" text="پروژه‌ای نیست." actionLabel={can('Projects.Create') ? 'اولین پروژه را بساز' : undefined} onAction={can('Projects.Create') ? () => setEditing('new') : undefined} />}
+          {sorted.length === 0 && <Empty icon="📁" text="پروژه‌ای نیست." actionLabel={can('Projects.Create') ? 'اولین پروژه را بساز' : undefined} onAction={can('Projects.Create') ? () => setEditing('new') : undefined} />}
         </div>
       )}
 

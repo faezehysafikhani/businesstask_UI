@@ -28,6 +28,7 @@ export function Palette({ onClose }: { onClose: () => void }) {
           <Search size={16} className="text-slate-400" />
           <input ref={ref} value={q} onChange={(e) => setQ(e.target.value)} placeholder="برو به صفحه…" autoComplete="off" className="flex-1 py-3 bg-transparent outline-none" />
           <kbd className="text-[10px] text-slate-400 border rounded px-1">Esc</kbd>
+          <button type="button" aria-label="بستن" onClick={onClose} className="text-slate-400 hover:text-slate-700 px-1">✕</button>
         </div>
         <ul className="max-h-80 overflow-y-auto p-2">
           {hits.map((m, i) => (

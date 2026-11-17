@@ -13,6 +13,9 @@ import { TaskExtrasPanel } from './TaskExtrasPanel';
 import { Confetti } from '../../ui/effects';
 import { Empty } from '../../ui/Empty';
 import { askConfirm, askText } from '../../ui/dialog';
+import { FilterBar, FilterRow, useColumnFilters } from '../../ui/filters';
+import { PRIORITY_OPTS } from '../../constants/enums';
+import { formatJalaliDate } from '../../ui/format';
 
 type Chip = 'all' | 'today' | 'overdue' | 'mine';
 const PAGE = 20;
@@ -83,7 +86,14 @@ export function TasksPage() {
     chip === 'today' ? t.status !== 3 && sameDay(t.dueDate)
     : chip === 'overdue' ? t.status !== 3 && new Date(t.dueDate).getTime() < dayStart()
     : chip === 'mine' ? !!uid && t.assignedUser?.id === uid : true), [all, chip, uid]);
-  const { sorted, sort, toggle: toggleSort } = useSort(filtered, {
+  const cf = useColumnFilters(archived ? 'tasks-a' : 'tasks', filtered, [
+    { key: 'title', kind: 'text', get: (t) => t.title },
+    { key: 'status', kind: 'select', get: (t) => statuses.keyOf(t.status, t.customStatusId), options: statuses.options.map((o: StatusOption) => ({ value: o.key, label: o.label })) },
+    { key: 'priority', kind: 'select', get: (t) => String(t.priority), options: PRIORITY_OPTS },
+    { key: 'due', kind: 'date', get: (t) => t.dueDate },
+    { key: 'who', kind: 'text', get: (t) => t.assignedUser?.displayName ?? '' },
+  ]);
+  const { sorted, sort, toggle: toggleSort } = useSort(cf.filtered, {
     title: (t) => t.title, status: (t) => t.status, priority: (t) => t.priority, due: (t) => t.dueDate, who: (t) => t.assignedUser?.displayName ?? '',
   });
   const pages = Math.max(1, Math.ceil(sorted.length / PAGE));
@@ -151,15 +161,9 @@ export function TasksPage() {
             <button key={String(b)} onClick={() => setBoard(b)} className={`px-4 py-1.5 rounded-xl ${board === b ? 'nav-active' : 'text-slate-600'}`}>{b ? 'بورد' : 'لیست'}</button>
           ))}
         </div>
-        <input data-search autoComplete="off" className="rounded-2xl px-4 py-2 text-sm shadow-[var(--shadow)] border border-transparent focus:border-blue-500" placeholder="جستجو ( / )" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         {newTask && (
           <button data-primary onClick={newTask} className="ms-auto flex items-center gap-1 rounded-2xl text-white px-5 py-2.5 text-sm font-semibold shadow-[0_8px_20px_color-mix(in_srgb,var(--primary)_38%,transparent)]" style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}><Plus size={16} /> وظیفه جدید</button>
         )}
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {([['all', 'همه'], ['today', 'سررسید امروز'], ['overdue', 'عقب‌افتاده'], ['mine', 'مال من']] as [Chip, string][]).map(([k, l]) => (
-          <button key={k} className="chip" data-on={chip === k} data-warn={k === 'overdue' && counts.overdue > 0} onClick={() => { setChip(k); setPage(1); }}>{l}<b>{counts[k].toLocaleString('fa-IR')}</b></button>
-        ))}
       </div>
       {can('Tasks.Create') && !archived && (
         <form onSubmit={(e) => { e.preventDefault(); const t = quick.trim(); if (t) act(async () => { await tasksApi.quick(t); setQuick(''); }); }}>
@@ -185,12 +189,13 @@ export function TasksPage() {
           <button className="ghost" aria-label="لغو انتخاب" onClick={() => setSelected(new Set())}>✕</button>
         </div>
       )}
+      {!board && <FilterBar f={cf} shown={cf.filtered.length} total={filtered.length} />}
       {error && <p className="text-sm text-red-600">{error}</p>}
       {!data && !error && <div className="space-y-3">{[0, 1, 2, 3].map((i) => <div key={i} className="skel h-12" />)}</div>}
       {data && (board ? (
         <div className="flex gap-3.5 overflow-x-auto pb-3">
           {statuses.options.map((o: StatusOption) => {
-            const items = filtered.filter((t) => statuses.keyOf(t.status, t.customStatusId) === o.key);
+            const items = cf.filtered.filter((t) => statuses.keyOf(t.status, t.customStatusId) === o.key);
             return (
               <div key={o.key} className="kcol space-y-2" style={{ ['--c' as string]: o.color ?? '#8a5cff' }} data-over={overKey === o.key}
                 onDragOver={(e) => { if (dragId && !archived && can('Tasks.Edit')) { e.preventDefault(); setOverKey(o.key); } }}
@@ -206,7 +211,7 @@ export function TasksPage() {
                     <div>{t.title}</div>
                     <div className="flex items-center gap-2 text-xs text-slate-500">
                       <span className="pri-dot" style={{ ['--c' as string]: PRIORITY_COLOR[t.priority] }}>{PriorityLabel[t.priority]}</span>
-                      <span>{new Date(t.dueDate).toLocaleDateString('fa-IR')}</span>
+                      <span>{formatJalaliDate(t.dueDate)}</span>
                       {t.assignedUser && <span className="ms-auto"><Avatar name={t.assignedUser.displayName} /></span>}
                     </div>
                     <StatusSelect t={t} />
@@ -227,7 +232,7 @@ export function TasksPage() {
             <SortTh k="due" sort={sort} onSort={toggleSort}>سررسید</SortTh>
             <SortTh k="who" sort={sort} onSort={toggleSort}>مسئول</SortTh>
             <th className="rounded-tl-[20px]" />
-          </tr></thead>
+          </tr><FilterRow f={cf} layout={[null, 'title', 'status', 'priority', 'due', 'who', null]} /></thead>
           <tbody>
             {shown.map((t) => (
               <tr key={t.id} data-done={t.status === 3} onClick={rowClick(t)} className="cursor-pointer">
@@ -235,7 +240,7 @@ export function TasksPage() {
                 <td className="px-3 ttl" data-label="عنوان">{t.title}</td>
                 <td className="px-3" data-label="وضعیت"><span><StatusSelect t={t} />{slaCell(t)}</span></td>
                 <td className="px-3" data-label="اولویت"><span className="pri-dot" style={{ ['--c' as string]: PRIORITY_COLOR[t.priority] }}>{PriorityLabel[t.priority]}</span></td>
-                <td className="px-3" data-label="سررسید">{new Date(t.dueDate).toLocaleDateString('fa-IR')}</td>
+                <td className="px-3" data-label="سررسید">{formatJalaliDate(t.dueDate)}</td>
                 <td className="px-3" data-label="مسئول">{t.assignedUser ? <span><Avatar name={t.assignedUser.displayName} />{t.assignedUser.displayName}</span> : '—'}</td>
                 <td className="px-3 text-end row-act"><Actions t={t} /></td>
               </tr>
@@ -243,8 +248,8 @@ export function TasksPage() {
           </tbody>
         </table>
         {shown.length === 0 && (
-          <Empty icon="🗂️" text={chip === 'all' ? (archived ? 'وظیفه‌ی بایگانی‌شده‌ای نیست.' : 'هنوز وظیفه‌ای نیست.') : 'وظیفه‌ای با این فیلتر نیست.'}
-            actionLabel={chip === 'all' && newTask ? 'اولین وظیفه را بساز' : undefined} onAction={newTask} />
+          <Empty icon="🗂️" text={!cf.active ? (archived ? 'وظیفه‌ی بایگانی‌شده‌ای نیست.' : 'هنوز وظیفه‌ای نیست.') : 'وظیفه‌ای با این فیلتر نیست.'}
+            actionLabel={!cf.active && newTask ? 'اولین وظیفه را بساز' : undefined} onAction={newTask} />
         )}
       </div>
       ))}
@@ -259,7 +264,7 @@ export function TasksPage() {
         <Drawer title={detail.title} onClose={() => setDetail(null)}>
           <dl className="text-sm">
             {([['وضعیت', statuses.options.find((o: StatusOption) => o.key === statuses.keyOf((full ?? detail).status, (full ?? detail).customStatusId))?.label ?? '—'],
-              ['اولویت', PriorityLabel[(full ?? detail).priority] ?? '—'], ['سررسید', new Date(detail.dueDate).toLocaleDateString('fa-IR')],
+              ['اولویت', PriorityLabel[(full ?? detail).priority] ?? '—'], ['سررسید', formatJalaliDate(detail.dueDate)],
               ['مسئول', detail.assignedUser?.displayName ?? '—']] as [string, string][]).map(([k, v]) => (
               <div key={k} className="flex justify-between py-2.5 border-b border-slate-200"><dt className="text-slate-500">{k}</dt><dd>{v}</dd></div>
             ))}

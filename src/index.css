@@ -178,3 +178,9 @@ td[colspan]::before { content: '🗂️'; display: block; font-size: 2.4rem; mar
 /* every primary button (the old blue-600 ones too) gets the gradient and a soft shadow */
 button.bg-blue-600:not(:disabled) { background-image: linear-gradient(135deg, var(--primary), var(--secondary)); box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 30%, transparent); }
 button.bg-blue-600:not(:disabled):hover { filter: brightness(1.08); }
+
+/* column filter row (shared FilterRow) */
+.tf-row th{padding:3px 6px;background:var(--surface,#fff)}
+.tf-in{font:inherit;font-size:11.5px;height:28px;border-color:#d9dfea;outline:none}
+.tf-in:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent)}
+@media(max-width:760px){.tf-row{display:none}}
