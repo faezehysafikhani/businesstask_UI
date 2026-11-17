@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { formatJalaliDate } from '../../ui/format';
 import { Pager } from '../../ui/table';
 import { CardFilterBar, useColumnFilters } from '../../ui/filters';
 import { ACTIVE_OPTS } from '../../constants/enums';
@@ -111,8 +112,8 @@ export function UsersPage() {
               <div className="flex items-center gap-2"><span className="font-medium">{a.name}</span>
                 {can('users.update') && <button className="ms-auto text-xs underline" onClick={() => act(async () => { const k = await api<{ key: ApiKeyInfo; secret: string }>('POST', `/api/identity/service-accounts/${a.id}/api-keys`, { name: (await askText('نام کلید', 'کلید جدید')) || 'key' }); setSecret({ label: k.key.name, value: k.secret }); })}>کلید جدید</button>}</div>
               <ul className="text-xs text-slate-500 space-y-0.5">
-                {a.keys.map((k) => <li key={k.id} className="flex gap-2"><span className={k.revoked ? 'line-through' : ''}>{k.name}</span><span>ساخته‌شده {new Date(k.createdAtUtc).toLocaleDateString('fa-IR')}</span>
-                  <span>{k.lastUsedAtUtc ? `آخرین استفاده ${new Date(k.lastUsedAtUtc).toLocaleDateString('fa-IR')}` : 'استفاده نشده'}</span>
+                {a.keys.map((k) => <li key={k.id} className="flex gap-2"><span className={k.revoked ? 'line-through' : ''}>{k.name}</span><span>ساخته‌شده {formatJalaliDate(k.createdAtUtc)}</span>
+                  <span>{k.lastUsedAtUtc ? `آخرین استفاده ${formatJalaliDate(k.lastUsedAtUtc)}` : 'استفاده نشده'}</span>
                   {!k.revoked && can('users.update') && <button className="ms-auto underline text-red-600" onClick={async () => (await askConfirm('کلید باطل شود؟')) && act(() => api('DELETE', `/api/identity/service-accounts/${a.id}/api-keys/${k.id}`))}>ابطال</button>}</li>)}
               </ul>
             </li>

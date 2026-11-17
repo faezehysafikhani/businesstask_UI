@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { formatJalaliDate } from '../../ui/format';
 import { CardFilterBar, useColumnFilters } from '../../ui/filters';
 import { PRIORITY_OPTS, REQUEST_STATUS_OPTS } from '../../constants/enums';
 import { requestsApi } from '../../api/tasks';
@@ -40,7 +41,7 @@ export function InboxPage() {
             <div className="flex items-center gap-2"><span className="font-medium">{r.title}</span><span className="text-xs text-slate-500">{RequestStatusLabel[r.status]}</span>
               <span className="ms-auto text-xs text-slate-400">{r.requester?.displayName}</span></div>
             {r.description && <p className="text-slate-600">{r.description}</p>}
-            <div className="text-xs text-slate-500">{r.categoryName ?? 'بدون دسته'} · {PriorityLabel[r.priority]}{r.routedTo ? ` · ارجاع به ${r.routedTo.displayName}` : ''}{r.neededBy ? ` · تا ${new Date(r.neededBy).toLocaleDateString('fa-IR')}` : ''}</div>
+            <div className="text-xs text-slate-500">{r.categoryName ?? 'بدون دسته'} · {PriorityLabel[r.priority]}{r.routedTo ? ` · ارجاع به ${r.routedTo.displayName}` : ''}{r.neededBy ? ` · تا ${formatJalaliDate(r.neededBy)}` : ''}</div>
             {r.status === 0 && (
               <div className="flex gap-2">
                 <button className="rounded-lg bg-green-600 text-white px-3 py-1" onClick={() => act(() => requestsApi.convert(r.id, {}))}>تبدیل به وظیفه</button>

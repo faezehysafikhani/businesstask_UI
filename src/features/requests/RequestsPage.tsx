@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { formatJalaliDate } from '../../ui/format';
 import { CardFilterBar, useColumnFilters } from '../../ui/filters';
 import { PRIORITY_OPTS, REQUEST_STATUS_OPTS } from '../../constants/enums';
 import { requestsApi } from '../../api/tasks';
@@ -53,7 +54,7 @@ export function RequestsPage() {
           <li key={r.id} className="bg-white rounded-xl border p-3 text-sm space-y-1">
             <div className="flex items-center gap-2"><span className="font-medium">{r.title}</span>
               <span className={`text-xs ${r.status === 1 ? 'text-green-600' : r.status === 2 ? 'text-red-600' : 'text-amber-600'}`}>{RequestStatusLabel[r.status]}</span>
-              <span className="ms-auto text-xs text-slate-400">{new Date(r.createdAtUtc).toLocaleDateString('fa-IR')}</span></div>
+              <span className="ms-auto text-xs text-slate-400">{formatJalaliDate(r.createdAtUtc)}</span></div>
             <div className="text-slate-500 text-xs">{r.categoryName ?? 'بدون دسته'} · {PriorityLabel[r.priority]}{r.routedTo ? ` · ارجاع به ${r.routedTo.displayName}` : ''}</div>
             {r.decisionNote && <div className="text-xs text-slate-600">توضیح: {r.decisionNote}</div>}
           </li>

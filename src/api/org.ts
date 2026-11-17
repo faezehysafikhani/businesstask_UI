@@ -1,4 +1,5 @@
 import { api } from './client';
+import { formatJalaliDate } from '../ui/format';
 
 // The organization structure's own API (/api/org-structure): companies, the chart, nodes, posts
 // (unit positions), appointments, the people's places, leaving and role transfer.
@@ -147,7 +148,7 @@ export const ORG_PERMISSIONS = [
   'org_structure.manage_templates',
 ];
 
-export const faDate = (iso?: string | null) => iso ? new Date(iso).toLocaleDateString('fa-IR') : '—';
+export const faDate = (iso?: string | null) => formatJalaliDate(iso);
 
 /** A date input's value (yyyy-mm-dd) from an ISO date; empty when there is none. */
 export const dayOf = (iso?: string | null) => {

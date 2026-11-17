@@ -251,3 +251,6 @@ html.dark input[type="file"]::file-selector-button { background: var(--tint); }
   table.cards td.row-act, table.cards td:last-child { justify-content: flex-end; flex-wrap: wrap; gap: .4rem; }
   .grid.grid-cols-7 { font-size: .7rem; }
 }
+.tf-in, .tf-row th { background-color: var(--surface) !important; color: var(--ink); }
+.tf-in::placeholder { color: var(--mute); }
+@media (max-width: 760px) { [role="radiogroup"] { flex-wrap: nowrap; max-width: 100%; overflow-x: auto; } }

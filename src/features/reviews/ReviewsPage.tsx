@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { formatJalaliDate } from '../../ui/format';
 import { CardFilterBar, useColumnFilters } from '../../ui/filters';
 import { Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -57,8 +58,8 @@ export function ReviewsPage() {
           <li key={instance.id} className="bg-white rounded-xl border p-3 space-y-2 text-sm">
             <div className="flex items-center gap-2">
               <span className="font-medium">{sheet ? `ساعت کاری ${sheet.user?.displayName ?? ''}` : task ? <Link className="hover:text-blue-700 underline" to={`/tasks?open=${task.id}`}>{task.title}</Link> : 'وظیفه (دیگر در دسترس نیست)'}</span>
-              {sheet && <span className="text-slate-500">هفته از {new Date(sheet.weekStart).toLocaleDateString('fa-IR')} · <b dir="ltr">{fmtMinutes(sheet.totalMinutes)}</b></span>}
-              {task?.dueDate && <span className="text-slate-400">سررسید {new Date(task.dueDate).toLocaleDateString('fa-IR')}</span>}
+              {sheet && <span className="text-slate-500">هفته از {formatJalaliDate(sheet.weekStart)} · <b dir="ltr">{fmtMinutes(sheet.totalMinutes)}</b></span>}
+              {task?.dueDate && <span className="text-slate-400">سررسید {formatJalaliDate(task.dueDate)}</span>}
               <span className="ms-auto text-xs text-slate-400">مرحله {instance.currentStepOrder} از {instance.totalSteps}</span>
             </div>
             {task?.submittedBy && <div className="text-slate-500">ارسال‌کننده: {task.submittedBy.displayName}{task.comment ? ` — «${task.comment}»` : ''}</div>}
